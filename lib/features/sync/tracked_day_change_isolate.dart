@@ -82,6 +82,14 @@ class TrackedDayChangeIsolate extends ChangeIsolate<DateTime> {
     }
   }
 
+  String _toPgDate(DateTime d) {
+    final local = d.toLocal();
+    final y = local.year.toString().padLeft(4, '0');
+    final m = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    return '$y-$m-$day'; // "YYYY-MM-DD"
+  }
+
   /* ---------- Supabase sync ---------- */
 
   Future<void> _attemptSync() async {
@@ -116,9 +124,12 @@ class TrackedDayChangeIsolate extends ChangeIsolate<DateTime> {
         final entries = <Map<String, dynamic>>[];
 
         // Convert each day to JSON
-        for (final day in batch) {
-          final dbo = box.get(day.toParsedDay()) as TrackedDayDBO?;
-          if (dbo != null) entries.add(dbo.toJson());
+        for (final dayKey in batch) {
+          final dbo = box.get(dayKey.toParsedDay()) as TrackedDayDBO?;
+          if (dbo == null) continue;
+          final m = dbo.toJson();
+          m['day'] = _toPgDate(dbo.day);
+          entries.add(m);
         }
 
         // If there is something to send…

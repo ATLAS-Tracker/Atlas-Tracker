@@ -4,11 +4,11 @@ import 'package:opennutritracker/core/utils/locator.dart';
 class GetKcalGoalUsecase {
   GetKcalGoalUsecase();
 
-  Future<double> getKcalGoal() async {
+  Future<double> getKcalGoal({DateTime? day}) async {
     final getMacroGoalUsecase = locator<GetMacroGoalUsecase>();
-    final protein = await getMacroGoalUsecase.getProteinsGoal();
-    final carbs = await getMacroGoalUsecase.getCarbsGoal();
-    final fats = await getMacroGoalUsecase.getFatsGoal();
+    final protein = await getMacroGoalUsecase.getProteinsGoal(day: day);
+    final carbs = await getMacroGoalUsecase.getCarbsGoal(day: day);
+    final fats = await getMacroGoalUsecase.getFatsGoal(day: day);
     final kcal = protein * 4 + carbs * 4 + fats * 9;
     return kcal;
   }

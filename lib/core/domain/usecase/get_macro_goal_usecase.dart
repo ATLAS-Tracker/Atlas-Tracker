@@ -12,38 +12,39 @@ class GetMacroGoalUsecase {
 
   GetMacroGoalUsecase();
 
-  bool isTodayAfterTarget(DateTime target) {
-    final today = DateTime.now();
-    final todayDateOnly = DateTime(today.year, today.month, today.day);
+  bool isDayAfterTarget(DateTime day, DateTime target) {
+    final dayOnly = DateTime(day.year, day.month, day.day);
     final targetDateOnly = DateTime(target.year, target.month, target.day);
-    return todayDateOnly.isAfter(targetDateOnly) ||
-        targetDateOnly == todayDateOnly;
+    return dayOnly.isAfter(targetDateOnly) || dayOnly == targetDateOnly;
   }
 
-  Future<double> getCarbsGoal() async {
+  Future<double> getCarbsGoal({DateTime? day}) async {
     final macroGoal = await _macroGoalRepository.getMacroGoal();
+    final dateToCheck = day ?? DateTime.now();
 
-    if (macroGoal != null && isTodayAfterTarget(macroGoal.date)) {
+    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
       return macroGoal.newCarbsGoal;
     }
 
     return macroGoal?.oldCarbsGoal ?? defaultCarbs;
   }
 
-  Future<double> getFatsGoal() async {
+  Future<double> getFatsGoal({DateTime? day}) async {
     final macroGoal = await _macroGoalRepository.getMacroGoal();
+    final dateToCheck = day ?? DateTime.now();
 
-    if (macroGoal != null && isTodayAfterTarget(macroGoal.date)) {
+    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
       return macroGoal.newFatsGoal;
     }
 
     return macroGoal?.oldFatsGoal ?? defaultFats;
   }
 
-  Future<double> getProteinsGoal() async {
+  Future<double> getProteinsGoal({DateTime? day}) async {
     final macroGoal = await _macroGoalRepository.getMacroGoal();
+    final dateToCheck = day ?? DateTime.now();
 
-    if (macroGoal != null && isTodayAfterTarget(macroGoal.date)) {
+    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
       return macroGoal.newProteinsGoal;
     }
 

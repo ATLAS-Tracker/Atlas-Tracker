@@ -113,10 +113,12 @@ class MealDetailBloc extends Bloc<MealDetailEvent, MealDetailState> {
   ) async {
     final hasTrackedDay = await _addTrackedDayUsecase.hasTrackedDay(day);
     if (!hasTrackedDay) {
-      final totalKcalGoal = await _getKcalGoalUsecase.getKcalGoal();
-      final totalCarbsGoal = await _getMacroGoalUsecase.getCarbsGoal();
-      final totalFatGoal = await _getMacroGoalUsecase.getFatsGoal();
-      final totalProteinGoal = await _getMacroGoalUsecase.getProteinsGoal();
+      final totalKcalGoal = await _getKcalGoalUsecase.getKcalGoal(day: day);
+      final totalCarbsGoal = await _getMacroGoalUsecase.getCarbsGoal(day: day);
+      final totalFatGoal = await _getMacroGoalUsecase.getFatsGoal(day: day);
+      final totalProteinGoal = await _getMacroGoalUsecase.getProteinsGoal(
+        day: day,
+      );
 
       await _addTrackedDayUsecase.addNewTrackedDay(
         day,

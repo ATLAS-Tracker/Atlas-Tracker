@@ -7,7 +7,6 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'set_student_macros_page.dart';
 
 class StudentMacrosPage extends StatefulWidget {
@@ -34,6 +33,15 @@ class _StudentMacrosPageState extends State<StudentMacrosPage> {
   DateTime _selectedDate = DateTime.now();
   MacroType _selectedMacro = MacroType.calories;
   TimeRange _selectedRange = TimeRange.month;
+  double caloriesTracked = 0;
+  double caloriesBurned = 0;
+  double calorieGoal = 0;
+  double carbsGoal = 0;
+  double carbsTracked = 0;
+  double fatGoal = 0;
+  double fatTracked = 0;
+  double proteinGoal = 0;
+  double proteinTracked = 0;
 
   @override
   void initState() {
@@ -59,6 +67,34 @@ class _StudentMacrosPageState extends State<StudentMacrosPage> {
         .gte('day', startDate)
         .lte('day', endDate)
         .order('day');
+
+    caloriesTracked = macroResponse.isNotEmpty
+        ? (macroResponse.last['caloriesTracked'] as num?)?.toDouble() ?? 0
+        : 0;
+    caloriesBurned = macroResponse.isNotEmpty
+        ? (macroResponse.last['caloriesBurned'] as num?)?.toDouble() ?? 0
+        : 0;
+    calorieGoal = macroResponse.isNotEmpty
+        ? (macroResponse.last['calorieGoal'] as num?)?.toDouble() ?? 0
+        : 0;
+    carbsTracked = macroResponse.isNotEmpty
+        ? (macroResponse.last['carbsTracked'] as num?)?.toDouble() ?? 0
+        : 0;
+    carbsGoal = macroResponse.isNotEmpty
+        ? (macroResponse.last['carbsGoal'] as num?)?.toDouble() ?? 0
+        : 0;
+    fatTracked = macroResponse.isNotEmpty
+        ? (macroResponse.last['fatTracked'] as num?)?.toDouble() ?? 0
+        : 0;
+    fatGoal = macroResponse.isNotEmpty
+        ? (macroResponse.last['fatGoal'] as num?)?.toDouble() ?? 0
+        : 0;
+    proteinTracked = macroResponse.isNotEmpty
+        ? (macroResponse.last['proteinTracked'] as num?)?.toDouble() ?? 0
+        : 0;
+    proteinGoal = macroResponse.isNotEmpty
+        ? (macroResponse.last['proteinGoal'] as num?)?.toDouble() ?? 0
+        : 0;
 
     // 2. Récupère les poids
     final weightResponse = await supabase
@@ -114,33 +150,6 @@ class _StudentMacrosPageState extends State<StudentMacrosPage> {
 
           final dayKey = DateFormat('yyyy-MM-dd').format(_selectedDate);
           final data = _allMacros[dayKey];
-
-          final double caloriesTracked =
-              (data?['caloriesTracked'] ?? 0).toDouble();
-          final double caloriesBurned =
-              (data?['caloriesBurned'] ?? 0).toDouble();
-          final double calorieGoal = ((data?['calorieGoal'] ?? 0).toDouble() -
-                  caloriesBurned)
-              .clamp(0.0, double.infinity)
-              .toDouble();
-          final double carbsGoal = ((data?['carbsGoal'] ?? 0).toDouble() -
-                  MacroCalc.getTotalCarbsGoal(caloriesBurned))
-              .clamp(0.0, double.infinity)
-              .toDouble();
-          final double carbsTracked =
-              (data?['carbsTracked'] ?? 0).toDouble();
-          final double fatGoal = ((data?['fatGoal'] ?? 0).toDouble() -
-                  MacroCalc.getTotalFatsGoal(caloriesBurned))
-              .clamp(0.0, double.infinity)
-              .toDouble();
-          final double fatTracked = (data?['fatTracked'] ?? 0).toDouble();
-          final double proteinGoal =
-              ((data?['proteinGoal'] ?? 0).toDouble() -
-                      MacroCalc.getTotalProteinsGoal(caloriesBurned))
-                  .clamp(0.0, double.infinity)
-                  .toDouble();
-          final double proteinTracked =
-              (data?['proteinTracked'] ?? 0).toDouble();
 
           final double kcalLeft = calorieGoal - caloriesTracked;
           final double gaugeValue = calorieGoal == 0
@@ -456,7 +465,11 @@ class _StudentMacrosPageState extends State<StudentMacrosPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SetStudentMacrosPage(studentId: widget.studentId),
+        builder: (_) => SetStudentMacrosPage(
+            studentId: widget.studentId,
+            initialCarbs: carbsGoal.toInt(),
+            initialFat: fatGoal.toInt(),
+            initialProtein: proteinGoal.toInt()),
       ),
     );
   }

@@ -7,7 +7,7 @@ class SupabaseTrackedDayService {
   final _log = Logger('DatabaseClient');
 
   SupabaseTrackedDayService({SupabaseClient? client})
-    : _client = client ?? locator<SupabaseClient>();
+      : _client = client ?? locator<SupabaseClient>();
 
   /// Upserts a single tracked day.
   /// Logs any exception that occurs during the operation.
@@ -25,7 +25,7 @@ class SupabaseTrackedDayService {
   Future<void> upsertTrackedDays(List<Map<String, dynamic>> days) async {
     if (days.isEmpty) return;
     try {
-      await _client.from('tracked_days').upsert(days, onConflict: 'day');
+      await _client.from('tracked_days').upsert(days).select();
     } catch (e, stackTrace) {
       _log.severe('Failed to upsert tracked days: $e', e, stackTrace);
     }
@@ -48,7 +48,7 @@ class SupabaseUserWeightService {
   final _log = Logger('SupabaseUserWeightService');
 
   SupabaseUserWeightService({SupabaseClient? client})
-    : _client = client ?? locator<SupabaseClient>();
+      : _client = client ?? locator<SupabaseClient>();
 
   /// Upserts a single user weight entry.
   /// Logs any exception that occurs during the operation.

@@ -9,24 +9,49 @@ import 'package:logging/logging.dart';
 
 class SetStudentMacrosPage extends StatefulWidget {
   final String studentId;
-  const SetStudentMacrosPage({super.key, required this.studentId});
+  final int initialCarbs;
+  final int initialFat;
+  final int initialProtein;
+  const SetStudentMacrosPage({
+    super.key,
+    required this.studentId,
+    required this.initialCarbs,
+    required this.initialFat,
+    required this.initialProtein,
+  });
 
   @override
   State<SetStudentMacrosPage> createState() => _SetStudentMacrosPageState();
 }
 
 class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
-  DateTime _startDate = DateTime.now();
+  // Toujours stocker des dates "pures" (00:00)
+  DateTime _startDate = _today();
+
+  static DateTime _today() {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  // Utilitaire pour normaliser toute date reçue
+  static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
   final log = Logger('SetStudentMacrosPage');
-  final _carbsController = TextEditingController(text: '250');
-  final _fatController = TextEditingController(text: '60');
-  final _proteinController = TextEditingController(text: '120');
+  late final TextEditingController _carbsController;
+  late final TextEditingController _fatController;
+  late final TextEditingController _proteinController;
 
   int _calculatedCalories = 0;
 
   @override
   void initState() {
     super.initState();
+    _startDate = _dateOnly(_startDate);
+    _carbsController =
+        TextEditingController(text: widget.initialCarbs.toString());
+    _fatController = TextEditingController(text: widget.initialFat.toString());
+    _proteinController =
+        TextEditingController(text: widget.initialProtein.toString());
     _calculateCalories();
 
     _carbsController.addListener(_calculateCalories);
@@ -54,6 +79,8 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final todayDate = _today();
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(title: Text(S.of(context).setMacrosLabel)),
@@ -63,13 +90,16 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Date selector
+              // Sélecteur de date
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left),
-                    onPressed: _goToPreviousDay,
+                    // Désactive si on est déjà sur aujourd'hui (ou avant, par sécurité)
+                    onPressed: _dateOnly(_startDate).isAfter(todayDate)
+                        ? _goToPreviousDay
+                        : null,
                   ),
                   InkWell(
                     onTap: _selectDate,
@@ -132,8 +162,8 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
                 child: Text(
                   '${S.of(context).caloriesLabel}: $_calculatedCalories kcal',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ),
 
@@ -155,27 +185,36 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
   }
 
   void _goToPreviousDay() {
+    final todayDate = _today();
     setState(() {
-      _startDate = _startDate.subtract(const Duration(days: 1));
+      final current = _dateOnly(_startDate);
+      if (current.isAfter(todayDate)) {
+        _startDate = current.subtract(const Duration(days: 1));
+      }
+      // Sinon, ne rien faire (reste sur aujourd'hui)
     });
   }
 
   void _goToNextDay() {
     setState(() {
-      _startDate = _startDate.add(const Duration(days: 1));
+      _startDate = _dateOnly(_startDate).add(const Duration(days: 1));
     });
   }
 
   Future<void> _selectDate() async {
+    final todayDate = _today();
+    final initial =
+        _dateOnly(_startDate).isBefore(todayDate) ? todayDate : _startDate;
+
     final picked = await showDatePicker(
       context: context,
-      initialDate: _startDate,
-      firstDate: DateTime(2000),
+      initialDate: initial,
+      firstDate: todayDate, // interdit toute date avant aujourd'hui
       lastDate: DateTime(2100),
     );
     if (picked != null) {
       setState(() {
-        _startDate = picked;
+        _startDate = _dateOnly(picked); // normaliser
       });
     }
   }
@@ -204,7 +243,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
               "Problème lors de l'enregistrement des objectifs macro.",
             ),
