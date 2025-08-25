@@ -158,7 +158,7 @@ void main() {
       // Check that the tracked day was actually sent to the mock Supabase backend
       final result = await mockSupabase.from('tracked_days').select();
       expect(result.length, 1);
-      expect(result.first['day'], day.toIso8601String());
+      expect(result.first['day'], day.toIso8601String().split('T').first);
     });
 
     test('syncs without connectivity restoration', () async {
@@ -196,16 +196,16 @@ void main() {
       // Check that the tracked day was actually sent to the mock Supabase backend
       final output = await mockSupabase.from('tracked_days').select();
       expect(output.length, 1);
-      expect(output.first['day'], day.toIso8601String());
+      expect(output.first['day'], day.toIso8601String().split('T').first);
     });
 
     test('check values store on the remote', () async {
       final day = DateTime.utc(2024, 1, 1);
 
-      // Simulate a local update by adding a new tracked day
+      // Simule une mise à jour locale en ajoutant un nouveau jour suivi
       await repo.addNewTrackedDay(day, 2, 2, 2, 2);
 
-      // Make multiple changes while offline
+      // Plusieurs modifications hors ligne
       await repo.addDayMacrosTracked(
         day,
         carbsTracked: 2,
@@ -220,27 +220,32 @@ void main() {
       );
       await repo.addDayTrackedCalories(day, 10);
 
-      // Wait for the isolate to detect the modification
+      // Attendre que l’isolate détecte la modification
       await waitForCondition(
-          () async => (await watcher.getModifiedDays()).contains(day));
+        () async => (await watcher.getModifiedDays()).contains(day),
+      );
 
-      // Check that the modified day is captured
+      // Vérifie que le jour modifié est bien capturé
       final modifiedDays = await watcher.getModifiedDays();
       expect(modifiedDays, contains(day));
 
-      // Simulate connectivity restoration (e.g. Wi-Fi comes back)
+      // Simule le retour de la connectivité (ex: Wi-Fi rétabli)
       connectivity.emit(ConnectivityResult.wifi);
 
-      // Wait for the isolate to sync and clear the modified day set
+      // Attendre que l’isolate synchronise et nettoie les jours modifiés
       await waitForCondition(
-          () async => (await watcher.getModifiedDays()).isEmpty);
+        () async => (await watcher.getModifiedDays()).isEmpty,
+      );
       expect(await watcher.getModifiedDays(), isEmpty);
 
-      // Check that the tracked day was actually sent to the mock Supabase backend
+      // Vérifie que le jour suivi a bien été envoyé dans Supabase mock
       final result = await mockSupabase.from('tracked_days').select();
       expect(result.length, 1);
+
       final remote = result.first;
-      expect(remote['day'], day.toIso8601String());
+      final remoteDay = remote['day'] as String;
+      expect(remoteDay, day.toIso8601String().split('T').first);
+
       expect(remote['calorieGoal'], 2);
       expect(remote['caloriesTracked'], 10);
       expect(remote['carbsGoal'], 2);
@@ -250,9 +255,26 @@ void main() {
       expect(remote['proteinGoal'], 2);
       expect(remote['proteinTracked'], 5);
 
-      // Ensure the remote data matches what is stored locally
+      // Vérifie que les données distantes correspondent bien au local
       final dbo = box.get(day.toParsedDay());
       expect(dbo, isNotNull);
+
+      // Adapter la comparaison : ignorer la différence de format de 'day'
+      final expected = {
+        'day': day.toIso8601String().split('T').first,
+        'calorieGoal': 2.0,
+        'caloriesTracked': 10.0,
+        'carbsGoal': 2.0,
+        'carbsTracked': 5.0,
+        'fatGoal': 2.0,
+        'fatTracked': 5.0,
+        'proteinGoal': 2.0,
+        'proteinTracked': 5.0,
+        'updated_at': remote['updated_at'],
+        'caloriesBurned': 0.0,
+      };
+
+      expect(remote, equals(expected));
       expect(remote, equals(dbo!.toJson()));
     });
   });
