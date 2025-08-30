@@ -8,7 +8,7 @@ class DashboardWidget extends StatefulWidget {
   final double totalKcalDaily;
   final double totalKcalLeft;
   final double totalKcalSupplied;
-  final double totalKcalBurned;
+  final int dailyStepCount;
   final double totalCarbsIntake;
   final double totalFatsIntake;
   final double totalProteinsIntake;
@@ -19,7 +19,7 @@ class DashboardWidget extends StatefulWidget {
   const DashboardWidget(
       {super.key,
       required this.totalKcalSupplied,
-      required this.totalKcalBurned,
+      required this.dailyStepCount,
       required this.totalKcalDaily,
       required this.totalKcalLeft,
       required this.totalCarbsIntake,
@@ -127,22 +127,22 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                     circularStrokeCap: CircularStrokeCap.round,
                   ),
                   Expanded(
-                    child: Column(
-                      children: [
-                        Icon(Icons.keyboard_arrow_down_outlined,
-                            color: Theme.of(context).colorScheme.onSurface),
-                        Text('${widget.totalKcalBurned.toInt()}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface)),
-                        Text(S.of(context).burnedLabel,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
+                  child: Column(
+                    children: [
+                      Icon(Icons.directions_walk,
+                          color: Theme.of(context).colorScheme.onSurface),
+                      Text('${widget.dailyStepCount}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface)),
+                      Text(S.of(context).stepsLabel,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme

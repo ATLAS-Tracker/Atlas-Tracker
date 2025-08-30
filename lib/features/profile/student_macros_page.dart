@@ -288,6 +288,10 @@ class _StudentMacrosView extends StatelessWidget {
                                 value: MacroType.weight,
                                 child: Text(S.of(context).weightLabel),
                               ),
+                              DropdownMenuItem(
+                                value: MacroType.steps,
+                                child: Text(S.of(context).stepsLabel),
+                              ),
                             ],
                           ),
                           DropdownButton<TimeRange>(
@@ -520,6 +524,9 @@ class _StudentMacrosView extends StatelessWidget {
             break;
           case MacroType.weight:
             value = (data['weight'] as num?)?.toDouble();
+            break;
+          case MacroType.steps:
+            value = (data['steps'] as num?)?.toDouble();
             break;
         }
       }

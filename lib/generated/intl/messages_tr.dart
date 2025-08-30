@@ -732,6 +732,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ör. elma, dondurma, çikolata ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Atıştırmalık"),
+        "stepsLabel": MessageLookupByLibrary.simpleMessage("adım"),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
         "unitLabel": MessageLookupByLibrary.simpleMessage("Birim"),

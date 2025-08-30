@@ -131,6 +131,7 @@
   "deleteAllLabel": "Tout supprimer",
   "suppliedLabel": "Ingérées",
   "burnedLabel": "Brûlées",
+  "stepsLabel": "pas",
   "kcalLeftLabel": "kcal restantes",
   "nutritionInfoLabel": "Informations nutritionnelles",
   "kcalLabel": "kcal",

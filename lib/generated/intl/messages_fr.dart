@@ -761,6 +761,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ex : pomme, glace, chocolat..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Collation"),
+        "stepsLabel": MessageLookupByLibrary.simpleMessage("pas"),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sucre"),
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("Ingérées"),
         "unitLabel": MessageLookupByLibrary.simpleMessage("Unité"),

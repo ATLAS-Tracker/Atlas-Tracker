@@ -1342,6 +1342,16 @@ class S {
     );
   }
 
+  /// `steps`
+  String get stepsLabel {
+    return Intl.message(
+      'steps',
+      name: 'stepsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `kcal left`
   String get kcalLeftLabel {
     return Intl.message(

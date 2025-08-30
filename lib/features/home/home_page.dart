@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
+import 'package:daily_pedometer2/daily_pedometer2.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -18,6 +20,10 @@ import 'package:opennutritracker/features/home/presentation/widgets/dashboard_wi
 import 'package:opennutritracker/features/home/presentation/widgets/intake_vertical_list.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/services/daily_steps_recorder.dart';
+
+typedef Pedometer = DailyPedometer2;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,18 +37,56 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   late HomeBloc _homeBloc;
   bool _isDragging = false;
+  StreamSubscription<StepCount>? _dailyStepCountSubscription;
+  int _dailySteps = 0;
+  late HiveDBProvider _hive;
+  int _lastSavedSteps = 0;
+  late DailyStepsRecorder _stepsRecorder;
+  int? _deviceBaseline;
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
+    _hive = locator<HiveDBProvider>();
+    _stepsRecorder = DailyStepsRecorder(_hive);
+    _lastSavedSteps = _hive.dailyStepsBox
+        .get(_stepsRecorder.dayKeyFor(DateTime.now()), defaultValue: 0) as int;
+    _dailySteps = _lastSavedSteps;
+    initPlatformState();
     super.initState();
   }
 
   @override
   void dispose() {
+    _dailyStepCountSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void onDailyStepCount(StepCount event) {
+    _deviceBaseline ??= event.steps - _lastSavedSteps;
+    final adjusted = event.steps - (_deviceBaseline ?? 0);
+    setState(() {
+      _dailySteps = adjusted;
+    });
+    _maybeSaveSteps(adjusted);
+  }
+
+  void onDailyStepCountError(error) {
+    log.severe('Daily step count error: $error');
+    setState(() {
+      _dailySteps = 0;
+    });
+  }
+
+  Future<void> initPlatformState() async {
+    _dailyStepCountSubscription = Pedometer.dailyStepCountStream
+        .listen(onDailyStepCount, onError: onDailyStepCountError);
+  }
+
+  void _maybeSaveSteps(int steps) {
+    _lastSavedSteps = _stepsRecorder.maybeSaveSteps(steps);
   }
 
   @override
@@ -61,7 +105,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               state.totalKcalDaily,
               state.totalKcalLeft,
               state.totalKcalSupplied,
-              state.totalKcalBurned,
               state.totalCarbsIntake,
               state.totalFatsIntake,
               state.totalProteinsIntake,
@@ -102,7 +145,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       double totalKcalDaily,
       double totalKcalLeft,
       double totalKcalSupplied,
-      double totalKcalBurned,
       double totalCarbsIntake,
       double totalFatsIntake,
       double totalProteinsIntake,
@@ -122,7 +164,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           totalKcalDaily: totalKcalDaily,
           totalKcalLeft: totalKcalLeft,
           totalKcalSupplied: totalKcalSupplied,
-          totalKcalBurned: totalKcalBurned,
+          dailyStepCount: _dailySteps,
           totalCarbsIntake: totalCarbsIntake,
           totalFatsIntake: totalFatsIntake,
           totalProteinsIntake: totalProteinsIntake,

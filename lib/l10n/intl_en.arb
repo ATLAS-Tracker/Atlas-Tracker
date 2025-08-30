@@ -133,6 +133,7 @@
 
   "suppliedLabel": "supplied",
   "burnedLabel": "burned",
+  "stepsLabel": "steps",
   "kcalLeftLabel": "kcal left",
   "nutritionInfoLabel": "Nutrition Information",
   "kcalLabel": "kcal",

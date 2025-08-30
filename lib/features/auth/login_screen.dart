@@ -16,6 +16,7 @@ import 'package:opennutritracker/features/settings/presentation/bloc/export_impo
 import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
 import 'package:opennutritracker/services/firebase_messaging_service.dart';
 import 'package:opennutritracker/services/local_notifications_service.dart';
+import 'package:opennutritracker/features/sync/supabase_client.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/add_user_usecase.dart';
 import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
@@ -318,6 +319,16 @@ class _LoginScreenState extends State<LoginScreen> {
             Logger('LoginScreen').warning(stack.toString());
             return;
           }
+        }
+
+        // Récupère les pas du jour depuis Supabase
+        try {
+          final stepsService = SupabaseDailyStepsService();
+          final today = DateUtils.dateOnly(DateTime.now());
+          final steps = await stepsService.fetchDailySteps(userId!, today);
+          await hive.dailyStepsBox.put(today.toIso8601String(), steps);
+        } catch (e, stack) {
+          Logger('LoginScreen').warning('Failed to fetch daily steps', e, stack);
         }
 
         // ✅ Init Firebase Messaging & Local Notifications après login
