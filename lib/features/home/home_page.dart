@@ -41,9 +41,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   StreamSubscription<StepCount>? _dailyStepCountSubscription;
   int _dailySteps = 0;
   late HiveDBProvider _hive;
-  int _lastSavedSteps = 0;
   late DailyStepsRecorder _stepsRecorder;
-  int? _deviceBaseline;
 
   @override
   void initState() {
@@ -52,12 +50,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _hive = locator<HiveDBProvider>();
     _stepsRecorder = DailyStepsRecorder(
       _hive,
-      onThresholdReached:
-          locator<DailyStepsSyncService>().syncPendingSteps,
+      onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
-    _lastSavedSteps = _hive.dailyStepsBox
-        .get(_stepsRecorder.dayKeyFor(DateTime.now()), defaultValue: 0) as int;
-    _dailySteps = _lastSavedSteps;
     initPlatformState();
     super.initState();
   }
@@ -70,18 +64,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onDailyStepCount(StepCount event) {
-    _deviceBaseline ??= event.steps - _lastSavedSteps;
-    final adjusted = event.steps - (_deviceBaseline ?? 0);
     setState(() {
-      _dailySteps = adjusted;
+      _dailySteps = event.steps;
     });
-    _maybeSaveSteps(adjusted);
+    _maybeSaveSteps(event.steps);
   }
 
   void onDailyStepCountError(error) {
     log.severe('Daily step count error: $error');
     setState(() {
-      _dailySteps = _lastSavedSteps;
+      _dailySteps = 0;
     });
   }
 
@@ -91,7 +83,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void _maybeSaveSteps(int steps) {
-    _lastSavedSteps = _stepsRecorder.maybeSaveSteps(steps);
+    _stepsRecorder.maybeSaveSteps(steps);
   }
 
   @override
