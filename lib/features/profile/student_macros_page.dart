@@ -72,8 +72,7 @@ class _StudentMacrosView extends StatelessWidget {
               (data?['calorieGoal'] as num?)?.toDouble() ?? 0;
           final double caloriesTracked =
               (data?['caloriesTracked'] as num?)?.toDouble() ?? 0;
-          final double caloriesBurned =
-              (data?['caloriesBurned'] as num?)?.toDouble() ?? 0;
+          final double steps = (data?['steps'] as num?)?.toDouble() ?? 0;
           final double carbsGoal =
               (data?['carbsGoal'] as num?)?.toDouble() ?? 0;
           final double carbsTracked =
@@ -214,13 +213,13 @@ class _StudentMacrosView extends StatelessWidget {
                             Column(
                               children: [
                                 Icon(
-                                  Icons.keyboard_arrow_down_outlined,
+                                  Icons.directions_walk,
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.onSurface,
                                 ),
                                 Text(
-                                  '${caloriesBurned.toInt()}',
+                                  '${steps.toInt()}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleLarge
@@ -231,7 +230,7 @@ class _StudentMacrosView extends StatelessWidget {
                                       ),
                                 ),
                                 Text(
-                                  S.of(context).burnedLabel,
+                                  S.of(context).stepsLabel,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleSmall

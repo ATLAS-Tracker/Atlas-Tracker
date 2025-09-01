@@ -81,7 +81,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void onDailyStepCountError(error) {
     log.severe('Daily step count error: $error');
     setState(() {
-      _dailySteps = 0;
+      _dailySteps = _lastSavedSteps;
     });
   }
 
