@@ -14,7 +14,6 @@ class DailyStepsSyncService with WidgetsBindingObserver {
   final Connectivity _connectivity;
   final Logger _log = Logger('DailyStepsSyncService');
   final String? Function()? _userIdProvider;
-  final DateTime Function() _now;
 
   DailyStepsSyncService({
     HiveDBProvider? hive,
@@ -25,8 +24,7 @@ class DailyStepsSyncService with WidgetsBindingObserver {
   })  : _hive = hive ?? locator<HiveDBProvider>(),
         _service = service ?? SupabaseDailyStepsService(),
         _connectivity = connectivity ?? locator<Connectivity>(),
-        _userIdProvider = userIdProvider,
-        _now = nowProvider ?? DateTime.now;
+        _userIdProvider = userIdProvider;
 
   Future<void> init() async {
     WidgetsBinding.instance.addObserver(this);
@@ -62,7 +60,7 @@ class DailyStepsSyncService with WidgetsBindingObserver {
       final box = _hive.dailyStepsBox;
 
       // Charger la dernière synchro
-      final lastSyncMillis = box.get(_lastSyncKey) as int?;
+      final lastSyncMillis = box.get(_lastSyncKey);
       final lastSynced = lastSyncMillis != null
           ? DateTime.fromMillisecondsSinceEpoch(lastSyncMillis)
           : null;
