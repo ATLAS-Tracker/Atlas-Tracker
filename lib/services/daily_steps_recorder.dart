@@ -8,8 +8,13 @@ import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 class DailyStepsRecorder {
   final HiveDBProvider hive;
   final int saveThreshold;
+  final Future<void> Function()? onThresholdReached;
 
-  DailyStepsRecorder(this.hive, {this.saveThreshold = 100});
+  DailyStepsRecorder(
+    this.hive, {
+    this.saveThreshold = 100,
+    this.onThresholdReached,
+  });
 
   /// Returns the ISO-8601 key used for the given date (00:00 time).
   String dayKeyFor(DateTime date) => DateUtils.dateOnly(date).toIso8601String();
@@ -25,6 +30,7 @@ class DailyStepsRecorder {
     final lastSaved = hive.dailyStepsBox.get(key, defaultValue: 0) as int;
     if (steps - lastSaved >= saveThreshold) {
       hive.dailyStepsBox.put(key, steps);
+      onThresholdReached?.call();
       return steps;
     }
     return lastSaved;

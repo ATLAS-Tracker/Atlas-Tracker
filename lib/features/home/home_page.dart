@@ -22,6 +22,7 @@ import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
+import 'package:opennutritracker/services/daily_steps_sync_service.dart';
 
 typedef Pedometer = DailyPedometer2;
 
@@ -49,7 +50,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
     _hive = locator<HiveDBProvider>();
-    _stepsRecorder = DailyStepsRecorder(_hive);
+    _stepsRecorder = DailyStepsRecorder(
+      _hive,
+      onThresholdReached:
+          locator<DailyStepsSyncService>().syncPendingSteps,
+    );
     _lastSavedSteps = _hive.dailyStepsBox
         .get(_stepsRecorder.dayKeyFor(DateTime.now()), defaultValue: 0) as int;
     _dailySteps = _lastSavedSteps;

@@ -75,6 +75,20 @@ void main() {
       expect(recorder.maybeSaveSteps(120, now: day2), 120);
       expect(box.get(key2), 120);
     });
+
+    test('invokes callback when threshold reached', () async {
+      var called = false;
+      recorder = DailyStepsRecorder(
+        hive,
+        onThresholdReached: () async {
+          called = true;
+        },
+      );
+
+      recorder.maybeSaveSteps(100, now: DateTime.now());
+      await Future.delayed(Duration.zero);
+      expect(called, isTrue);
+    });
   });
 }
 
