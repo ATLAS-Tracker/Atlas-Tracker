@@ -10,73 +10,84 @@ class MealDetailNutrimentsTable extends StatelessWidget {
   final double? servingQuantity;
   final String? servingUnit;
 
-  const MealDetailNutrimentsTable(
-      {super.key,
-      required this.product,
-      required this.usesImperialUnits,
-      this.servingQuantity,
-      this.servingUnit});
+  const MealDetailNutrimentsTable({
+    super.key,
+    required this.product,
+    required this.usesImperialUnits,
+    this.servingQuantity,
+    this.servingUnit,
+  });
 
   @override
   Widget build(BuildContext context) {
     final textStyleNormal =
         Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
-    final textStyleBold = Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(fontWeight: FontWeight.bold) ??
+    final textStyleBold =
+        Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold) ??
         const TextStyle();
 
-    final headerText = (usesImperialUnits && servingQuantity != null) ||
+    final headerText =
+        (usesImperialUnits && servingQuantity != null) ||
             product.mealOrRecipe == MealOrRecipeEntity.recipe
-        ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${servingUnit ?? 'g/ml'})"
+        ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${_localizedUnit(context, servingUnit)})"
         : S.of(context).per100gmlLabel;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(S.of(context).nutritionInfoLabel,
-            style: Theme.of(context).textTheme.titleLarge),
+        Text(
+          S.of(context).nutritionInfoLabel,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
         const SizedBox(height: 16.0),
         Table(
           defaultVerticalAlignment: TableCellVerticalAlignment.middle,
           border: TableBorder.all(
-              color: Theme.of(context)
-                  .colorScheme
-                  .onSurface
-                  .withValues(alpha: 0.5)),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
           children: <TableRow>[
             _getNutrimentsTableRow("", headerText, textStyleBold),
             _getNutrimentsTableRow(
-                S.of(context).energyLabel,
-                "${_adjustValueForServing(product.nutriments.energyKcalPerQuantity?.toDouble() ?? 0).toInt()} ${S.of(context).kcalLabel}",
-                textStyleNormal),
+              S.of(context).energyLabel,
+              "${_adjustValueForServing(product.nutriments.energyKcalPerQuantity?.toDouble() ?? 0).toInt()} ${S.of(context).kcalLabel}",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                S.of(context).fatLabel,
-                "${_adjustValueForServing(product.nutriments.fatPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal),
+              S.of(context).fatLabel,
+              "${_adjustValueForServing(product.nutriments.fatPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                '   ${S.of(context).saturatedFatLabel}',
-                "${_adjustValueForServing(product.nutriments.saturatedFatPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal),
+              '   ${S.of(context).saturatedFatLabel}',
+              "${_adjustValueForServing(product.nutriments.saturatedFatPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                S.of(context).carbohydrateLabel,
-                "${_adjustValueForServing(product.nutriments.carbohydratesPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal),
+              S.of(context).carbohydrateLabel,
+              "${_adjustValueForServing(product.nutriments.carbohydratesPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                '    ${S.of(context).sugarLabel}',
-                "${_adjustValueForServing(product.nutriments.sugarsPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal),
+              '    ${S.of(context).sugarLabel}',
+              "${_adjustValueForServing(product.nutriments.sugarsPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                S.of(context).fiberLabel,
-                "${_adjustValueForServing(product.nutriments.fiberPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal),
+              S.of(context).fiberLabel,
+              "${_adjustValueForServing(product.nutriments.fiberPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
             _getNutrimentsTableRow(
-                S.of(context).proteinLabel,
-                "${_adjustValueForServing(product.nutriments.proteinsPerQuantity ?? 0).roundToPrecision(2)}g",
-                textStyleNormal)
+              S.of(context).proteinLabel,
+              "${_adjustValueForServing(product.nutriments.proteinsPerQuantity ?? 0).roundToPrecision(2)}g",
+              textStyleNormal,
+            ),
           ],
-        )
+        ),
       ],
     );
   }
@@ -90,15 +101,43 @@ class MealDetailNutrimentsTable extends StatelessWidget {
   }
 
   TableRow _getNutrimentsTableRow(
-      String label, String quantityString, TextStyle textStyle) {
-    return TableRow(children: <Widget>[
-      Container(
+    String label,
+    String quantityString,
+    TextStyle textStyle,
+  ) {
+    return TableRow(
+      children: <Widget>[
+        Container(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Text(label, style: textStyle)),
-      Container(
+          child: Text(label, style: textStyle),
+        ),
+        Container(
           padding: const EdgeInsets.only(right: 8.0),
           alignment: Alignment.centerRight,
-          child: Text(quantityString, style: textStyle)),
-    ]);
+          child: Text(quantityString, style: textStyle),
+        ),
+      ],
+    );
+  }
+
+  String _localizedUnit(BuildContext context, String? unit) {
+    switch (unit) {
+      case 'serving':
+        return S.of(context).servingLabel;
+      case 'g':
+        return S.of(context).gramUnit;
+      case 'ml':
+        return S.of(context).milliliterUnit;
+      case 'oz':
+        return S.of(context).ozUnit;
+      case 'fl oz':
+      case 'fl.oz':
+        return S.of(context).flOzUnit;
+      case 'g/ml':
+      case 'gml':
+        return S.of(context).gramMilliliterUnit;
+      default:
+        return unit ?? S.of(context).gramMilliliterUnit;
+    }
   }
 }

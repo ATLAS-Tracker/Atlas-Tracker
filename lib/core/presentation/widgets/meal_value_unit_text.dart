@@ -23,9 +23,10 @@ class MealValueUnitText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mealUnit = meal.mealUnit ?? S.of(context).gramMilliliterUnit;
-    final unitToDisplay = displayUnit ?? _convertUnit(context, mealUnit);
-    final convertedValue = _convertValue(value, mealUnit, unitToDisplay);
+    final mealUnit = meal.mealUnit ?? 'g/ml';
+    final targetUnit = displayUnit ?? _convertUnit(mealUnit);
+    final convertedValue = _convertValue(value, mealUnit, targetUnit);
+    final unitToDisplay = _localizeUnit(context, targetUnit);
 
     return Text(
       '$prefix${_formatValue(convertedValue)} $unitToDisplay',
@@ -68,16 +69,33 @@ class MealValueUnitText extends StatelessWidget {
     }
   }
 
-  String _convertUnit(BuildContext context, String unit) {
+  String _convertUnit(String unit) {
     switch (unit) {
       case 'g':
-        return usesImperialUnits
-            ? S.of(context).ozUnit
-            : S.of(context).gramUnit;
+        return usesImperialUnits ? 'oz' : 'g';
       case 'ml':
-        return usesImperialUnits
-            ? S.of(context).flOzUnit
-            : S.of(context).milliliterUnit;
+        return usesImperialUnits ? 'fl oz' : 'ml';
+      default:
+        return unit;
+    }
+  }
+
+  String _localizeUnit(BuildContext context, String unit) {
+    switch (unit) {
+      case 'g':
+        return S.of(context).gramUnit;
+      case 'ml':
+        return S.of(context).milliliterUnit;
+      case 'oz':
+        return S.of(context).ozUnit;
+      case 'fl oz':
+      case 'fl.oz':
+        return S.of(context).flOzUnit;
+      case 'g/ml':
+      case 'gml':
+        return S.of(context).gramMilliliterUnit;
+      case 'serving':
+        return S.of(context).servingLabel;
       default:
         return unit;
     }
@@ -88,7 +106,7 @@ class MealValueUnitText extends StatelessWidget {
     return formattedValue.endsWith('.00')
         ? formattedValue.substring(0, formattedValue.length - 3)
         : formattedValue.endsWith('0')
-            ? formattedValue.substring(0, formattedValue.length - 1)
-            : formattedValue;
+        ? formattedValue.substring(0, formattedValue.length - 1)
+        : formattedValue;
   }
 }

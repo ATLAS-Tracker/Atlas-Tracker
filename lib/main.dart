@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -83,7 +84,7 @@ void runAppWithChangeNotifiers(
       ),
     );
 
-class AtlasTrackerApp extends StatelessWidget {
+class AtlasTrackerApp extends StatefulWidget {
   final bool userInitialized;
   final bool hasAuthSession;
 
@@ -92,6 +93,33 @@ class AtlasTrackerApp extends StatelessWidget {
     required this.userInitialized,
     required this.hasAuthSession,
   });
+
+  @override
+  State<AtlasTrackerApp> createState() => _AtlasTrackerAppState();
+}
+
+class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
+  late final StreamSubscription<AuthState> _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.signedOut && mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          NavigationOptions.loginRoute,
+          (route) => false,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,7 +144,7 @@ class AtlasTrackerApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
       ],
       supportedLocales: S.delegate.supportedLocales,
-      initialRoute: hasAuthSession
+      initialRoute: widget.hasAuthSession
           ? NavigationOptions.mainRoute
           : NavigationOptions.loginRoute,
       routes: {

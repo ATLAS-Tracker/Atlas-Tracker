@@ -74,7 +74,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # version qui évite le conflit d’analyzer
   build_runner: ^2.4.13
   json_serializable: ^6.7.1
   flutter_lints: ^5.0.0
