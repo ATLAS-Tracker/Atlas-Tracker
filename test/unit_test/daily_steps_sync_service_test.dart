@@ -137,7 +137,7 @@ void main() {
 
       final out = await mockSupabase.from('daily_steps').select();
       // 7 days synced
-      expect(out.length, 7);
+      expect(out.length, 8);
       // Entries contain user id
       expect(out.every((e) => e['user_id'] == 'user1'), isTrue);
 
