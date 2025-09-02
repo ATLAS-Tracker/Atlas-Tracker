@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool _isDragging = false;
   StreamSubscription<StepCount>? _dailyStepCountSubscription;
   int _dailySteps = 0;
+  int lastValue = 0;
   late HiveDBProvider _hive;
   late DailyStepsRecorder _stepsRecorder;
 
@@ -52,6 +53,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _hive,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
+    final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
+    lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
     initPlatformState();
     super.initState();
   }
@@ -65,15 +68,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void onDailyStepCount(StepCount event) {
     setState(() {
-      _dailySteps = event.steps;
+      final diff = event.steps - lastValue;
+      _dailySteps = event.steps - 1 * diff;
     });
-    _maybeSaveSteps(event.steps);
+    _maybeSaveSteps(_dailySteps);
   }
 
   void onDailyStepCountError(error) {
     log.severe('Daily step count error: $error');
     setState(() {
-      _dailySteps = 0;
+      _dailySteps = lastValue;
     });
   }
 
