@@ -99,25 +99,13 @@ class AtlasTrackerApp extends StatefulWidget {
 }
 
 class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
-  late final StreamSubscription<AuthState> _authSubscription;
-
   @override
   void initState() {
     super.initState();
-    _authSubscription =
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.signedOut && mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          NavigationOptions.loginRoute,
-          (route) => false,
-        );
-      }
-    });
   }
 
   @override
   void dispose() {
-    _authSubscription.cancel();
     super.dispose();
   }
 
