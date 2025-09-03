@@ -17,7 +17,7 @@ class SubscriptionService {
           .eq('id', userId)
           .maybeSingle();
 
-      final isSubscribed = row?['subscribed'] as bool? ?? false;
+      final isSubscribed = row?['is_subscribed'] as bool? ?? false;
 
       if (!isSubscribed) {
         _showMessage(context,
