@@ -39,7 +39,6 @@ class SubscriptionService {
     }
   }
 
-  /// Public method: handles UI + returns a Future<bool>.
   Future<bool> checkAndEnforceSubscription(BuildContext context) async {
     final (ok, message) = await checkSubscription();
 

@@ -36,15 +36,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
-    if (state == AppLifecycleState.resumed) {
-      bool isSubscribed = await SubscriptionService(locator<SupabaseClient>())
-          .checkAndEnforceSubscription(context);
-      if (!isSubscribed && context.mounted) {
-        Navigator.of(context).popUntil((route) => route.isFirst); 
-      }    
-    }
+  void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      _handleResume();
+    }
+  }
+
+  Future<void> _handleResume() async {
+    final service = SubscriptionService(locator<SupabaseClient>());
+    final isSubscribed = await service.checkAndEnforceSubscription(context);
+
+    if (!mounted) return; // guard after async gap
+
+    if (!isSubscribed) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 
   @override
