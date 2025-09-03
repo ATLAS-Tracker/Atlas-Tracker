@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/add_item_bottom_sheet.dart';
+import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/diary_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/home_appbar.dart';
 import 'package:opennutritracker/features/home/home_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
 import 'package:opennutritracker/features/profile/profile_page.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:opennutritracker/features/auth/check_subscription.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,11 +17,35 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _selectedPageIndex = 0;
 
   late List<Widget> _bodyPages;
   late List<PreferredSizeWidget> _appbarPages;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      bool isSubscribed = await SubscriptionService(locator<SupabaseClient>())
+          .checkAndEnforceSubscription(context);
+      if (!isSubscribed && context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst); 
+      }    
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   void didChangeDependencies() {

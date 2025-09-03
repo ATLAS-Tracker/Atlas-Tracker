@@ -10,6 +10,7 @@ import 'package:opennutritracker/features/auth/validate_password.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'forgot_password_screen.dart';
 import 'reset_password_screen.dart';
+import 'check_subscription.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
@@ -251,6 +252,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (res.session != null) {
+        // Check subscription status
+        bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
+        if (!isSubscribed) {
+          return;
+        }
+
         // ── 1. Prépare Hive pour le user (nécessaire à l’import)
         final hive = locator<HiveDBProvider>();
         await hive.initForUser(res.user?.id);
