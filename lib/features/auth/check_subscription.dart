@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import './auth_safe_sign_out.dart';
 
 class SubscriptionService {
   final SupabaseClient client;
@@ -22,16 +23,19 @@ class SubscriptionService {
       if (!isSubscribed) {
         _showMessage(context,
             "Votre abonnement n'est plus actif. Veuillez contacter votre coach.");
-        return await safeLogout(context);
+        await safeSignOut(context);
+        return false;
       }
 
       return true;
     } on PostgrestException catch (e) {
       _showMessage(context, "Erreur Supabase : ${e.message}");
-      return await safeLogout(context);
+      await safeSignOut(context);
+      return false;
     } catch (_) {
       _showMessage(context, "Problème de synchronisation avec le cloud.");
-      return await safeLogout(context);
+      await safeSignOut(context);
+      return false;
     }
   }
 
@@ -41,14 +45,5 @@ class SubscriptionService {
         SnackBar(content: Text(msg)),
       );
     }
-  }
-
-  Future<bool> safeLogout(BuildContext context) async {
-    try {
-      await client.auth.signOut();
-    } catch (_) {
-      _showMessage(context, "Erreur lors de la déconnexion.");
-    }
-    return false;
   }
 }

@@ -252,16 +252,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (res.session != null) {
-        // Check subscription status
-        bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
-        if (!isSubscribed) {
-          return;
-        }
 
         // ── 1. Prépare Hive pour le user (nécessaire à l’import)
         final hive = locator<HiveDBProvider>();
         await hive.initForUser(res.user?.id);
         await registerUserScope(hive);
+
+        // Check subscription status
+        // If the user is not subscribed anymore push is data to save them for later
+        bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
+        if (!isSubscribed) {
+          return;
+        }
+
         // ── 2. Tente l’import
         final importData = locator<ImportDataSupabaseUsecase>();
         final importSuccessful = await importData.importData(
