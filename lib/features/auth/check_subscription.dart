@@ -7,9 +7,13 @@ class SubscriptionService {
 
   SubscriptionService(this.client);
 
-  Future<bool> checkAndEnforceSubscription(BuildContext context) async {
+  /// Pure business logic: check subscription status.
+  /// Returns (success, message).
+  Future<(bool success, String? message)> checkSubscription() async {
     final userId = client.auth.currentUser?.id;
-    if (userId == null) return false;
+    if (userId == null) {
+      return (false, "Utilisateur non connecté.");
+    }
 
     try {
       final row = await client
@@ -21,29 +25,36 @@ class SubscriptionService {
       final isSubscribed = row?['is_subscribed'] as bool? ?? false;
 
       if (!isSubscribed) {
-        _showMessage(context,
-            "Votre abonnement n'est plus actif. Veuillez contacter votre coach.");
-        await safeSignOut(context);
-        return false;
+        return (
+          false,
+          "Votre abonnement n'est plus actif. Veuillez contacter votre coach."
+        );
       }
 
-      return true;
+      return (true, null);
     } on PostgrestException catch (e) {
-      _showMessage(context, "Erreur Supabase : ${e.message}");
-      await safeSignOut(context);
-      return false;
+      return (false, "Erreur Supabase : ${e.message}");
     } catch (_) {
-      _showMessage(context, "Problème de synchronisation avec le cloud.");
-      await safeSignOut(context);
-      return false;
+      return (false, "Problème de synchronisation avec le cloud.");
     }
   }
 
-  void _showMessage(BuildContext context, String msg) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
-      );
+  /// Public method: handles UI + returns a Future<bool>.
+  Future<bool> checkAndEnforceSubscription(BuildContext context) async {
+    final (ok, message) = await checkSubscription();
+
+    if (!context.mounted) return false;
+
+    if (!ok) {
+      if (message != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+      }
+      await safeSignOut(context);
+      return false;
     }
+
+    return true;
   }
 }

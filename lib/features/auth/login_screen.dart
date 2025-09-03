@@ -260,9 +260,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Check subscription status
         // If the user is not subscribed anymore push is data to save them for later
-        bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
-        if (!isSubscribed) {
-          return;
+        if (mounted) {
+          bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
+          if (!isSubscribed) {
+            return;
+          }
         }
 
         // ── 2. Tente l’import
