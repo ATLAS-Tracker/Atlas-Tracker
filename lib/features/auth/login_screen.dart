@@ -304,13 +304,8 @@ class _LoginScreenState extends State<LoginScreen> {
         final hasProfile = await getUser.hasUserData();
         final userId = res.user?.id;
 
-        final profileSynced = userId != null
-            ? await _syncUserProfile(userId)
-            : false;
-
-        if (!profileSynced && !hasProfile) {
-          await supabase.auth.signOut();
-          return;
+        if(!hasProfile) {
+          await _syncUserProfile(userId!);
         }
 
         // Récupérer les objectifs si student

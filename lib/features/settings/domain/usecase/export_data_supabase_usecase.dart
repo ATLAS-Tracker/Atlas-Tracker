@@ -76,6 +76,17 @@ class ExportDataSupabaseUsecase {
         jsonEncode(fullRecipes.map((r) => r.toJson()).toList());
     final recipesJsonBytes = utf8.encode(fullRecipesJson);
 
+    if (fullUserActivity.isEmpty &&
+        fullIntake.isEmpty &&
+        fullTrackedDay.isEmpty &&
+        fullUserWeight.isEmpty &&
+        fullRecipes.isEmpty) {
+      // this handle the case when the user has no hive data because it is the first time,
+      // the user attempt to connect to its account but the user is not subscribed
+
+      return true;
+    }
+
     // Export user data to Json File Bytes
     final userDBO = await _userRepository.getUserDBO();
     final userMap = {
@@ -103,10 +114,10 @@ class ExportDataSupabaseUsecase {
           trackedDayJsonBytes))
       ..addFile(ArchiveFile(userWeightJsonFileName, userWeightJsonBytes.length,
           userWeightJsonBytes))
-      ..addFile(ArchiveFile(recipesJsonFileName, recipesJsonBytes.length,
-          recipesJsonBytes))
-      ..addFile(ArchiveFile(userJsonFileName, userJsonBytes.length,
-          userJsonBytes));
+      ..addFile(ArchiveFile(
+          recipesJsonFileName, recipesJsonBytes.length, recipesJsonBytes))
+      ..addFile(
+          ArchiveFile(userJsonFileName, userJsonBytes.length, userJsonBytes));
 
     final imagePaths = <String>{};
     if (userDBO.profileImagePath != null &&
