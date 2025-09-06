@@ -27,6 +27,7 @@ import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart
 import 'package:opennutritracker/core/domain/entity/user_pal_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'auth_safe_sign_out.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -83,8 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
           final msg = e.message.toLowerCase();
 
           // ➜ Cas “bruyant mais OK” : 500 ‘Database error granting user’
-          final isGrantingUser500 =
-              e.statusCode == "500" &&
+          final isGrantingUser500 = e.statusCode == "500" &&
               msg.contains('database error granting user');
 
           // ➜ Cas « déjà consommé »
@@ -204,9 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final goal = parseGoal(row['goal'] as String?);
       final pal = parsePal(row['pal'] as String?);
       final birthday = parseBirthday(row['birthday']);
-      final role = roleStr == 'coach'
-          ? UserRoleEntity.coach
-          : UserRoleEntity.student;
+      final role =
+          roleStr == 'coach' ? UserRoleEntity.coach : UserRoleEntity.student;
 
       final user = UserEntity(
         name: displayName ?? '',
@@ -252,7 +251,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (res.session != null) {
-
         // ── 1. Prépare Hive pour le user (nécessaire à l’import)
         final hive = locator<HiveDBProvider>();
         await hive.initForUser(res.user?.id);
@@ -261,7 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
         // Check subscription status
         // If the user is not subscribed anymore push is data to save them for later
         if (mounted) {
-          bool isSubscribed = await SubscriptionService(supabase).checkAndEnforceSubscription(context);
+          bool isSubscribed = await SubscriptionService(supabase)
+              .checkAndEnforceSubscription(context);
           if (!isSubscribed) {
             return;
           }
@@ -304,8 +303,12 @@ class _LoginScreenState extends State<LoginScreen> {
         final hasProfile = await getUser.hasUserData();
         final userId = res.user?.id;
 
-        if(!hasProfile) {
-          await _syncUserProfile(userId!);
+        if (!hasProfile) {
+          bool isUserProfileSync = await _syncUserProfile(userId!);
+          if (!isUserProfileSync && mounted){
+            await safeSignOut(context);
+            return;
+          }
         }
 
         // Récupérer les objectifs si student
@@ -324,6 +327,8 @@ class _LoginScreenState extends State<LoginScreen> {
               'LoginScreen',
             ).warning('[❌] Erreur lors de la mise à jour des macros : $e');
             Logger('LoginScreen').warning(stack.toString());
+            if (!mounted) return;
+            await safeSignOut(context);
             return;
           }
         }
@@ -335,7 +340,10 @@ class _LoginScreenState extends State<LoginScreen> {
           final steps = await stepsService.fetchDailySteps(userId!, today);
           await hive.dailyStepsBox.put(today.toIso8601String(), steps);
         } catch (e, stack) {
-          Logger('LoginScreen').warning('Failed to fetch daily steps', e, stack);
+          Logger('LoginScreen')
+              .warning('Failed to fetch daily steps', e, stack);
+          if (!mounted) return;
+          await safeSignOut(context);
         }
 
         // ✅ Init Firebase Messaging & Local Notifications après login
@@ -404,8 +412,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? S.of(context).loginEmailRequired
                     : (EmailValidator.validate(v.trim())
-                          ? null
-                          : S.of(context).loginEmailInvalid),
+                        ? null
+                        : S.of(context).loginEmailInvalid),
               ),
               const SizedBox(height: 16),
               TextFormField(

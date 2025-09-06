@@ -216,14 +216,6 @@ class ImportDataSupabaseUsecase {
 
       final existingDays = await _trackedDayRepository.getAllTrackedDaysDBO();
       final dayMap = {for (final d in existingDays) d.day.toIso8601String(): d};
-      final dayKeys =
-          trackedDayDBOs.map((e) => e.day.toIso8601String()).toSet();
-      for (final existing in existingDays) {
-        final key = existing.day.toIso8601String();
-        if (!dayKeys.contains(key)) {
-          await _trackedDayRepository.deleteTrackedDay(existing.day);
-        }
-      }
       final List<TrackedDayDBO> daysToSave = [];
       for (final dbo in trackedDayDBOs) {
         final key = dbo.day.toIso8601String();
