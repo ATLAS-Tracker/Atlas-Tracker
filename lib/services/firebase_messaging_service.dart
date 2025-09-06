@@ -33,23 +33,12 @@ class FirebaseMessagingService {
 
     await _requestPermission();
 
-    log.fine('[🟡] Enregistrement du handler background...');
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
+    // Foreground only: update macros live when user is in app
     log.fine('[🟢] Écoute des messages en foreground...');
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
 
-    log.fine(
-        '[🟣] Écoute des messages quand l\'app est ouverte via notification...');
-    FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
-
-    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) {
-      log.fine('[🟠] App ouverte via une notification depuis état TERMINÉ.');
-      _onMessageOpenedApp(initialMessage);
-    } else {
-      log.fine('[⚪] Aucune notification à l’ouverture.');
-    }
+    // We intentionally do NOT register background or opened-app handlers
+    // so that updates happen only when app is in foreground.
 
     log.fine('[✅] Initialisation FirebaseMessagingService terminée');
   }
@@ -201,16 +190,7 @@ class FirebaseMessagingService {
     }
   }
 
-  void _onMessageOpenedApp(RemoteMessage message) {
-    log.fine('[📲] Notification tapée - app ouverte');
-    log.fine('🔸 Données: ${message.data}');
-    // TODO: Add navigation or specific handling
-  }
+  // Removed onMessageOpenedApp handler (foreground only strategy)
 }
 
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  final log = Logger('FCMBackgroundHandler');
-  log.fine('[📤] Message reçu en background');
-  log.fine('🔸 Données: ${message.data}');
-}
+// Background handler removed (foreground only strategy)

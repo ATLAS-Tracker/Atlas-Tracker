@@ -9,6 +9,13 @@ import 'package:opennutritracker/features/profile/profile_page.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/features/auth/check_subscription.dart';
+// Added for resume macro refresh
+import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
+import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
+import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -45,6 +52,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _handleResume() async {
+    // 1) Ensure subscription is still valid
     final service = SubscriptionService(locator<SupabaseClient>());
     final isSubscribed = await service.checkAndEnforceSubscription(context);
 
@@ -52,6 +60,22 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
     if (!isSubscribed) {
       Navigator.of(context).popUntil((route) => route.isFirst);
+      return;
+    }
+
+    // 2) Refresh macro goals from coach and update tracked days
+    try {
+      final user = await locator.get<GetUserUsecase>().getUserData();
+      if (user.role == UserRoleEntity.student) {
+        await locator.get<AddMacroGoalUsecase>().addMacroGoalFromCoach();
+
+        // Notify key views to refresh
+        locator<HomeBloc>().add(const LoadItemsEvent());
+        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
+        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+      }
+    } catch (_) {
+      // Silently ignore on resume to avoid disrupting UX
     }
   }
 
