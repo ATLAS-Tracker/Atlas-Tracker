@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/data/dbo/tracked_day_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 class TrackedDayEntity extends Equatable {
   static const maxKcalDifferenceOverGoal = 500;
@@ -30,7 +31,7 @@ class TrackedDayEntity extends Equatable {
     this.proteinGoal,
     this.proteinTracked,
     DateTime? updatedAt,
-  }) : updatedAt = updatedAt ?? DateTime.now().toUtc();
+  }) : updatedAt = DateUtilsHelper.roundToSeconds(updatedAt ?? DateTime.now().toUtc());
 
   factory TrackedDayEntity.fromTrackedDayDBO(TrackedDayDBO trackedDayDBO) {
     return TrackedDayEntity(

@@ -26,8 +26,8 @@ class TrackedDayDBOAdapter extends TypeAdapter<TrackedDayDBO> {
       fatTracked: fields[6] as double?,
       proteinGoal: fields[7] as double?,
       proteinTracked: fields[8] as double?,
+      caloriesBurned: fields[10] as double,
       updatedAt: fields[9] as DateTime,
-      caloriesBurned: (fields[10] as double?) ?? 0,
     );
   }
 
@@ -100,6 +100,6 @@ Map<String, dynamic> _$TrackedDayDBOToJson(TrackedDayDBO instance) =>
       'fatTracked': instance.fatTracked,
       'proteinGoal': instance.proteinGoal,
       'proteinTracked': instance.proteinTracked,
-      'caloriesBurned': instance.caloriesBurned,
       'updated_at': instance.updatedAt.toIso8601String(),
+      'caloriesBurned': instance.caloriesBurned,
     };

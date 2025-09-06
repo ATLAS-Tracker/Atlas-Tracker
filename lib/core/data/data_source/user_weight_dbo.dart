@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 part 'user_weight_dbo.g.dart';
 
@@ -21,8 +22,11 @@ class UserWeightDbo extends HiveObject {
 
   factory UserWeightDbo.fromUserWeightEntity(
       UserWeightEntity userWeightEntity) {
-    return UserWeightDbo(userWeightEntity.id, userWeightEntity.weight,
-        userWeightEntity.date, userWeightEntity.updatedAt);
+    return UserWeightDbo(
+        userWeightEntity.id,
+        userWeightEntity.weight,
+        userWeightEntity.date,
+        DateUtilsHelper.roundToSeconds(userWeightEntity.updatedAt));
   }
 
   factory UserWeightDbo.fromJson(Map<String, dynamic> json) =>

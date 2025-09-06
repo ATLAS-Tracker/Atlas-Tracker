@@ -1,6 +1,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 part 'tracked_day_dbo.g.dart';
 
@@ -61,7 +62,7 @@ class TrackedDayDBO extends HiveObject {
         proteinGoal: entity.proteinGoal,
         proteinTracked: entity.proteinTracked,
         caloriesBurned: entity.caloriesBurned,
-        updatedAt: entity.updatedAt);
+        updatedAt: DateUtilsHelper.roundToSeconds(entity.updatedAt));
   }
 
   factory TrackedDayDBO.fromJson(Map<String, dynamic> json) =>

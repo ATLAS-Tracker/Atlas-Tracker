@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/data/data_source/user_weight_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 class UserWeightEntity {
   final String id;
@@ -12,7 +13,7 @@ class UserWeightEntity {
     required this.weight,
     required this.date,
     DateTime? updatedAt,
-  }) : updatedAt = updatedAt ?? DateTime.now().toUtc();
+  }) : updatedAt = DateUtilsHelper.roundToSeconds(updatedAt ?? DateTime.now().toUtc());
 
   factory UserWeightEntity.fromUserWeightDbo(UserWeightDbo userWeightDbo) {
     return UserWeightEntity(

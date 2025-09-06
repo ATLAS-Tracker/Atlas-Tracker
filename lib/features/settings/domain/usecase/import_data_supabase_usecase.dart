@@ -102,10 +102,6 @@ class ImportDataSupabaseUsecase {
         throw Exception('Archive is missing required files');
       }
 
-      // The zip has been downloaded and validated, we can clear the local database
-      final hive = locator<HiveDBProvider>();
-      await hive.clearAllData();
-
       Future<String?> restoreImage(String? path) async {
         if (path == null || path.startsWith('http')) return path;
         final fileName = p.basename(path);
@@ -182,35 +178,6 @@ class ImportDataSupabaseUsecase {
       }
       if (updatedRecipes.isNotEmpty) {
         await _recipeRepository.addAllRecipeDBOs(updatedRecipes);
-      }
-
-      // ----- USER ACTIVITY -----
-      final userActivityJsonString =
-          utf8.decode(userActivityFile!.content as List<int>);
-      final userActivityList = (jsonDecode(userActivityJsonString) as List)
-          .cast<Map<String, dynamic>>();
-      final userActivityDBOs =
-          userActivityList.map((e) => UserActivityDBO.fromJson(e)).toList();
-
-      final existingActivities =
-          await _userActivityRepository.getAllUserActivityDBO();
-      final activityMap = {for (final a in existingActivities) a.id: a};
-      final activityIds = userActivityDBOs.map((e) => e.id).toSet();
-      for (final existing in existingActivities) {
-        if (!activityIds.contains(existing.id)) {
-          await _userActivityRepository.deleteUserActivity(
-              UserActivityEntity.fromUserActivityDBO(existing));
-        }
-      }
-      for (final dbo in userActivityDBOs) {
-        final current = activityMap[dbo.id];
-        if (current == null) {
-          await _userActivityRepository.addAllUserActivityDBOs([dbo]);
-        } else if (dbo.updatedAt.isAfter(current.updatedAt)) {
-          await _userActivityRepository.deleteUserActivity(
-              UserActivityEntity.fromUserActivityDBO(current));
-          await _userActivityRepository.addAllUserActivityDBOs([dbo]);
-        }
       }
 
       // ----- INTAKES -----

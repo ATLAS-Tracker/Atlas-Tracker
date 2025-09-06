@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:opennutritracker/core/data/dbo/physical_activity_dbo.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 part 'user_activity_dbo.g.dart';
 
@@ -35,7 +36,7 @@ class UserActivityDBO extends HiveObject {
         userActivityEntity.date,
         PhysicalActivityDBO.fromPhysicalActivityEntity(
             userActivityEntity.physicalActivityEntity),
-        userActivityEntity.updatedAt);
+        DateUtilsHelper.roundToSeconds(userActivityEntity.updatedAt));
   }
 
   factory UserActivityDBO.fromJson(Map<String, dynamic> json) =>

@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:opennutritracker/core/data/dbo/intake_type_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 part 'intake_dbo.g.dart';
 
@@ -44,7 +45,7 @@ class IntakeDBO extends HiveObject {
         type: IntakeTypeDBO.fromIntakeTypeEntity(entity.type),
         meal: MealDBO.fromMealEntity(entity.meal),
         dateTime: entity.dateTime,
-        updatedAt: entity.updatedAt);
+        updatedAt: DateUtilsHelper.roundToSeconds(entity.updatedAt));
   }
 
   factory IntakeDBO.fromJson(Map<String, dynamic> json) =>
