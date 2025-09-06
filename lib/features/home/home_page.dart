@@ -55,6 +55,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     );
     final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
     lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
+    _dailySteps = lastValue;
     initPlatformState();
     super.initState();
   }
@@ -68,8 +69,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void onDailyStepCount(StepCount event) {
     setState(() {
-      final diff = event.steps - lastValue;
-      _dailySteps = event.steps - 1 * diff;
+      _dailySteps = event.steps;
     });
     _maybeSaveSteps(_dailySteps);
   }
