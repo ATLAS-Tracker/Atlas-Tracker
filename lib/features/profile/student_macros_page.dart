@@ -118,11 +118,24 @@ class _StudentMacrosView extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.chevron_right),
-                            onPressed: () =>
-                                _goToNextDay(context, state.selectedDate),
-                          ),
+                          Builder(builder: (context) {
+                            final now = DateTime.now();
+                            final todayOnly =
+                                DateTime(now.year, now.month, now.day);
+                            final d = state.selectedDate;
+                            final selectedOnly =
+                                DateTime(d.year, d.month, d.day);
+                            final canGoNext = selectedOnly.isBefore(todayOnly);
+                            return IconButton(
+                              icon: const Icon(Icons.chevron_right),
+                              onPressed: canGoNext
+                                  ? () => _goToNextDay(
+                                        context,
+                                        state.selectedDate,
+                                      )
+                                  : null,
+                            );
+                          }),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -350,9 +363,15 @@ class _StudentMacrosView extends StatelessWidget {
   }
 
   void _goToNextDay(BuildContext context, DateTime current) {
-    context.read<StudentMacrosBloc>().add(
-          ChangeDateEvent(current.add(const Duration(days: 1))),
-        );
+    final now = DateTime.now();
+    final todayOnly = DateTime(now.year, now.month, now.day);
+    final c = current;
+    final currentOnly = DateTime(c.year, c.month, c.day);
+    if (currentOnly.isBefore(todayOnly)) {
+      context.read<StudentMacrosBloc>().add(
+            ChangeDateEvent(current.add(const Duration(days: 1))),
+          );
+    }
   }
 
   Future<void> _selectDate(BuildContext context, DateTime initial) async {

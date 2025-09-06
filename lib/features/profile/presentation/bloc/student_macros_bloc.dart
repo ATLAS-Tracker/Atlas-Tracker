@@ -47,7 +47,13 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
   ) {
     final current = state;
     if (current is StudentMacrosLoaded) {
-      emit(current.copyWith(selectedDate: event.date));
+      final now = DateTime.now();
+      final todayOnly = DateTime(now.year, now.month, now.day);
+      final d = event.date;
+      final incomingOnly = DateTime(d.year, d.month, d.day);
+      final safeDate =
+          incomingOnly.isAfter(todayOnly) ? todayOnly : incomingOnly;
+      emit(current.copyWith(selectedDate: safeDate));
     }
   }
 
