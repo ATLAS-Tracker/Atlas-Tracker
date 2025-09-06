@@ -5,6 +5,7 @@ import 'package:opennutritracker/core/data/dbo/intake_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/intake_type_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/meal_or_recipe_dbo.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 class IntakeDataSource {
   final log = Logger('IntakeDataSource');
@@ -43,7 +44,10 @@ class IntakeDataSource {
       log.fine('Cannot update intake $intakeId as it is non existent');
       return null;
     }
+    // Update fields
     intakeObject.$2.amount = fields['amount'] ?? intakeObject.$2.amount;
+    // Always bump updatedAt when mutating an intake
+    intakeObject.$2.updatedAt = DateUtilsHelper.roundToSeconds(DateTime.now().toUtc());
     _hive.intakeBox.putAt(intakeObject.$1, intakeObject.$2);
     return _hive.intakeBox.getAt(intakeObject.$1);
   }
