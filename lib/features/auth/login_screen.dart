@@ -8,8 +8,8 @@ import 'package:app_links/app_links.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:opennutritracker/features/auth/validate_password.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'forgot_password_screen.dart';
 import 'reset_password_screen.dart';
+import 'otp_password_reset_email_screen.dart';
 import 'check_subscription.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
@@ -305,7 +305,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (!hasProfile) {
           bool isUserProfileSync = await _syncUserProfile(userId!);
-          if (!isUserProfileSync && mounted){
+          if (!isUserProfileSync && mounted) {
             await safeSignOut(context);
             return;
           }
@@ -457,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const ForgotPasswordScreen(),
+                    builder: (_) => const OtpPasswordResetEmailScreen(),
                   ),
                 ),
                 child: Text(S.of(context).loginForgotPassword),
