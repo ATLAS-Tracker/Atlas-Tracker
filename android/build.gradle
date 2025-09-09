@@ -17,6 +17,13 @@ subprojects {
     project.evaluationDependsOn(':app')
 }
 
+// Suppress obsolete -source/-target 8 warnings across plugin modules
+subprojects { subproject ->
+    tasks.withType(JavaCompile).configureEach { task ->
+        options.compilerArgs << "-Xlint:-options"
+    }
+}
+
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
