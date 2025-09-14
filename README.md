@@ -17,9 +17,16 @@
 </p>
 
 ## Description
-AtlasTracker is an open-source mobile application designed to simplify nutritional tracking and management. Whether you are looking to improve your health, lose weight, or simply maintain a balanced diet, AtlasTracker provides a minimalistic interface to easily track and analyze your daily nutrition.
+AtlasTracker is a free and open-source calorie and nutritional tracking application designed to help users manage their health, lose weight, or maintain a balanced diet. Forked from simonoppowa/OpenNutriTracker [Website](https://github.com/simonoppowa/OpenNutriTracker), the project's key features include:
 
-[Website](https://simonoppowa.github.io/AtlasTracker-Website/)
+- **🍎 Nutritional Tracking:**  The app allows users to log meals and access a comprehensive food database, including a barcode scanner for quick lookups
+- **📓 Food Diary:** Users can monitor their daily food intake with a food diary and create custom meal plans.
+- **🏋️ Coach-Client Exchange: ** The project also serves as a tool to enable exchange between clients and their coaches for nutritional guidance.
+- **🍽️ Custom Meals:** Plan your meals in advance, create personalized meal plans, and optimize them according to your dietary goals.
+- **📷 Barcode Scanner:** Scan barcodes on packaged food items to instantly retrieve their nutritional information.
+- **🔒 Privacy Focused:** AtlasTracker prioritizes the privacy its users. It does not collect or share any personal data without your consent.
+
+[Website](https://atlas-tracker.fr/)
 
 ## Screenshots
 <p align="center">
@@ -37,12 +44,7 @@ AtlasTracker is an open-source mobile application designed to simplify nutrition
 [<img src="fastlane/metadata/android/en-US/images/playstore_banner.png" width="30%">](https://play.google.com/store/apps/details?id=com.AtlasTracker.ont.AtlasTracker)
 
 ## Key Features
-- **🍎 Nutritional Tracking:** Easily log your meals and snacks, and access a vast database of food items and ingredients to get detailed nutritional information.
-- **📓 Food Diary:** Maintain a comprehensive food diary to keep track of your daily food consumption, habits, and progress.
-- **🍽️ Custom Meals:** Plan your meals in advance, create personalized meal plans, and optimize them according to your dietary goals.
-- **📷 Barcode Scanner:** Scan barcodes on packaged food items to instantly retrieve their nutritional information.
-- **🔒 Privacy Focused:** AtlasTracker prioritizes the privacy its users. It does not collect or share any personal data without your consent.
-- **🚫💰 No Subscription, In-App Purchases, or Ads:** AtlasTracker is completely free to use, without any subscription fees, in-app purchases, or intrusive advertisements.
+
 
 ## Privacy
 See [Data Protection](https://www.iubenda.com/privacy-policy/53501884)
@@ -50,10 +52,6 @@ See [Data Protection](https://www.iubenda.com/privacy-policy/53501884)
 - **Minimal Data Collection**: AtlasTracker only collects the necessary information required for tracking nutrition and providing personalized insights. Your data will not be shared with third parties without your consent.
 - **Open-Source**: AtlasTracker is an open-source application
 
-## TODOs
-- Add serving sizes to meals
-- ~~Add Imperial unit support~~
-- Add support for Material You themes
 
 ## Contribution
 Contributions to AtlasTracker are welcome! If you find any issues or have suggestions for new features, please open an issue or submit a pull request. Make sure to follow the project's code style and guidelines.
