@@ -70,10 +70,35 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onDailyStepCount(StepCount event) {
+    // Try to determine the event's date from the StepCount payload.
+    // Different plugins expose different field names; be defensive.
+    DateTime? eventTime;
+    try {
+      // Common in pedometer packages
+      eventTime = (event as dynamic).timeStamp as DateTime?;
+    } catch (_) {}
+    if (eventTime == null) {
+      try {
+        eventTime = (event as dynamic).timestamp as DateTime?;
+      } catch (_) {}
+    }
+    if (eventTime == null) {
+      try {
+        eventTime = (event as dynamic).date as DateTime?;
+      } catch (_) {}
+    }
+
+    final now = DateTime.now();
+    final isToday = eventTime == null
+        ? true
+        : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
+
+    final stepsToUse = isToday ? event.steps : 0;
+
     setState(() {
-      _dailySteps = event.steps;
+      _dailySteps = stepsToUse;
     });
-    _maybeSaveSteps(_dailySteps);
+    _maybeSaveSteps(stepsToUse);
   }
 
   void onDailyStepCountError(error) {
