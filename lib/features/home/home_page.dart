@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 import 'package:daily_pedometer2/daily_pedometer2.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io' show Platform;
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -82,8 +84,31 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Future<void> initPlatformState() async {
-    _dailyStepCountSubscription = Pedometer.dailyStepCountStream
-        .listen(onDailyStepCount, onError: onDailyStepCountError);
+    // Ensure Android runtime permission before subscribing
+    if (await _ensureActivityPermission()) {
+      _dailyStepCountSubscription = Pedometer.dailyStepCountStream
+          .listen(onDailyStepCount, onError: onDailyStepCountError);
+    } else {
+      log.warning('Activity Recognition permission not granted.');
+    }
+  }
+
+  Future<bool> _ensureActivityPermission() async {
+    // iOS prompts automatically via Core Motion; nothing to do here.
+    if (!Platform.isAndroid) return true;
+
+    final status = await Permission.activityRecognition.status;
+    if (status.isGranted) return true;
+
+    final result = await Permission.activityRecognition.request();
+    if (result.isGranted) return true;
+
+    if (result.isPermanentlyDenied) {
+      // Optionally guide user to settings; avoid blocking UI here.
+      log.warning('Activity Recognition permanently denied. Opening settings.');
+      unawaited(openAppSettings());
+    }
+    return false;
   }
 
   void _maybeSaveSteps(int steps) {
