@@ -92,10 +92,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
 
     final now = DateTime.now();
-    final isToday = eventTime == null
-        ? true
-        : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
+    final today = DateUtils.dateOnly(now);
+    final eventDay = DateUtils.dateOnly(eventTime ?? now);
 
+    // Advance _currentDay immediately when we see a new-day event.
+    if (!DateUtils.isSameDay(_currentDay, eventDay)) {
+      _currentDay = eventDay;
+    }
+
+    final isToday = DateUtils.isSameDay(eventDay, today);
     final stepsToUse = isToday ? event.steps : 0;
 
     setState(() {
@@ -410,12 +415,5 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     setState(() {
       _isDragging = false;
     });
-  }
-
-  /// Refresh page when day changes
-  void _refreshPageOnDayChange() {
-    if (!DateUtils.isSameDay(_homeBloc.currentDay, DateTime.now())) {
-      _homeBloc.add(const LoadItemsEvent());
-    }
   }
 }
