@@ -43,6 +43,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   StreamSubscription<StepCount>? _dailyStepCountSubscription;
   int _dailySteps = 0;
   int lastValue = 0;
+  // Track the logical current day to handle midnight rollover
+  late DateTime _currentDay;
   late HiveDBProvider _hive;
   late DailyStepsRecorder _stepsRecorder;
 
@@ -55,7 +57,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _hive,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
-    final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
+    _currentDay = DateUtils.dateOnly(DateTime.now());
+    final key = _currentDay.toIso8601String();
     lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
     _dailySteps = lastValue;
     initPlatformState();
@@ -180,7 +183,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
-      _refreshPageOnDayChange();
+      // Ensure UI reflects a new day if the app crossed midnight in background
+      final today = DateUtils.dateOnly(DateTime.now());
+      if (!DateUtils.isSameDay(_currentDay, today)) {
+        _currentDay = today;
+        final key = _currentDay.toIso8601String();
+        lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
+        setState(() {
+          _dailySteps = lastValue;
+        });
+      }
     }
     super.didChangeAppLifecycleState(state);
   }
