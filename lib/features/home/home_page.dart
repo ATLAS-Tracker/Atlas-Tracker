@@ -41,13 +41,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late HomeBloc _homeBloc;
   bool _isDragging = false;
   StreamSubscription<StepCount>? _dailyStepCountSubscription;
+  Stream<StepCount>? _dailyStepCountStream;
   int _dailySteps = 0;
   int lastValue = 0;
+  late String _currentDayKey;
+  int _previousDaySteps = 0;
+  bool _waitingForTodaySteps = false;
   late HiveDBProvider _hive;
   late DailyStepsRecorder _stepsRecorder;
 
   @override
   void initState() {
+    super.initState();
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
     _hive = locator<HiveDBProvider>();
@@ -55,11 +60,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _hive,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
-    final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
-    lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
+    _currentDayKey = _stepsRecorder.dayKeyFor(DateTime.now());
+    _previousDaySteps = _hive.dailyStepsBox.get(
+      _stepsRecorder.dayKeyFor(DateTime.now().subtract(const Duration(days: 1))),
+      defaultValue: 0,
+    ) as int;
+    lastValue = _hive.dailyStepsBox.get(_currentDayKey, defaultValue: 0) as int;
     _dailySteps = lastValue;
     initPlatformState();
-    super.initState();
   }
 
   @override
@@ -70,6 +78,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onDailyStepCount(StepCount event) {
+    final bool resetForNewDay = _maybeResetForNewDay();
+    if (resetForNewDay && mounted) {
+      setState(() {
+        _dailySteps = 0;
+      });
+    }
     // Try to determine the event's date from the StepCount payload.
     // Different plugins expose different field names; be defensive.
     DateTime? eventTime;
@@ -93,12 +107,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ? true
         : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
 
-    final stepsToUse = isToday ? event.steps : 0;
+    if (!isToday) {
+      log.fine('Discarding pedometer sample ${event.steps} from $eventTime');
+      return;
+    }
+
+    if (_waitingForTodaySteps &&
+        eventTime == null &&
+        event.steps >= _previousDaySteps) {
+      log.fine(
+        'Ignoring pedometer sample ${event.steps} without timestamp while waiting for today\'s reset (previous day steps: $_previousDaySteps).',
+      );
+      return;
+    }
+
+    final stepsToUse = event.steps;
 
     setState(() {
       _dailySteps = stepsToUse;
     });
-    _maybeSaveSteps(stepsToUse);
+    lastValue = stepsToUse;
+    _waitingForTodaySteps = false;
+    _maybeSaveSteps(stepsToUse, eventTime: eventTime);
   }
 
   void onDailyStepCountError(error) {
@@ -106,16 +136,41 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     setState(() {
       _dailySteps = lastValue;
     });
+    // Attempt to restart the stream after a brief delay to recover on Android.
+    _restartDailyStepListener();
   }
 
   Future<void> initPlatformState() async {
     // Ensure Android runtime permission before subscribing
-    if (await _ensureActivityPermission()) {
-      _dailyStepCountSubscription = Pedometer.dailyStepCountStream
-          .listen(onDailyStepCount, onError: onDailyStepCountError);
-    } else {
+    final hasPermission = await _ensureActivityPermission();
+    if (!hasPermission) {
       log.warning('Activity Recognition permission not granted.');
+      return;
     }
+    _startDailyStepListener();
+  }
+
+  void _startDailyStepListener() {
+    _dailyStepCountSubscription?.cancel();
+    _dailyStepCountStream ??= Pedometer.dailyStepCountStream;
+    _dailyStepCountSubscription = _dailyStepCountStream?.listen(
+      onDailyStepCount,
+      onError: onDailyStepCountError,
+    );
+  }
+
+  void _restartDailyStepListener() {
+    Future<void>.delayed(const Duration(seconds: 1), () async {
+      if (!mounted) {
+        return;
+      }
+      if (Platform.isAndroid &&
+          !await Permission.activityRecognition.isGranted) {
+        log.fine('Skipping pedometer restart, permission still missing.');
+        return;
+      }
+      _startDailyStepListener();
+    });
   }
 
   Future<bool> _ensureActivityPermission() async {
@@ -136,8 +191,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return false;
   }
 
-  void _maybeSaveSteps(int steps) {
-    _stepsRecorder.maybeSaveSteps(steps);
+  void _maybeSaveSteps(int steps, {DateTime? eventTime}) {
+    _stepsRecorder.maybeSaveSteps(steps, now: eventTime);
+  }
+
+  bool _maybeResetForNewDay() {
+    final todayKey = _stepsRecorder.dayKeyFor(DateTime.now());
+    if (todayKey == _currentDayKey) {
+      return false;
+    }
+    log.info('New day detected. Resetting cached steps.');
+    _previousDaySteps = lastValue;
+    _currentDayKey = todayKey;
+    _waitingForTodaySteps = true;
+    lastValue = 0;
+    _dailySteps = 0;
+    _hive.dailyStepsBox.put(todayKey, 0);
+    return true;
   }
 
   @override
@@ -152,23 +222,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           return _getLoadingContent();
         } else if (state is HomeLoadedState) {
           return _getLoadedContent(
-              context,
-              state.totalKcalDaily,
-              state.totalKcalLeft,
-              state.totalKcalSupplied,
-              state.totalCarbsIntake,
-              state.totalFatsIntake,
-              state.totalProteinsIntake,
-              state.totalCarbsGoal,
-              state.totalFatsGoal,
-              state.totalProteinsGoal,
-              state.breakfastIntakeList,
-              state.lunchIntakeList,
-              state.dinnerIntakeList,
-              state.snackIntakeList,
-              state.userActivityList,
-              state.userWeightEntity,
-              state.usesImperialUnits);
+            context,
+            state.totalKcalDaily,
+            state.totalKcalLeft,
+            state.totalKcalSupplied,
+            state.totalCarbsIntake,
+            state.totalFatsIntake,
+            state.totalProteinsIntake,
+            state.totalCarbsGoal,
+            state.totalFatsGoal,
+            state.totalProteinsGoal,
+            state.breakfastIntakeList,
+            state.lunchIntakeList,
+            state.dinnerIntakeList,
+            state.snackIntakeList,
+            state.userActivityList,
+            state.userWeightEntity,
+            state.usesImperialUnits,
+          );
         } else {
           return _getLoadingContent();
         }
@@ -180,160 +251,177 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
+      final didReset = _maybeResetForNewDay();
+      if (didReset && mounted) {
+        setState(() {
+          _dailySteps = 0;
+        });
+      }
       _refreshPageOnDayChange();
+      _restartDailyStepListener();
     }
     super.didChangeAppLifecycleState(state);
   }
 
   Widget _getLoadingContent() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
+    return const Center(child: CircularProgressIndicator());
   }
 
   Widget _getLoadedContent(
-      BuildContext context,
-      double totalKcalDaily,
-      double totalKcalLeft,
-      double totalKcalSupplied,
-      double totalCarbsIntake,
-      double totalFatsIntake,
-      double totalProteinsIntake,
-      double totalCarbsGoal,
-      double totalFatsGoal,
-      double totalProteinsGoal,
-      List<IntakeEntity> breakfastIntakeList,
-      List<IntakeEntity> lunchIntakeList,
-      List<IntakeEntity> dinnerIntakeList,
-      List<IntakeEntity> snackIntakeList,
-      List<UserActivityEntity> userActivities,
-      UserWeightEntity? userWeight,
-      bool usesImperialUnits) {
-    return Stack(children: [
-      ListView(children: [
-        DashboardWidget(
-          totalKcalDaily: totalKcalDaily,
-          totalKcalLeft: totalKcalLeft,
-          totalKcalSupplied: totalKcalSupplied,
-          dailyStepCount: _dailySteps,
-          totalCarbsIntake: totalCarbsIntake,
-          totalFatsIntake: totalFatsIntake,
-          totalProteinsIntake: totalProteinsIntake,
-          totalCarbsGoal: totalCarbsGoal,
-          totalFatsGoal: totalFatsGoal,
-          totalProteinsGoal: totalProteinsGoal,
+    BuildContext context,
+    double totalKcalDaily,
+    double totalKcalLeft,
+    double totalKcalSupplied,
+    double totalCarbsIntake,
+    double totalFatsIntake,
+    double totalProteinsIntake,
+    double totalCarbsGoal,
+    double totalFatsGoal,
+    double totalProteinsGoal,
+    List<IntakeEntity> breakfastIntakeList,
+    List<IntakeEntity> lunchIntakeList,
+    List<IntakeEntity> dinnerIntakeList,
+    List<IntakeEntity> snackIntakeList,
+    List<UserActivityEntity> userActivities,
+    UserWeightEntity? userWeight,
+    bool usesImperialUnits,
+  ) {
+    return Stack(
+      children: [
+        ListView(
+          children: [
+            DashboardWidget(
+              totalKcalDaily: totalKcalDaily,
+              totalKcalLeft: totalKcalLeft,
+              totalKcalSupplied: totalKcalSupplied,
+              dailyStepCount: _dailySteps,
+              totalCarbsIntake: totalCarbsIntake,
+              totalFatsIntake: totalFatsIntake,
+              totalProteinsIntake: totalProteinsIntake,
+              totalCarbsGoal: totalCarbsGoal,
+              totalFatsGoal: totalFatsGoal,
+              totalProteinsGoal: totalProteinsGoal,
+            ),
+            IntakeVerticalList(
+              day: DateTime.now(),
+              title: S.of(context).breakfastLabel,
+              listIcon: IntakeTypeEntity.breakfast.getIconData(),
+              addMealType: AddMealType.breakfastType,
+              intakeList: breakfastIntakeList,
+              onDeleteIntakeCallback: onDeleteIntake,
+              onItemDragCallback: onIntakeItemDrag,
+              onItemTappedCallback: onIntakeItemTapped,
+              usesImperialUnits: usesImperialUnits,
+            ),
+            IntakeVerticalList(
+              day: DateTime.now(),
+              title: S.of(context).lunchLabel,
+              listIcon: IntakeTypeEntity.lunch.getIconData(),
+              addMealType: AddMealType.lunchType,
+              intakeList: lunchIntakeList,
+              onDeleteIntakeCallback: onDeleteIntake,
+              onItemDragCallback: onIntakeItemDrag,
+              onItemTappedCallback: onIntakeItemTapped,
+              usesImperialUnits: usesImperialUnits,
+            ),
+            IntakeVerticalList(
+              day: DateTime.now(),
+              title: S.of(context).dinnerLabel,
+              addMealType: AddMealType.dinnerType,
+              listIcon: IntakeTypeEntity.dinner.getIconData(),
+              intakeList: dinnerIntakeList,
+              onDeleteIntakeCallback: onDeleteIntake,
+              onItemDragCallback: onIntakeItemDrag,
+              onItemTappedCallback: onIntakeItemTapped,
+              usesImperialUnits: usesImperialUnits,
+            ),
+            IntakeVerticalList(
+              day: DateTime.now(),
+              title: S.of(context).snackLabel,
+              listIcon: IntakeTypeEntity.snack.getIconData(),
+              addMealType: AddMealType.snackType,
+              intakeList: snackIntakeList,
+              onDeleteIntakeCallback: onDeleteIntake,
+              onItemDragCallback: onIntakeItemDrag,
+              onItemTappedCallback: onIntakeItemTapped,
+              usesImperialUnits: usesImperialUnits,
+            ),
+            SizedBox(height: 40),
+            // TEMP: activities temporarily hidden by request
+            // ActivityVerticalList(
+            //   day: DateTime.now(),
+            //   title: S.of(context).activityLabel,
+            //   userActivityList: userActivities,
+            //   onItemLongPressedCallback: onActivityItemLongPressed,
+            // ),
+            WeightVerticalList(
+              day: DateTime.now(),
+              title: S.of(context).weightLabel,
+              weightEntity: userWeight,
+              onItemLongPressedCallback: onWeightItemLongPressed,
+            ),
+            const SizedBox(height: 48.0),
+          ],
         ),
-        IntakeVerticalList(
-          day: DateTime.now(),
-          title: S.of(context).breakfastLabel,
-          listIcon: IntakeTypeEntity.breakfast.getIconData(),
-          addMealType: AddMealType.breakfastType,
-          intakeList: breakfastIntakeList,
-          onDeleteIntakeCallback: onDeleteIntake,
-          onItemDragCallback: onIntakeItemDrag,
-          onItemTappedCallback: onIntakeItemTapped,
-          usesImperialUnits: usesImperialUnits,
-        ),
-        IntakeVerticalList(
-          day: DateTime.now(),
-          title: S.of(context).lunchLabel,
-          listIcon: IntakeTypeEntity.lunch.getIconData(),
-          addMealType: AddMealType.lunchType,
-          intakeList: lunchIntakeList,
-          onDeleteIntakeCallback: onDeleteIntake,
-          onItemDragCallback: onIntakeItemDrag,
-          onItemTappedCallback: onIntakeItemTapped,
-          usesImperialUnits: usesImperialUnits,
-        ),
-        IntakeVerticalList(
-          day: DateTime.now(),
-          title: S.of(context).dinnerLabel,
-          addMealType: AddMealType.dinnerType,
-          listIcon: IntakeTypeEntity.dinner.getIconData(),
-          intakeList: dinnerIntakeList,
-          onDeleteIntakeCallback: onDeleteIntake,
-          onItemDragCallback: onIntakeItemDrag,
-          onItemTappedCallback: onIntakeItemTapped,
-          usesImperialUnits: usesImperialUnits,
-        ),
-        IntakeVerticalList(
-          day: DateTime.now(),
-          title: S.of(context).snackLabel,
-          listIcon: IntakeTypeEntity.snack.getIconData(),
-          addMealType: AddMealType.snackType,
-          intakeList: snackIntakeList,
-          onDeleteIntakeCallback: onDeleteIntake,
-          onItemDragCallback: onIntakeItemDrag,
-          onItemTappedCallback: onIntakeItemTapped,
-          usesImperialUnits: usesImperialUnits,
-        ),
-        SizedBox(
-          height: 40,
-        ),
-        // TEMP: activities temporarily hidden by request
-        // ActivityVerticalList(
-        //   day: DateTime.now(),
-        //   title: S.of(context).activityLabel,
-        //   userActivityList: userActivities,
-        //   onItemLongPressedCallback: onActivityItemLongPressed,
-        // ),
-        WeightVerticalList(
-          day: DateTime.now(),
-          title: S.of(context).weightLabel,
-          weightEntity: userWeight,
-          onItemLongPressedCallback: onWeightItemLongPressed,
-        ),
-        const SizedBox(height: 48.0)
-      ]),
-      Align(
+        Align(
           alignment: Alignment.bottomCenter,
           child: Visibility(
-              visible: _isDragging,
-              child: Container(
-                height: 70,
-                color: Theme.of(context).colorScheme.error
-                  ..withValues(alpha: 0.3),
-                child: DragTarget<IntakeEntity>(
-                  onAcceptWithDetails: (data) {
-                    _confirmDelete(context, data.data);
-                  },
-                  onLeave: (data) {
-                    setState(() {
-                      _isDragging = false;
-                    });
-                  },
-                  builder: (context, candidateData, rejectedData) {
-                    return const Center(
-                      child: Icon(
-                        Icons.delete_outline,
-                        size: 36,
-                        color: Colors.white,
-                      ),
-                    );
-                  },
-                ),
-              )))
-    ]);
+            visible: _isDragging,
+            child: Container(
+              height: 70,
+              color: Theme.of(context).colorScheme.error
+                ..withValues(alpha: 0.3),
+              child: DragTarget<IntakeEntity>(
+                onAcceptWithDetails: (data) {
+                  _confirmDelete(context, data.data);
+                },
+                onLeave: (data) {
+                  setState(() {
+                    _isDragging = false;
+                  });
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return const Center(
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 36,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void onActivityItemLongPressed(
-      BuildContext context, UserActivityEntity activityEntity) async {
+    BuildContext context,
+    UserActivityEntity activityEntity,
+  ) async {
     final deleteIntake = await showDialog<bool>(
-        context: context, builder: (context) => const DeleteDialog());
+      context: context,
+      builder: (context) => const DeleteDialog(),
+    );
 
     if (deleteIntake != null) {
       _homeBloc.deleteUserActivityItem(activityEntity);
       _homeBloc.add(const LoadItemsEvent());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).itemDeletedSnackbar)));
+          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
+        );
       }
     }
   }
 
   void onWeightItemLongPressed(BuildContext context) async {
     final deleteWeight = await showDialog<bool>(
-        context: context, builder: (context) => const DeleteDialog());
+      context: context,
+      builder: (context) => const DeleteDialog(),
+    );
 
     final info = await PackageInfo.fromPlatform();
     debugPrint('Bundle ID: ${info.packageName}');
@@ -344,16 +432,21 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onIntakeItemLongPressed(
-      BuildContext context, IntakeEntity intakeEntity) async {
+    BuildContext context,
+    IntakeEntity intakeEntity,
+  ) async {
     final deleteIntake = await showDialog<bool>(
-        context: context, builder: (context) => const DeleteDialog());
+      context: context,
+      builder: (context) => const DeleteDialog(),
+    );
 
     if (deleteIntake != null) {
       _homeBloc.deleteIntakeItem(intakeEntity);
       _homeBloc.add(const LoadItemsEvent());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).itemDeletedSnackbar)));
+          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
+        );
       }
     }
   }
@@ -366,19 +459,27 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     });
   }
 
-  void onIntakeItemTapped(BuildContext context, IntakeEntity intakeEntity,
-      bool usesImperialUnits) async {
+  void onIntakeItemTapped(
+    BuildContext context,
+    IntakeEntity intakeEntity,
+    bool usesImperialUnits,
+  ) async {
     final changeIntakeAmount = await showDialog<double>(
-        context: context,
-        builder: (context) => EditDialog(
-            intakeEntity: intakeEntity, usesImperialUnits: usesImperialUnits));
+      context: context,
+      builder: (context) => EditDialog(
+        intakeEntity: intakeEntity,
+        usesImperialUnits: usesImperialUnits,
+      ),
+    );
     if (changeIntakeAmount != null) {
-      _homeBloc
-          .updateIntakeItem(intakeEntity.id, {'amount': changeIntakeAmount});
+      _homeBloc.updateIntakeItem(intakeEntity.id, {
+        'amount': changeIntakeAmount,
+      });
       _homeBloc.add(const LoadItemsEvent());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).itemUpdatedSnackbar)));
+          SnackBar(content: Text(S.of(context).itemUpdatedSnackbar)),
+        );
       }
     }
   }
@@ -390,7 +491,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void _confirmDelete(BuildContext context, IntakeEntity intake) async {
     bool? delete = await showDialog<bool>(
-        context: context, builder: (context) => const DeleteDialog());
+      context: context,
+      builder: (context) => const DeleteDialog(),
+    );
 
     if (delete == true) {
       onDeleteIntake(intake, null);
