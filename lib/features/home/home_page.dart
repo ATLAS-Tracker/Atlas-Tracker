@@ -44,6 +44,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Stream<StepCount>? _dailyStepCountStream;
   int _dailySteps = 0;
   int lastValue = 0;
+  late String _currentDayKey;
+  int _previousDaySteps = 0;
+  bool _waitingForTodaySteps = false;
   late HiveDBProvider _hive;
   late DailyStepsRecorder _stepsRecorder;
 
@@ -57,8 +60,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _hive,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
-    final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
-    lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
+    _currentDayKey = _stepsRecorder.dayKeyFor(DateTime.now());
+    _previousDaySteps = _hive.dailyStepsBox.get(
+      _stepsRecorder.dayKeyFor(DateTime.now().subtract(const Duration(days: 1))),
+      defaultValue: 0,
+    ) as int;
+    lastValue = _hive.dailyStepsBox.get(_currentDayKey, defaultValue: 0) as int;
     _dailySteps = lastValue;
     initPlatformState();
   }
@@ -71,6 +78,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onDailyStepCount(StepCount event) {
+    final bool resetForNewDay = _maybeResetForNewDay();
+    if (resetForNewDay && mounted) {
+      setState(() {
+        _dailySteps = 0;
+      });
+    }
     // Try to determine the event's date from the StepCount payload.
     // Different plugins expose different field names; be defensive.
     DateTime? eventTime;
@@ -94,13 +107,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ? true
         : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
 
-    final stepsToUse = isToday ? event.steps : 0;
+    if (!isToday) {
+      log.fine('Discarding pedometer sample ${event.steps} from $eventTime');
+      return;
+    }
+
+    if (_waitingForTodaySteps &&
+        eventTime == null &&
+        event.steps >= _previousDaySteps) {
+      log.fine(
+        'Ignoring pedometer sample ${event.steps} without timestamp while waiting for today\'s reset (previous day steps: $_previousDaySteps).',
+      );
+      return;
+    }
+
+    final stepsToUse = event.steps;
 
     setState(() {
       _dailySteps = stepsToUse;
     });
     lastValue = stepsToUse;
-    _maybeSaveSteps(stepsToUse);
+    _waitingForTodaySteps = false;
+    _maybeSaveSteps(stepsToUse, eventTime: eventTime);
   }
 
   void onDailyStepCountError(error) {
@@ -163,8 +191,23 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return false;
   }
 
-  void _maybeSaveSteps(int steps) {
-    _stepsRecorder.maybeSaveSteps(steps);
+  void _maybeSaveSteps(int steps, {DateTime? eventTime}) {
+    _stepsRecorder.maybeSaveSteps(steps, now: eventTime);
+  }
+
+  bool _maybeResetForNewDay() {
+    final todayKey = _stepsRecorder.dayKeyFor(DateTime.now());
+    if (todayKey == _currentDayKey) {
+      return false;
+    }
+    log.info('New day detected. Resetting cached steps.');
+    _previousDaySteps = lastValue;
+    _currentDayKey = todayKey;
+    _waitingForTodaySteps = true;
+    lastValue = 0;
+    _dailySteps = 0;
+    _hive.dailyStepsBox.put(todayKey, 0);
+    return true;
   }
 
   @override
@@ -208,6 +251,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
+      final didReset = _maybeResetForNewDay();
+      if (didReset && mounted) {
+        setState(() {
+          _dailySteps = 0;
+        });
+      }
       _refreshPageOnDayChange();
       _restartDailyStepListener();
     }
