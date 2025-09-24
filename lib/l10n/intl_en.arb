@@ -69,7 +69,7 @@
   "createCustomDialogTitle": "Create custom meal item?",
   "createRecipeLabel": "Create a meal",
   "dailyKcalAdjustmentLabel": "Daily Kcal adjustment:",
-  "stepsTodayLabel": "Steps today",
+  "stepsTodayLabel": "Steps",
   "dataCollectionLabel": "Support development by providing anonymous usage data",
   "deleteAllLabel": "Delete all",
   "deleteTimeDialogContent": "Do want to delete the selected item?",

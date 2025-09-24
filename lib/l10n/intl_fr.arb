@@ -69,7 +69,7 @@
   "createCustomDialogTitle": "Créer un aliment personnalisé ?",
   "createRecipeLabel": "Créer un repas",
   "dailyKcalAdjustmentLabel": "Ajustement quotidien des kcal :",
-  "stepsTodayLabel": "Pas aujourd'hui",
+  "stepsTodayLabel": "Pas",
   "dataCollectionLabel": "Soutenir le développement en fournissant des données d'utilisation anonymes",
   "deleteAllLabel": "Tout supprimer",
   "deleteTimeDialogContent": "Voulez-vous supprimer l'élément sélectionné ?",

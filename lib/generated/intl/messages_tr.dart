@@ -753,8 +753,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ör. elma, dondurma, çikolata ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Atıştırmalık"),
-        "stepsTodayLabel":
-            MessageLookupByLibrary.simpleMessage("Bugünkü adımlar"),
+        "stepsTodayLabel": MessageLookupByLibrary.simpleMessage("Adımlar"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Aboneliğiniz artık aktif değil. Lütfen antrenörünüzle iletişime geçin."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),

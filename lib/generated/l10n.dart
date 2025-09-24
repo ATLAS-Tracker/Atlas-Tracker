@@ -562,10 +562,10 @@ class S {
     );
   }
 
-  /// `Steps today`
+  /// `Steps`
   String get stepsTodayLabel {
     return Intl.message(
-      'Steps today',
+      'Steps',
       name: 'stepsTodayLabel',
       desc: '',
       args: [],
