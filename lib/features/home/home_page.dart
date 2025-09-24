@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 import 'package:daily_pedometer2/daily_pedometer2.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -41,14 +40,17 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late Stream<StepCount> _dailyStepCountStream;
   late final HiveDBProvider _hive;
   late int _dailySteps = 0;
+  DateTime? _lastDayChecked; 
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
     _hive = locator<HiveDBProvider>();
-    _stepsRecorder = DailyStepsRecorder(_hive, onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps);
-    _dailySteps = _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ?? 0;
+    _stepsRecorder = DailyStepsRecorder(_hive,
+        onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps);
+    _dailySteps =
+        _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ?? 0;
     initPlatformState();
     super.initState();
   }
@@ -63,21 +65,20 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     setState(() {
       _dailySteps = event.steps.toInt();
     });
+    _lastDayChecked = event.timeStamp;
+    log.fine('StepCount: $_dailySteps at ${event.timeStamp}');
     _stepsRecorder.maybeSaveSteps(_dailySteps, event.timeStamp);
   }
 
   void onDailyStepCountError(error) {
     setState(() {
-      _dailySteps = _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ?? 0;
+      _dailySteps =
+          _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ??
+              0;
     });
   }
 
   void initPlatformState() async {
-    if (await Permission.activityRecognition.isDenied) {
-      await Permission.activityRecognition.request();
-    }
-    if (!await Permission.activityRecognition.isGranted) return;
-
     _dailyStepCountStream = DailyPedometer2.dailyStepCountStream;
     _dailyStepCountStream
         .listen(onDailyStepCount)
@@ -126,6 +127,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
+      if (_lastDayChecked != null && DateTime.now().isAfter(_lastDayChecked!)) {
+          setState(() {
+            _dailySteps = 0;
+          });
+          final date = DateTime.now();
+          _lastDayChecked = date;
+          _stepsRecorder.maybeSaveSteps(_dailySteps, date);
+      }
       _refreshPageOnDayChange();
     }
     super.didChangeAppLifecycleState(state);
