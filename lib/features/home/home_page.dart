@@ -87,6 +87,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
       _refreshPageOnDayChange();
+      _homeBloc.add(const RefreshDailyStepsEvent());
     }
     super.didChangeAppLifecycleState(state);
   }

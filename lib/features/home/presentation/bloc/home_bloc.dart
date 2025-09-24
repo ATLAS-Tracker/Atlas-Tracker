@@ -142,6 +142,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           usesImperialUnits: usesImperialUnits,
           userWeightEntity: userWeight));
     });
+
+    on<RefreshDailyStepsEvent>((event, emit) async {
+      final updatedSteps = await _dailyStepsService.fetchAndSyncTodaySteps();
+      if (updatedSteps == null) {
+        return;
+      }
+
+      final currentState = state;
+      if (currentState is HomeLoadedState &&
+          updatedSteps != currentState.dailySteps) {
+        emit(currentState.copyWith(dailySteps: updatedSteps));
+      }
+    });
   }
 
   double getTotalKcal(List<IntakeEntity> intakeList) =>

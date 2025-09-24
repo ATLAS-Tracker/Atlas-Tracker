@@ -10,3 +10,7 @@ abstract class HomeEvent extends Equatable {
 class LoadItemsEvent extends HomeEvent {
   const LoadItemsEvent();
 }
+
+class RefreshDailyStepsEvent extends HomeEvent {
+  const RefreshDailyStepsEvent();
+}

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:background_fetch/background_fetch.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,12 +33,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:opennutritracker/firebase_options.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:opennutritracker/services/daily_steps_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   LoggerConfig.intiLogger();
   await initLocator();
+  await _configureDailyStepsBackgroundFetch();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -67,6 +70,86 @@ Future<void> main() async {
     'Starting App with Crashlytics ${hasAcceptedAnonymousData ? 'enabled' : 'disabled'} ...',
   );
   runAppWithChangeNotifiers(isUserInitialized, hasAuthSession, savedAppTheme);
+}
+
+const _dailyStepsBackgroundTaskId = 'daily_steps_fetch';
+
+Future<void> _configureDailyStepsBackgroundFetch() async {
+  final log = Logger('_DailyStepsBackgroundFetch');
+  final dailyStepsService = locator<DailyStepsService>();
+
+  try {
+    final status = await BackgroundFetch.configure(
+      BackgroundFetchConfig(
+        minimumFetchInterval: 3,
+        stopOnTerminate: false,
+        enableHeadless: true,
+        startOnBoot: true,
+        requiresBatteryNotLow: false,
+        requiresCharging: false,
+        requiresStorageNotLow: false,
+        requiresDeviceIdle: false,
+        requiredNetworkType: NetworkType.ANY,
+      ),
+      (taskId) async {
+        try {
+          await dailyStepsService.fetchAndSyncTodaySteps();
+        } catch (error, stackTrace) {
+          log.warning('Background fetch task failed', error, stackTrace);
+        } finally {
+          BackgroundFetch.finish(taskId);
+        }
+      },
+      (taskId) async {
+        BackgroundFetch.finish(taskId);
+      },
+    );
+
+    log.info('BackgroundFetch configured with status $status');
+
+    await BackgroundFetch.registerHeadlessTask(backgroundFetchHeadlessTask);
+
+    await BackgroundFetch.scheduleTask(
+      TaskConfig(
+        taskId: _dailyStepsBackgroundTaskId,
+        delay: const Duration(minutes: 3).inMilliseconds,
+        periodic: true,
+        stopOnTerminate: false,
+        enableHeadless: true,
+        requiresCharging: false,
+        requiresDeviceIdle: false,
+        requiresBatteryNotLow: false,
+        requiresStorageNotLow: false,
+      ),
+    );
+  } catch (error, stackTrace) {
+    log.warning('Failed to configure BackgroundFetch', error, stackTrace);
+  }
+}
+
+@pragma('vm:entry-point')
+Future<void> backgroundFetchHeadlessTask(HeadlessTask task) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  if (task.timeout) {
+    BackgroundFetch.finish(task.taskId);
+    return;
+  }
+
+  final log = Logger('DailyStepsHeadlessTask');
+
+  try {
+    if (!locator.isRegistered<DailyStepsService>()) {
+      await initLocator();
+    }
+
+    final service = locator<DailyStepsService>();
+    await service.fetchAndSyncTodaySteps();
+  } catch (error, stackTrace) {
+    log.warning('Headless background fetch failed', error, stackTrace);
+  } finally {
+    BackgroundFetch.finish(task.taskId);
+  }
 }
 
 void runAppWithChangeNotifiers(

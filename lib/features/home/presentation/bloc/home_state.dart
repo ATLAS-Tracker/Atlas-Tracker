@@ -55,6 +55,50 @@ class HomeLoadedState extends HomeState {
     required this.usesImperialUnits,
   });
 
+  HomeLoadedState copyWith({
+    double? totalKcalDaily,
+    double? totalKcalLeft,
+    double? totalKcalSupplied,
+    double? totalKcalBurned,
+    int? dailySteps,
+    double? totalCarbsIntake,
+    double? totalFatsIntake,
+    double? totalProteinsIntake,
+    double? totalCarbsGoal,
+    double? totalFatsGoal,
+    double? totalProteinsGoal,
+    List<UserActivityEntity>? userActivityList,
+    UserWeightEntity? userWeightEntity,
+    List<IntakeEntity>? breakfastIntakeList,
+    List<IntakeEntity>? lunchIntakeList,
+    List<IntakeEntity>? dinnerIntakeList,
+    List<IntakeEntity>? snackIntakeList,
+    bool? usesImperialUnits,
+  }) {
+    return HomeLoadedState(
+      totalKcalDaily: totalKcalDaily ?? this.totalKcalDaily,
+      totalKcalLeft: totalKcalLeft ?? this.totalKcalLeft,
+      totalKcalSupplied: totalKcalSupplied ?? this.totalKcalSupplied,
+      totalKcalBurned: totalKcalBurned ?? this.totalKcalBurned,
+      dailySteps: dailySteps ?? this.dailySteps,
+      totalCarbsIntake: totalCarbsIntake ?? this.totalCarbsIntake,
+      totalFatsIntake: totalFatsIntake ?? this.totalFatsIntake,
+      totalProteinsIntake:
+          totalProteinsIntake ?? this.totalProteinsIntake,
+      totalCarbsGoal: totalCarbsGoal ?? this.totalCarbsGoal,
+      totalFatsGoal: totalFatsGoal ?? this.totalFatsGoal,
+      totalProteinsGoal: totalProteinsGoal ?? this.totalProteinsGoal,
+      userActivityList: userActivityList ?? this.userActivityList,
+      userWeightEntity: userWeightEntity ?? this.userWeightEntity,
+      breakfastIntakeList:
+          breakfastIntakeList ?? this.breakfastIntakeList,
+      lunchIntakeList: lunchIntakeList ?? this.lunchIntakeList,
+      dinnerIntakeList: dinnerIntakeList ?? this.dinnerIntakeList,
+      snackIntakeList: snackIntakeList ?? this.snackIntakeList,
+      usesImperialUnits: usesImperialUnits ?? this.usesImperialUnits,
+    );
+  }
+
   @override
   List<Object?> get props => [
         dailySteps,
