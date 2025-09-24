@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
 
@@ -9,6 +10,7 @@ void main() {
   group('DailyStepsRecorder', () {
     late Directory tempDir;
     late Box<int> box;
+    late Box<StepsDateDbo> stepsDateBox;
     late HiveDBProvider hive;
     late DailyStepsRecorder recorder;
 
@@ -16,14 +18,20 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
       tempDir = await Directory.systemTemp.createTemp('hive_steps_recorder_');
       Hive.init(tempDir.path);
+      if (!Hive.isAdapterRegistered(StepsDateDboAdapter().typeId)) {
+        Hive.registerAdapter(StepsDateDboAdapter());
+      }
       box = await Hive.openBox<int>('daily_steps_test');
+      stepsDateBox = await Hive.openBox<StepsDateDbo>('steps_date_test');
       hive = HiveDBProvider();
       hive.dailyStepsBox = box;
+      hive.stepsDateBox = stepsDateBox;
       recorder = DailyStepsRecorder(hive);
     });
 
     tearDown(() async {
       await box.close();
+      await stepsDateBox.close();
       await Hive.deleteFromDisk();
       await tempDir.delete(recursive: true);
     });
@@ -91,4 +99,3 @@ void main() {
     });
   });
 }
-

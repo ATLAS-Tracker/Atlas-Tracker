@@ -57,50 +57,29 @@ class DailyStepsSyncService with WidgetsBindingObserver {
         return;
       }
 
-      final box = _hive.dailyStepsBox;
+      final stepsBox = _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
 
-      // Charger la dernière synchro
-      final lastSyncMillis = box.get(_lastSyncKey);
-      final lastSynced = lastSyncMillis != null
-          ? DateTime.fromMillisecondsSinceEpoch(lastSyncMillis)
-          : null;
-
-      // Filtrer uniquement les clés de jours (yyyy-MM-dd)
-      final keys = box.keys.where((k) => k is String && k != _lastSyncKey);
-
-      // Convertir en DateTime et inclure le lastSynced lui-même
-      final pending = keys
-          .map((k) => DateTime.parse(k as String))
-          .where((d) => lastSynced == null || !d.isBefore(lastSynced))
-          .toList()
-        ..sort();
-
-      if (pending.isEmpty) {
-        _log.fine('No daily steps to sync.');
+      if (stepsBox == null || stepsBox.nowDate == null || stepsBox.nowSteps == null) {
+        _log.fine('No steps data to sync.');
         return;
       }
 
-      // Construire les entrées pour l’API
-      final entries = pending.map((date) {
-        final key =
-            DateUtils.dateOnly(date).toIso8601String(); // clé Hive exacte
-        return {
-          'user_id': userId,
-          // Pour l’API on veut une date au format yyyy-MM-dd
-          'date': date.toIso8601String().split('T').first,
-          'steps': box.get(key, defaultValue: 0),
-        };
-      }).toList();
+      final steps = stepsBox.nowSteps!;
+      if (steps % 100 >= 0 && steps % 100 <= 10) {
+        final entries = [
+          {
+        'user_id': userId,
+        'date': stepsBox.nowDate!.toIso8601String().split('T').first,
+        'steps': steps,
+          }
+        ];
 
-      // Envoi au backend
-      await _service.upsertDailySteps(entries);
+        // Envoi au backend
+        await _service.upsertDailySteps(entries);
+      } else {
+        _log.fine('Steps not in sync range, skipping upsert.');
+      }
 
-      // Mise à jour de la dernière synchro avec le dernier jour traité
-      final newLastSync = pending.last;
-      await box.put(_lastSyncKey, newLastSync.millisecondsSinceEpoch);
-
-      _log.info(
-          'Synced ${entries.length} day(s) of steps. Last sync: $newLastSync');
     } catch (e, s) {
       _log.severe('Failed to sync daily steps: $e', e, s);
     }

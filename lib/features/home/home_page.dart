@@ -2,16 +2,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
-import 'package:daily_pedometer2/daily_pedometer2.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io' show Platform;
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
-// TEMP: hide activities UI
-// import 'package:opennutritracker/core/presentation/widgets/activity_vertial_list.dart';
 import 'package:opennutritracker/core/presentation/widgets/weight_vertical_list.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
@@ -23,10 +19,10 @@ import 'package:opennutritracker/features/home/presentation/widgets/intake_verti
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
 import 'package:opennutritracker/services/daily_steps_sync_service.dart';
-
-typedef Pedometer = DailyPedometer2;
+import 'package:pedometer/pedometer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -37,18 +33,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final log = Logger('HomePage');
-
   late HomeBloc _homeBloc;
   bool _isDragging = false;
-  StreamSubscription<StepCount>? _dailyStepCountSubscription;
-  Stream<StepCount>? _dailyStepCountStream;
-  int _dailySteps = 0;
-  int lastValue = 0;
-  late String _currentDayKey;
-  int _previousDaySteps = 0;
-  bool _waitingForTodaySteps = false;
-  late HiveDBProvider _hive;
+  late Stream<StepCount> _stepCountStream;
   late DailyStepsRecorder _stepsRecorder;
+  late HiveDBProvider _hive;
+  int _steps = 0;
 
   @override
   void initState() {
@@ -60,154 +50,53 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _hive,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
-    _currentDayKey = _stepsRecorder.dayKeyFor(DateTime.now());
-    _previousDaySteps = _hive.dailyStepsBox.get(
-      _stepsRecorder.dayKeyFor(DateTime.now().subtract(const Duration(days: 1))),
-      defaultValue: 0,
-    ) as int;
-    lastValue = _hive.dailyStepsBox.get(_currentDayKey, defaultValue: 0) as int;
-    _dailySteps = lastValue;
+
     initPlatformState();
+  }
+
+  void onStepCount(StepCount event) {
+    setState(() {
+      _steps = event.steps.toInt();
+    });
+    _stepsRecorder.maybeSaveSteps(event.steps, event.timeStamp);
+  }
+
+  void onStepCountError(error) {
+    log.severe('StepCount error: $error');
+    final StepsDateDbo? stepsDate =
+        _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+    setState(() {
+      _steps = stepsDate?.nowSteps ?? 0;
+    });
+  }
+
+  Future<bool> _checkActivityRecognitionPermission() async {
+    bool granted = await Permission.activityRecognition.isGranted;
+
+    if (!granted) {
+      granted = await Permission.activityRecognition.request() ==
+          PermissionStatus.granted;
+    }
+
+    return granted;
+  }
+
+  Future<void> initPlatformState() async {
+    bool granted = await _checkActivityRecognitionPermission();
+    if (!granted) {
+      // tell user, the app will not work
+    }
+
+    _stepCountStream = Pedometer.stepCountStream;
+    _stepCountStream.listen(onStepCount).onError(onStepCountError);
+
+    if (!mounted) return;
   }
 
   @override
   void dispose() {
-    _dailyStepCountSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  void onDailyStepCount(StepCount event) {
-    final bool resetForNewDay = _maybeResetForNewDay();
-    if (resetForNewDay && mounted) {
-      setState(() {
-        _dailySteps = 0;
-      });
-    }
-    // Try to determine the event's date from the StepCount payload.
-    // Different plugins expose different field names; be defensive.
-    DateTime? eventTime;
-    try {
-      // Common in pedometer packages
-      eventTime = (event as dynamic).timeStamp as DateTime?;
-    } catch (_) {}
-    if (eventTime == null) {
-      try {
-        eventTime = (event as dynamic).timestamp as DateTime?;
-      } catch (_) {}
-    }
-    if (eventTime == null) {
-      try {
-        eventTime = (event as dynamic).date as DateTime?;
-      } catch (_) {}
-    }
-
-    final now = DateTime.now();
-    final isToday = eventTime == null
-        ? true
-        : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
-
-    if (!isToday) {
-      log.fine('Discarding pedometer sample ${event.steps} from $eventTime');
-      return;
-    }
-
-    if (_waitingForTodaySteps &&
-        eventTime == null &&
-        event.steps >= _previousDaySteps) {
-      log.fine(
-        'Ignoring pedometer sample ${event.steps} without timestamp while waiting for today\'s reset (previous day steps: $_previousDaySteps).',
-      );
-      return;
-    }
-
-    final stepsToUse = event.steps;
-
-    setState(() {
-      _dailySteps = stepsToUse;
-    });
-    lastValue = stepsToUse;
-    _waitingForTodaySteps = false;
-    _maybeSaveSteps(stepsToUse, eventTime: eventTime);
-  }
-
-  void onDailyStepCountError(error) {
-    log.severe('Daily step count error: $error');
-    setState(() {
-      _dailySteps = lastValue;
-    });
-    // Attempt to restart the stream after a brief delay to recover on Android.
-    _restartDailyStepListener();
-  }
-
-  Future<void> initPlatformState() async {
-    // Ensure Android runtime permission before subscribing
-    final hasPermission = await _ensureActivityPermission();
-    if (!hasPermission) {
-      log.warning('Activity Recognition permission not granted.');
-      return;
-    }
-    _startDailyStepListener();
-  }
-
-  void _startDailyStepListener() {
-    _dailyStepCountSubscription?.cancel();
-    _dailyStepCountStream ??= Pedometer.dailyStepCountStream;
-    _dailyStepCountSubscription = _dailyStepCountStream?.listen(
-      onDailyStepCount,
-      onError: onDailyStepCountError,
-    );
-  }
-
-  void _restartDailyStepListener() {
-    Future<void>.delayed(const Duration(seconds: 1), () async {
-      if (!mounted) {
-        return;
-      }
-      if (Platform.isAndroid &&
-          !await Permission.activityRecognition.isGranted) {
-        log.fine('Skipping pedometer restart, permission still missing.');
-        return;
-      }
-      _startDailyStepListener();
-    });
-  }
-
-  Future<bool> _ensureActivityPermission() async {
-    // iOS prompts automatically via Core Motion; nothing to do here.
-    if (!Platform.isAndroid) return true;
-
-    final status = await Permission.activityRecognition.status;
-    if (status.isGranted) return true;
-
-    final result = await Permission.activityRecognition.request();
-    if (result.isGranted) return true;
-
-    if (result.isPermanentlyDenied) {
-      // Optionally guide user to settings; avoid blocking UI here.
-      log.warning('Activity Recognition permanently denied. Opening settings.');
-      unawaited(openAppSettings());
-    }
-    return false;
-  }
-
-  void _maybeSaveSteps(int steps, {DateTime? eventTime}) {
-    _stepsRecorder.maybeSaveSteps(steps, now: eventTime);
-  }
-
-  bool _maybeResetForNewDay() {
-    final todayKey = _stepsRecorder.dayKeyFor(DateTime.now());
-    if (todayKey == _currentDayKey) {
-      return false;
-    }
-    log.info('New day detected. Resetting cached steps.');
-    _previousDaySteps = lastValue;
-    _currentDayKey = todayKey;
-    _waitingForTodaySteps = true;
-    lastValue = 0;
-    _dailySteps = 0;
-    _hive.dailyStepsBox.put(todayKey, 0);
-    return true;
   }
 
   @override
@@ -251,14 +140,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
-      final didReset = _maybeResetForNewDay();
-      if (didReset && mounted) {
-        setState(() {
-          _dailySteps = 0;
-        });
-      }
       _refreshPageOnDayChange();
-      _restartDailyStepListener();
+      unawaited(_resetStepsIfDayChanged());
     }
     super.didChangeAppLifecycleState(state);
   }
@@ -294,7 +177,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               totalKcalDaily: totalKcalDaily,
               totalKcalLeft: totalKcalLeft,
               totalKcalSupplied: totalKcalSupplied,
-              dailyStepCount: _dailySteps,
+              dailyStepCount: _steps,
               totalCarbsIntake: totalCarbsIntake,
               totalFatsIntake: totalFatsIntake,
               totalProteinsIntake: totalProteinsIntake,
@@ -507,6 +390,48 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void _refreshPageOnDayChange() {
     if (!DateUtils.isSameDay(_homeBloc.currentDay, DateTime.now())) {
       _homeBloc.add(const LoadItemsEvent());
+    }
+  }
+
+  Future<void> _resetStepsIfDayChanged() async {
+    final StepsDateDbo? stepsDate =
+        _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+
+    final today = DateUtils.dateOnly(DateTime.now());
+
+    if (stepsDate == null) {
+      final newEntry = StepsDateDbo(
+        lastDate: today,
+        nowDate: today,
+        lastSteps: 0,
+        nowSteps: 0,
+      );
+      await _hive.stepsDateBox.put(
+        HiveDBProvider.stepsDateEntryKey,
+        newEntry,
+      );
+      if (!mounted) return;
+      setState(() {
+        _steps = 0;
+      });
+      return;
+    }
+
+    final DateTime? storedNowDate = stepsDate.nowDate == null
+        ? null
+        : DateUtils.dateOnly(stepsDate.nowDate!);
+
+    if (storedNowDate == null || storedNowDate.isBefore(today)) {
+      stepsDate
+        ..lastDate = stepsDate.nowDate
+        ..nowDate = today
+        ..lastSteps = (stepsDate.lastSteps ?? 0) + (stepsDate.nowSteps ?? 0)
+        ..nowSteps = 0;
+      await stepsDate.save();
+      if (!mounted) return;
+      setState(() {
+        _steps = 0;
+      });
     }
   }
 }
