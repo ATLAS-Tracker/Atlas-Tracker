@@ -70,16 +70,16 @@ class DailyStepsService {
 
     final payload = {
       'user_id': userId,
-      'step_date': DateTime.utc(date.year, date.month, date.day)
+      'date': DateTime.utc(date.year, date.month, date.day)
           .toIso8601String(),
-      'step_count': steps,
+      'steps': steps,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
 
     try {
       await _supabaseClient
-          .from('user_daily_steps')
-          .upsert(payload, onConflict: 'user_id,step_date');
+          .from('daily_steps')
+          .upsert(payload, onConflict: 'user_id,date');
     } catch (error, stackTrace) {
       _log.warning('Failed to sync steps to Supabase', error, stackTrace);
     }
