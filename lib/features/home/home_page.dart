@@ -49,6 +49,16 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeBloc, HomeState>(
       bloc: _homeBloc,
+      buildWhen: (previous, current) {
+        if (previous is HomeLoadedState && current is HomeLoadedState) {
+          final onlyStepsChanged =
+              previous.dailySteps != current.dailySteps &&
+                  previous.copyWith(dailySteps: current.dailySteps) == current;
+
+          return !onlyStepsChanged;
+        }
+        return true;
+      },
       builder: (context, state) {
         if (state is HomeInitial) {
           _homeBloc.add(const LoadItemsEvent());
@@ -61,7 +71,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               state.totalKcalDaily,
               state.totalKcalLeft,
               state.totalKcalSupplied,
-              state.dailySteps,
               state.totalCarbsIntake,
               state.totalFatsIntake,
               state.totalProteinsIntake,
@@ -103,7 +112,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       double totalKcalDaily,
       double totalKcalLeft,
       double totalKcalSupplied,
-      int dailySteps,
       double totalCarbsIntake,
       double totalFatsIntake,
       double totalProteinsIntake,
@@ -119,17 +127,28 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       bool usesImperialUnits) {
     return Stack(children: [
       ListView(children: [
-        DashboardWidget(
-          totalKcalDaily: totalKcalDaily,
-          totalKcalLeft: totalKcalLeft,
-          totalKcalSupplied: totalKcalSupplied,
-          dailySteps: dailySteps,
-          totalCarbsIntake: totalCarbsIntake,
-          totalFatsIntake: totalFatsIntake,
-          totalProteinsIntake: totalProteinsIntake,
-          totalCarbsGoal: totalCarbsGoal,
-          totalFatsGoal: totalFatsGoal,
-          totalProteinsGoal: totalProteinsGoal,
+        BlocSelector<HomeBloc, HomeState, int>(
+          bloc: _homeBloc,
+          selector: (state) {
+            if (state is HomeLoadedState) {
+              return state.dailySteps;
+            }
+            return 0;
+          },
+          builder: (context, dailySteps) {
+            return DashboardWidget(
+              totalKcalDaily: totalKcalDaily,
+              totalKcalLeft: totalKcalLeft,
+              totalKcalSupplied: totalKcalSupplied,
+              dailySteps: dailySteps,
+              totalCarbsIntake: totalCarbsIntake,
+              totalFatsIntake: totalFatsIntake,
+              totalProteinsIntake: totalProteinsIntake,
+              totalCarbsGoal: totalCarbsGoal,
+              totalFatsGoal: totalFatsGoal,
+              totalProteinsGoal: totalProteinsGoal,
+            );
+          },
         ),
         IntakeVerticalList(
           day: DateTime.now(),
