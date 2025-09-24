@@ -782,6 +782,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ex : pomme, glace, chocolat..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Collation"),
+        "stepsTodayLabel":
+            MessageLookupByLibrary.simpleMessage("Pas aujourd\'hui"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Votre abonnement n\'est plus actif. Veuillez contacter votre coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sucre"),

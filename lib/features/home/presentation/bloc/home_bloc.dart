@@ -20,6 +20,7 @@ import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:opennutritracker/services/daily_steps_service.dart';
 
 part 'home_event.dart';
 
@@ -37,6 +38,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetMacroGoalUsecase _getMacroGoalUsecase;
   final GetWeightUsecase _getWeightUsecase;
   final DeleteUserWeightUsecase _deleteUserWeightUsecase;
+  final DailyStepsService _dailyStepsService;
 
   DateTime currentDay = DateTime.now();
 
@@ -51,7 +53,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       this._getKcalGoalUsecase,
       this._getMacroGoalUsecase,
       this._getWeightUsecase,
-      this._deleteUserWeightUsecase)
+      this._deleteUserWeightUsecase,
+      this._dailyStepsService)
       : super(HomeInitial()) {
     on<LoadItemsEvent>((event, emit) async {
       emit(HomeLoadingState());
@@ -116,12 +119,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           CalorieGoalCalc.getDailyKcalLeft(totalKcalGoal, totalKcalIntake);
 
       final userWeight = await _getWeightUsecase.getTodayUserWeight();
+      final dailySteps =
+          await _dailyStepsService.fetchAndSyncTodaySteps() ?? 0;
 
       emit(HomeLoadedState(
           totalKcalDaily: totalKcalGoal,
           totalKcalLeft: totalKcalLeft,
           totalKcalSupplied: totalKcalIntake,
           totalKcalBurned: totalKcalActivities,
+          dailySteps: dailySteps,
           totalCarbsIntake: totalCarbsIntake,
           totalFatsIntake: totalFatsIntake,
           totalCarbsGoal: totalCarbsGoal,

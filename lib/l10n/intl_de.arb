@@ -63,6 +63,7 @@
   "createCustomDialogTitle": "Benutzerdefinierte Mahlzeit erstellen?",
   "createRecipeLabel": "Mahlzeit erstellen",
   "dailyKcalAdjustmentLabel": "Tägliche kcal-Anpassung:",
+  "stepsTodayLabel": "Schritte heute",
   "dataCollectionLabel": "Unterstützen der Entwicklung durch Bereitstellung anonymer Nutzungsdaten",
   "deleteAllLabel": "Alle löschen",
   "deleteTimeDialogContent": "Möchten Sie den ausgewählten Eintrag löschen?",

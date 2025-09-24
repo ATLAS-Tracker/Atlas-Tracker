@@ -21,6 +21,7 @@ void main() {
         totalKcalSupplied: 1500,
         totalKcalDaily: 2000,
         totalKcalLeft: 1000,
+        dailySteps: 5000,
         totalCarbsIntake: 200,
         totalFatsIntake: 50,
         totalProteinsIntake: 100,
@@ -35,8 +36,8 @@ void main() {
     expect(find.text('1500'), findsOneWidget);
 
     // Verify that the kcal left label is displayed as AnimatedFlipCounter
-    final kcalLeftFlipCounter = tester
-        .firstWidget<AnimatedFlipCounter>(find.byType(AnimatedFlipCounter));
-    expect(kcalLeftFlipCounter.value, 1000);
+    final counters = tester
+        .widgetList<AnimatedFlipCounter>(find.byType(AnimatedFlipCounter));
+    expect(counters.any((counter) => counter.value == 1000), isTrue);
   });
 }

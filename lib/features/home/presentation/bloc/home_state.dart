@@ -19,6 +19,7 @@ class HomeLoadedState extends HomeState {
   final double totalKcalLeft;
   final double totalKcalSupplied;
   final double totalKcalBurned;
+  final int dailySteps;
   final double totalCarbsIntake;
   final double totalFatsIntake;
   final double totalProteinsIntake;
@@ -38,6 +39,7 @@ class HomeLoadedState extends HomeState {
     required this.totalKcalLeft,
     required this.totalKcalSupplied,
     required this.totalKcalBurned,
+    required this.dailySteps,
     required this.totalCarbsIntake,
     required this.totalFatsIntake,
     required this.totalProteinsIntake,
@@ -55,6 +57,7 @@ class HomeLoadedState extends HomeState {
 
   @override
   List<Object?> get props => [
+        dailySteps,
         breakfastIntakeList,
         lunchIntakeList,
         dinnerIntakeList,

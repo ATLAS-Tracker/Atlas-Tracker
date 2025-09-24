@@ -562,6 +562,16 @@ class S {
     );
   }
 
+  /// `Steps today`
+  String get stepsTodayLabel {
+    return Intl.message(
+      'Steps today',
+      name: 'stepsTodayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Support development by providing anonymous usage data`
   String get dataCollectionLabel {
     return Intl.message(

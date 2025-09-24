@@ -68,6 +68,7 @@ dependencies:
   flutter_local_notifications: ^19.3.1
   firebase_crashlytics: ^4.3.10
   firebase_analytics: ^11.6.0
+  health: ^13.2.0
 
 dev_dependencies:
   flutter_test:

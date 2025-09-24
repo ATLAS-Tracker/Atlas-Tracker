@@ -52,6 +52,10 @@
 	<string>Pick image from Camera</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Pick an image from gallery</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>We use your activity data to display your daily steps inside the app.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>We use your activity data to display your daily steps inside the app.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

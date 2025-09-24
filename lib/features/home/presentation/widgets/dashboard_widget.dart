@@ -14,6 +14,7 @@ class DashboardWidget extends StatefulWidget {
   final double totalCarbsGoal;
   final double totalFatsGoal;
   final double totalProteinsGoal;
+  final int dailySteps;
 
   const DashboardWidget(
       {super.key,
@@ -25,7 +26,8 @@ class DashboardWidget extends StatefulWidget {
       required this.totalProteinsIntake,
       required this.totalCarbsGoal,
       required this.totalFatsGoal,
-      required this.totalProteinsGoal});
+      required this.totalProteinsGoal,
+      required this.dailySteps});
 
   @override
   State<DashboardWidget> createState() => _DashboardWidgetState();
@@ -127,6 +129,38 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                         ],
                       ),
                       circularStrokeCap: CircularStrokeCap.round,
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.directions_walk,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        AnimatedFlipCounter(
+                          duration: const Duration(milliseconds: 1000),
+                          value: widget.dailySteps,
+                          thousandSeparator: ' ',
+                          textStyle: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface),
+                        ),
+                        Text(
+                          S.of(context).stepsTodayLabel,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface),
+                        ),
+                      ],
                     ),
                   ),
                 ],
