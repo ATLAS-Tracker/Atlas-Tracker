@@ -72,7 +72,6 @@ class _StudentMacrosView extends StatelessWidget {
               (data?['calorieGoal'] as num?)?.toDouble() ?? 0;
           final double caloriesTracked =
               (data?['caloriesTracked'] as num?)?.toDouble() ?? 0;
-          final double steps = (data?['steps'] as num?)?.toDouble() ?? 0;
           final double carbsGoal =
               (data?['carbsGoal'] as num?)?.toDouble() ?? 0;
           final double carbsTracked =
@@ -223,38 +222,6 @@ class _StudentMacrosView extends StatelessWidget {
                               ),
                               circularStrokeCap: CircularStrokeCap.round,
                             ),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.directions_walk,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                                Text(
-                                  '${steps.toInt()}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                                Text(
-                                  S.of(context).stepsLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                         MacroNutrientsView(
@@ -299,10 +266,6 @@ class _StudentMacrosView extends StatelessWidget {
                               DropdownMenuItem(
                                 value: MacroType.weight,
                                 child: Text(S.of(context).weightLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.steps,
-                                child: Text(S.of(context).stepsLabel),
                               ),
                             ],
                           ),
@@ -542,9 +505,6 @@ class _StudentMacrosView extends StatelessWidget {
             break;
           case MacroType.weight:
             value = (data['weight'] as num?)?.toDouble();
-            break;
-          case MacroType.steps:
-            value = (data['steps'] as num?)?.toDouble();
             break;
         }
       }

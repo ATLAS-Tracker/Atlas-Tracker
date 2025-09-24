@@ -19,7 +19,6 @@ void main() {
       supportedLocales: S.delegate.supportedLocales,
       home: const DashboardWidget(
         totalKcalSupplied: 1500,
-        dailyStepCount: 500,
         totalKcalDaily: 2000,
         totalKcalLeft: 1000,
         totalCarbsIntake: 200,
@@ -32,9 +31,8 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    // Verify that the supplied and step values are displayed.
+    // Verify that the supplied total is displayed.
     expect(find.text('1500'), findsOneWidget);
-    expect(find.text('500'), findsOneWidget);
 
     // Verify that the kcal left label is displayed as AnimatedFlipCounter
     final kcalLeftFlipCounter = tester

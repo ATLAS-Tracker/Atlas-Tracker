@@ -11,7 +11,6 @@ import 'package:opennutritracker/features/settings/presentation/bloc/export_impo
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/data/repository/config_repository.dart';
-import 'package:opennutritracker/features/sync/supabase_client.dart';
 
 final _log = Logger('AuthSafeSignOut');
 
@@ -88,26 +87,6 @@ Future<void> safeSignOut(BuildContext context) async {
 
   // ——— Déconnexion (seulement si export OK) ———
   try {
-    // Synchronise today's steps before signing out
-    if (userId != null) {
-      try {
-        final hive = locator<HiveDBProvider>();
-        final today = DateUtils.dateOnly(DateTime.now());
-        final key = today.toIso8601String();
-        final steps =
-            hive.dailyStepsBox.get(key, defaultValue: 0) as int;
-        await SupabaseDailyStepsService().upsertDailySteps([
-          {
-            'user_id': userId,
-            'date': key.split('T').first,
-            'steps': steps,
-          }
-        ]);
-      } catch (err, stack) {
-        _log.warning('Failed to sync today steps', err, stack);
-      }
-    }
-
     try {
       await supabase.auth.signOut();
     } catch (err, stack) {

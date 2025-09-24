@@ -8,7 +8,6 @@ class DashboardWidget extends StatefulWidget {
   final double totalKcalDaily;
   final double totalKcalLeft;
   final double totalKcalSupplied;
-  final int dailyStepCount;
   final double totalCarbsIntake;
   final double totalFatsIntake;
   final double totalProteinsIntake;
@@ -19,7 +18,6 @@ class DashboardWidget extends StatefulWidget {
   const DashboardWidget(
       {super.key,
       required this.totalKcalSupplied,
-      required this.dailyStepCount,
       required this.totalKcalDaily,
       required this.totalKcalLeft,
       required this.totalCarbsIntake,
@@ -88,66 +86,47 @@ class _DashboardWidgetState extends State<DashboardWidget> {
                       ],
                     ),
                   ),
-                  CircularPercentIndicator(
-                    radius: 85.0,
-                    lineWidth: 13.0,
-                    animation: true,
-                    percent: gaugeValue,
-                    arcType: ArcType.FULL,
-                    progressColor:
-                        Theme.of(context).colorScheme.primaryContainer,
-                    arcBackgroundColor: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer
-                        .withAlpha(50),
-                    center: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedFlipCounter(
-                            duration: const Duration(milliseconds: 1000),
-                            value: kcalLeftLabel.toInt(),
-                            textStyle: Theme.of(context)
+                  SizedBox(
+                    width: 170,
+                    child: CircularPercentIndicator(
+                      radius: 85.0,
+                      lineWidth: 13.0,
+                      animation: true,
+                      percent: gaugeValue,
+                      arcType: ArcType.FULL,
+                      progressColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      arcBackgroundColor: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withAlpha(50),
+                      center: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedFlipCounter(
+                              duration: const Duration(milliseconds: 1000),
+                              value: kcalLeftLabel.toInt(),
+                              textStyle: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      letterSpacing: -1)),
+                          Text(
+                            S.of(context).kcalLeftLabel,
+                            style: Theme.of(context)
                                 .textTheme
-                                .headlineMedium
-                                ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                    letterSpacing: -1)),
-                        Text(
-                          S.of(context).kcalLeftLabel,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface),
-                        )
-                      ],
-                    ),
-                    circularStrokeCap: CircularStrokeCap.round,
-                  ),
-                  Expanded(
-                  child: Column(
-                    children: [
-                      Icon(Icons.directions_walk,
-                          color: Theme.of(context).colorScheme.onSurface),
-                      Text('${widget.dailyStepCount}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface)),
-                      Text(S.of(context).stepsLabel,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
+                                .titleMedium
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSurface)),
-                      ],
+                                        .onSurface),
+                          )
+                        ],
+                      ),
+                      circularStrokeCap: CircularStrokeCap.round,
                     ),
                   ),
                 ],

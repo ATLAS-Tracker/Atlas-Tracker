@@ -75,7 +75,6 @@ import 'package:opennutritracker/features/settings/domain/usecase/import_data_su
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:opennutritracker/services/daily_steps_sync_service.dart';
 
 final locator = GetIt.instance;
 const _userScope = 'user_scope';
@@ -339,13 +338,6 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     () => RecipeSearchBloc(locator(), locator(), locator()),
   );
   locator.registerLazySingleton(() => WeightBloc());
-
-  final stepsSyncService = DailyStepsSyncService();
-  await stepsSyncService.init();
-  locator.registerSingleton<DailyStepsSyncService>(
-    stepsSyncService,
-    dispose: (s) => s.dispose(),
-  );
 
   await _initializeConfig(locator());
 }

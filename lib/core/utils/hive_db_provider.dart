@@ -40,7 +40,6 @@ class HiveDBProvider extends ChangeNotifier {
   static const recipeBoxName = "RecipeBox";
   static const userWeightBoxName = 'UserWeightBox';
   static const macroGoalBoxName = 'MacroGoalBox';
-  static const dailyStepsBoxName = 'DailyStepsBox';
 
   String? _userId;
   String _boxName(String base) => _userId == null ? base : '${_userId}_$base';
@@ -56,7 +55,6 @@ class HiveDBProvider extends ChangeNotifier {
   late UserWeightChangeIsolate userWeightWatcher;
   late Box<UserWeightDbo> userWeightBox;
   late Box<MacroGoalDbo> macroGoalBox;
-  late Box<int> dailyStepsBox;
 
   List<StreamSubscription<BoxEvent>>? _updateSubs;
 
@@ -156,7 +154,6 @@ class HiveDBProvider extends ChangeNotifier {
       userWeightWatcher = UserWeightChangeIsolate(userWeightBox);
       await userWeightWatcher.start();
       macroGoalBox = await openBox(macroGoalBoxName);
-      dailyStepsBox = await openBox(dailyStepsBoxName);
       _log.info('✅ Hive initialised for user=$_userId');
     } catch (e, s) {
       _log.severe('Failed to initialize Hive DB', e, s);
@@ -182,9 +179,6 @@ class HiveDBProvider extends ChangeNotifier {
           .watch()
           .listen((_) => config.setLastDataUpdate(DateTime.now().toUtc())),
       macroGoalBox
-          .watch()
-          .listen((_) => config.setLastDataUpdate(DateTime.now().toUtc())),
-      dailyStepsBox
           .watch()
           .listen((_) => config.setLastDataUpdate(DateTime.now().toUtc())),
     ];
@@ -214,7 +208,6 @@ class HiveDBProvider extends ChangeNotifier {
       trackedDayBox.clear(),
       userWeightBox.clear(),
       macroGoalBox.clear(),
-      dailyStepsBox.clear(),
     ]);
   }
 
@@ -254,7 +247,6 @@ class HiveDBProvider extends ChangeNotifier {
         trackedDayBox.close(),
         userWeightBox.close(),
         macroGoalBox.close(),
-        dailyStepsBox.close(),
       ]);
     }
 
@@ -267,7 +259,6 @@ class HiveDBProvider extends ChangeNotifier {
       _deleteBox(recipeBoxName),
       _deleteBox(userWeightBoxName),
       _deleteBox(macroGoalBoxName),
-      _deleteBox(dailyStepsBoxName),
     ]);
 
     _log.info('✅ Hive database deleted for user=$_userId');

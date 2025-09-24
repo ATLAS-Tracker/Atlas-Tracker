@@ -6,7 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 part 'student_macros_event.dart';
 part 'student_macros_state.dart';
 
-enum MacroType { calories, carbs, fat, protein, weight, steps }
+enum MacroType { calories, carbs, fat, protein, weight }
 
 enum TimeRange { week, month, threeMonths, sixMonths, year }
 
@@ -117,14 +117,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
         .lte('date', endDate)
         .order('date');
 
-    final stepsResponse = await _supabase
-        .from('daily_steps')
-        .select('date, steps')
-        .eq('user_id', studentId)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date');
-
     final Map<String, Map<String, dynamic>> result = {
       for (final Map<String, dynamic> item in macroResponse)
         item['day'] as String: item,
@@ -134,12 +126,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
       final dateStr = item['date'] as String;
       result.putIfAbsent(dateStr, () => {});
       result[dateStr]!['weight'] = item['weight'];
-    }
-
-    for (final Map<String, dynamic> item in stepsResponse) {
-      final dateStr = item['date'] as String;
-      result.putIfAbsent(dateStr, () => {});
-      result[dateStr]!['steps'] = item['steps'];
     }
 
     return result;

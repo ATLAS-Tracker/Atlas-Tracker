@@ -50,6 +50,156 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
+  /// `Account successfully deleted.`
+  String get accountDeletedSuccess {
+    return Intl.message(
+      'Account successfully deleted.',
+      name: 'accountDeletedSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `e.g. running, biking, yoga ...`
+  String get activityExample {
+    return Intl.message(
+      'e.g. running, biking, yoga ...',
+      name: 'activityExample',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activity`
+  String get activityLabel {
+    return Intl.message(
+      'Activity',
+      name: 'activityLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add new Item:`
+  String get addItemLabel {
+    return Intl.message(
+      'Add new Item:',
+      name: 'addItemLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add`
+  String get addLabel {
+    return Intl.message(
+      'Add',
+      name: 'addLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Information provided\n by the \n'2011 Compendium\n of Physical Activities'`
+  String get additionalInfoLabelCompendium2011 {
+    return Intl.message(
+      'Information provided\n by the \n\'2011 Compendium\n of Physical Activities\'',
+      name: 'additionalInfoLabelCompendium2011',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Custom Meal Item`
+  String get additionalInfoLabelCustom {
+    return Intl.message(
+      'Custom Meal Item',
+      name: 'additionalInfoLabelCustom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `More Information at\nFoodData Central`
+  String get additionalInfoLabelFDC {
+    return Intl.message(
+      'More Information at\nFoodData Central',
+      name: 'additionalInfoLabelFDC',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `More Information at\nOpenFoodFacts`
+  String get additionalInfoLabelOFF {
+    return Intl.message(
+      'More Information at\nOpenFoodFacts',
+      name: 'additionalInfoLabelOFF',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown Meal Item`
+  String get additionalInfoLabelUnknown {
+    return Intl.message(
+      'Unknown Meal Item',
+      name: 'additionalInfoLabelUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Age`
+  String get ageLabel {
+    return Intl.message(
+      'Age',
+      name: 'ageLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get allItemsLabel {
+    return Intl.message(
+      'All',
+      name: 'allItemsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `[Alpha]`
+  String get alphaVersionName {
+    return Intl.message(
+      '[Alpha]',
+      name: 'alphaVersionName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy.`
+  String get appDescription {
+    return Intl.message(
+      'AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy.',
+      name: 'appDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `GPL-3.0 license`
+  String get appLicenseLabel {
+    return Intl.message(
+      'GPL-3.0 license',
+      name: 'appLicenseLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `AtlasTracker`
   String get appTitle {
     return Intl.message(
@@ -70,22 +220,13 @@ class S {
     );
   }
 
-  /// `AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy.`
-  String get appDescription {
+  /// `Average user weight over the last seven days. The current day is not counted.`
+  String get averageWeightBody {
     return Intl.message(
-      'AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy.',
-      name: 'appDescription',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `[Alpha]`
-  String get alphaVersionName {
-    return Intl.message(
-      '[Alpha]',
-      name: 'alphaVersionName',
-      desc: '',
+      'Average user weight over the last seven days. The current day is not counted.',
+      name: 'averageWeightBody',
+      desc:
+          'Explains that the average weight is calculated from the 7 days preceding the currently selected date, which is not included in the average.',
       args: [],
     );
   }
@@ -100,13 +241,12 @@ class S {
     );
   }
 
-  /// `Average user weight over the last seven days. The current day is not counted.`
-  String get averageWeightBody {
+  /// `Base quantity (g/ml)`
+  String get baseQuantityLabel {
     return Intl.message(
-      'Average user weight over the last seven days. The current day is not counted.',
-      name: 'averageWeightBody',
-      desc:
-          'Explains that the average weight is calculated from the 7 days preceding the currently selected date, which is not included in the average.',
+      'Base quantity (g/ml)',
+      name: 'baseQuantityLabel',
+      desc: '',
       args: [],
     );
   }
@@ -121,231 +261,51 @@ class S {
     );
   }
 
-  /// `Add`
-  String get addLabel {
+  /// `Body Mass Index (BMI) is a index to classify overweight and obesity in adults. It is defined as weight in kilograms divided by the square of height in meters (kg/m²).\n\nBMI does not differentiate between fat and muscle mass and can be misleading for some individuals.`
+  String get bmiInfo {
     return Intl.message(
-      'Add',
-      name: 'addLabel',
+      'Body Mass Index (BMI) is a index to classify overweight and obesity in adults. It is defined as weight in kilograms divided by the square of height in meters (kg/m²).\n\nBMI does not differentiate between fat and muscle mass and can be misleading for some individuals.',
+      name: 'bmiInfo',
       desc: '',
       args: [],
     );
   }
 
-  /// `Create custom meal item?`
-  String get createCustomDialogTitle {
+  /// `BMI`
+  String get bmiLabel {
     return Intl.message(
-      'Create custom meal item?',
-      name: 'createCustomDialogTitle',
+      'BMI',
+      name: 'bmiLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Do you want create a custom meal item?`
-  String get createCustomDialogContent {
+  /// `e.g. cereal, milk, coffee ...`
+  String get breakfastExample {
     return Intl.message(
-      'Do you want create a custom meal item?',
-      name: 'createCustomDialogContent',
+      'e.g. cereal, milk, coffee ...',
+      name: 'breakfastExample',
       desc: '',
       args: [],
     );
   }
 
-  /// `Settings`
-  String get settingsLabel {
+  /// `Breakfast`
+  String get breakfastLabel {
     return Intl.message(
-      'Settings',
-      name: 'settingsLabel',
+      'Breakfast',
+      name: 'breakfastLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Notifications`
-  String get notificationsLabel {
+  /// `burned`
+  String get burnedLabel {
     return Intl.message(
-      'Notifications',
-      name: 'notificationsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Notification activation problem. Please try again later.`
-  String get notificationActivationError {
-    return Intl.message(
-      'Notification activation problem. Please try again later.',
-      name: 'notificationActivationError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Home`
-  String get homeLabel {
-    return Intl.message(
-      'Home',
-      name: 'homeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Weight Delta`
-  String get deltaWeightLabel {
-    return Intl.message(
-      'Weight Delta',
-      name: 'deltaWeightLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `The weight delta is the difference between the average weight and the current weight entered for this day.\nIf no weight is recorded for the current day, the last valid weight will be used.`
-  String get deltaWeightBody {
-    return Intl.message(
-      'The weight delta is the difference between the average weight and the current weight entered for this day.\nIf no weight is recorded for the current day, the last valid weight will be used.',
-      name: 'deltaWeightBody',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Diary`
-  String get diaryLabel {
-    return Intl.message(
-      'Diary',
-      name: 'diaryLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Profile`
-  String get profileLabel {
-    return Intl.message(
-      'Profile',
-      name: 'profileLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Search`
-  String get searchLabel {
-    return Intl.message(
-      'Search',
-      name: 'searchLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Products`
-  String get searchProductsPage {
-    return Intl.message(
-      'Products',
-      name: 'searchProductsPage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Food`
-  String get searchFoodPage {
-    return Intl.message(
-      'Food',
-      name: 'searchFoodPage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Search results`
-  String get searchResultsLabel {
-    return Intl.message(
-      'Search results',
-      name: 'searchResultsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Please enter a search word`
-  String get searchDefaultLabel {
-    return Intl.message(
-      'Please enter a search word',
-      name: 'searchDefaultLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `All`
-  String get allItemsLabel {
-    return Intl.message(
-      'All',
-      name: 'allItemsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Recently`
-  String get recentlyAddedLabel {
-    return Intl.message(
-      'Recently',
-      name: 'recentlyAddedLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No meals recently added`
-  String get noMealsRecentlyAddedLabel {
-    return Intl.message(
-      'No meals recently added',
-      name: 'noMealsRecentlyAddedLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No activity recently added`
-  String get noActivityRecentlyAddedLabel {
-    return Intl.message(
-      'No activity recently added',
-      name: 'noActivityRecentlyAddedLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `OK`
-  String get dialogOKLabel {
-    return Intl.message(
-      'OK',
-      name: 'dialogOKLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `CANCEL`
-  String get dialogCancelLabel {
-    return Intl.message(
-      'CANCEL',
-      name: 'dialogCancelLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `START`
-  String get buttonStartLabel {
-    return Intl.message(
-      'START',
-      name: 'buttonStartLabel',
+      'burned',
+      name: 'burnedLabel',
       desc: '',
       args: [],
     );
@@ -361,26 +321,6 @@ class S {
     );
   }
 
-  /// `Save`
-  String get buttonSaveLabel {
-    return Intl.message(
-      'Save',
-      name: 'buttonSaveLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `YES`
-  String get buttonYesLabel {
-    return Intl.message(
-      'YES',
-      name: 'buttonYesLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Reset`
   String get buttonResetLabel {
     return Intl.message(
@@ -391,531 +331,31 @@ class S {
     );
   }
 
-  /// `Units`
-  String get settingsUnitsLabel {
+  /// `Save`
+  String get buttonSaveLabel {
     return Intl.message(
-      'Units',
-      name: 'settingsUnitsLabel',
+      'Save',
+      name: 'buttonSaveLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Calculations`
-  String get settingsCalculationsLabel {
+  /// `START`
+  String get buttonStartLabel {
     return Intl.message(
-      'Calculations',
-      name: 'settingsCalculationsLabel',
+      'START',
+      name: 'buttonStartLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Theme`
-  String get settingsThemeLabel {
+  /// `YES`
+  String get buttonYesLabel {
     return Intl.message(
-      'Theme',
-      name: 'settingsThemeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Light`
-  String get settingsThemeLightLabel {
-    return Intl.message(
-      'Light',
-      name: 'settingsThemeLightLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Dark`
-  String get settingsThemeDarkLabel {
-    return Intl.message(
-      'Dark',
-      name: 'settingsThemeDarkLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `System default`
-  String get settingsThemeSystemDefaultLabel {
-    return Intl.message(
-      'System default',
-      name: 'settingsThemeSystemDefaultLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Licenses`
-  String get settingsLicensesLabel {
-    return Intl.message(
-      'Licenses',
-      name: 'settingsLicensesLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Report Error`
-  String get settingsReportErrorLabel {
-    return Intl.message(
-      'Report Error',
-      name: 'settingsReportErrorLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Privacy Settings`
-  String get settingsPrivacySettings {
-    return Intl.message(
-      'Privacy Settings',
-      name: 'settingsPrivacySettings',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Source Code`
-  String get settingsSourceCodeLabel {
-    return Intl.message(
-      'Source Code',
-      name: 'settingsSourceCodeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Feedback`
-  String get settingFeedbackLabel {
-    return Intl.message(
-      'Feedback',
-      name: 'settingFeedbackLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `About`
-  String get settingAboutLabel {
-    return Intl.message(
-      'About',
-      name: 'settingAboutLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Mass`
-  String get settingsMassLabel {
-    return Intl.message(
-      'Mass',
-      name: 'settingsMassLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `System`
-  String get settingsSystemLabel {
-    return Intl.message(
-      'System',
-      name: 'settingsSystemLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Metric (kg, cm, ml)`
-  String get settingsMetricLabel {
-    return Intl.message(
-      'Metric (kg, cm, ml)',
-      name: 'settingsMetricLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Imperial (lbs, ft, oz)`
-  String get settingsImperialLabel {
-    return Intl.message(
-      'Imperial (lbs, ft, oz)',
-      name: 'settingsImperialLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Distance`
-  String get settingsDistanceLabel {
-    return Intl.message(
-      'Distance',
-      name: 'settingsDistanceLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Volume`
-  String get settingsVolumeLabel {
-    return Intl.message(
-      'Volume',
-      name: 'settingsVolumeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Do you want to report an error to the developer?`
-  String get reportErrorDialogText {
-    return Intl.message(
-      'Do you want to report an error to the developer?',
-      name: 'reportErrorDialogText',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Send anonymous usage data`
-  String get sendAnonymousUserData {
-    return Intl.message(
-      'Send anonymous usage data',
-      name: 'sendAnonymousUserData',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `GPL-3.0 license`
-  String get appLicenseLabel {
-    return Intl.message(
-      'GPL-3.0 license',
-      name: 'appLicenseLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Password required`
-  String get passwordRequired {
-    return Intl.message(
-      'Password required',
-      name: 'passwordRequired',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `At least 8 characters`
-  String get passwordMinLength {
-    return Intl.message(
-      'At least 8 characters',
-      name: 'passwordMinLength',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `At least 1 uppercase letter`
-  String get passwordUppercase {
-    return Intl.message(
-      'At least 1 uppercase letter',
-      name: 'passwordUppercase',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `At least 1 lowercase letter`
-  String get passwordLowercase {
-    return Intl.message(
-      'At least 1 lowercase letter',
-      name: 'passwordLowercase',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `At least 1 digit`
-  String get passwordDigit {
-    return Intl.message(
-      'At least 1 digit',
-      name: 'passwordDigit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `At least 1 special character`
-  String get passwordSpecialChar {
-    return Intl.message(
-      'At least 1 special character',
-      name: 'passwordSpecialChar',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sign In`
-  String get loginTitle {
-    return Intl.message(
-      'Sign In',
-      name: 'loginTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Email`
-  String get loginEmailLabel {
-    return Intl.message(
-      'Email',
-      name: 'loginEmailLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Password`
-  String get loginPasswordLabel {
-    return Intl.message(
-      'Password',
-      name: 'loginPasswordLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sign In`
-  String get loginButton {
-    return Intl.message(
-      'Sign In',
-      name: 'loginButton',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Forgot password?`
-  String get loginForgotPassword {
-    return Intl.message(
-      'Forgot password?',
-      name: 'loginForgotPassword',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Already signed in on another device. Please sign out first.`
-  String get loginAlreadySignedIn {
-    return Intl.message(
-      'Already signed in on another device. Please sign out first.',
-      name: 'loginAlreadySignedIn',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Unknown error`
-  String get loginUnknownError {
-    return Intl.message(
-      'Unknown error',
-      name: 'loginUnknownError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Email required`
-  String get loginEmailRequired {
-    return Intl.message(
-      'Email required',
-      name: 'loginEmailRequired',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Invalid email address`
-  String get loginEmailInvalid {
-    return Intl.message(
-      'Invalid email address',
-      name: 'loginEmailInvalid',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sign in error`
-  String get loginError {
-    return Intl.message(
-      'Sign in error',
-      name: 'loginError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Forgot your password?`
-  String get forgotPasswordTitle {
-    return Intl.message(
-      'Forgot your password?',
-      name: 'forgotPasswordTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Enter your email`
-  String get forgotPasswordEmailLabel {
-    return Intl.message(
-      'Enter your email',
-      name: 'forgotPasswordEmailLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Send password reset email`
-  String get forgotPasswordButton {
-    return Intl.message(
-      'Send password reset email',
-      name: 'forgotPasswordButton',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Back to sign in`
-  String get forgotPasswordBackToLogin {
-    return Intl.message(
-      'Back to sign in',
-      name: 'forgotPasswordBackToLogin',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Email sent! Click the link in your email to choose a new password.`
-  String get forgotPasswordEmailSent {
-    return Intl.message(
-      'Email sent! Click the link in your email to choose a new password.',
-      name: 'forgotPasswordEmailSent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Error sending email:`
-  String get forgotPasswordSendError {
-    return Intl.message(
-      'Error sending email:',
-      name: 'forgotPasswordSendError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `New password`
-  String get resetPasswordTitle {
-    return Intl.message(
-      'New password',
-      name: 'resetPasswordTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `New password`
-  String get resetPasswordNewLabel {
-    return Intl.message(
-      'New password',
-      name: 'resetPasswordNewLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Confirm password`
-  String get resetPasswordConfirmLabel {
-    return Intl.message(
-      'Confirm password',
-      name: 'resetPasswordConfirmLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Change password`
-  String get resetPasswordButton {
-    return Intl.message(
-      'Change password',
-      name: 'resetPasswordButton',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Password changed! You can now sign in with your new password.`
-  String get resetPasswordChanged {
-    return Intl.message(
-      'Password changed! You can now sign in with your new password.',
-      name: 'resetPasswordChanged',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Passwords do not match`
-  String get resetPasswordNoMatch {
-    return Intl.message(
-      'Passwords do not match',
-      name: 'resetPasswordNoMatch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `• Use at least 8 characters\n• Mix numbers & special characters\n• Uppercase + lowercase`
-  String get resetPasswordTips {
-    return Intl.message(
-      '• Use at least 8 characters\n• Mix numbers & special characters\n• Uppercase + lowercase',
-      name: 'resetPasswordTips',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `TDEE equation`
-  String get calculationsTDEELabel {
-    return Intl.message(
-      'TDEE equation',
-      name: 'calculationsTDEELabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Institute of Medicine Equation`
-  String get calculationsTDEEIOM2006Label {
-    return Intl.message(
-      'Institute of Medicine Equation',
-      name: 'calculationsTDEEIOM2006Label',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `(recommended)`
-  String get calculationsRecommendedLabel {
-    return Intl.message(
-      '(recommended)',
-      name: 'calculationsRecommendedLabel',
+      'YES',
+      name: 'buttonYesLabel',
       desc: '',
       args: [],
     );
@@ -942,321 +382,111 @@ class S {
     );
   }
 
-  /// `Daily Kcal adjustment:`
-  String get dailyKcalAdjustmentLabel {
+  /// `(recommended)`
+  String get calculationsRecommendedLabel {
     return Intl.message(
-      'Daily Kcal adjustment:',
-      name: 'dailyKcalAdjustmentLabel',
+      '(recommended)',
+      name: 'calculationsRecommendedLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Macronutrient Distribution:`
-  String get macroDistributionLabel {
+  /// `Institute of Medicine Equation`
+  String get calculationsTDEEIOM2006Label {
     return Intl.message(
-      'Macronutrient Distribution:',
-      name: 'macroDistributionLabel',
+      'Institute of Medicine Equation',
+      name: 'calculationsTDEEIOM2006Label',
       desc: '',
       args: [],
     );
   }
 
-  /// `Export / Import data`
-  String get exportImportLabel {
+  /// `TDEE equation`
+  String get calculationsTDEELabel {
     return Intl.message(
-      'Export / Import data',
-      name: 'exportImportLabel',
+      'TDEE equation',
+      name: 'calculationsTDEELabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `You can export the app data to a zip file and import it later. This is useful if you want to backup your data or transfer it to another device.\n\nThe app does not use any cloud service to store your data.`
-  String get exportImportDescription {
+  /// `Calories`
+  String get caloriesLabel {
     return Intl.message(
-      'You can export the app data to a zip file and import it later. This is useful if you want to backup your data or transfer it to another device.\n\nThe app does not use any cloud service to store your data.',
-      name: 'exportImportDescription',
+      'Calories',
+      name: 'caloriesLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Export / Import successful`
-  String get exportImportSuccessLabel {
+  /// `carbohydrate`
+  String get carbohydrateLabel {
     return Intl.message(
-      'Export / Import successful',
-      name: 'exportImportSuccessLabel',
+      'carbohydrate',
+      name: 'carbohydrateLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Export / Import error`
-  String get exportImportErrorLabel {
+  /// `Carbohydrates`
+  String get carbohydratesLabel {
     return Intl.message(
-      'Export / Import error',
-      name: 'exportImportErrorLabel',
+      'Carbohydrates',
+      name: 'carbohydratesLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Export`
-  String get exportAction {
+  /// `carbs`
+  String get carbsLabel {
     return Intl.message(
-      'Export',
-      name: 'exportAction',
+      'carbs',
+      name: 'carbsLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Import`
-  String get importAction {
+  /// `Choose Weight Goal`
+  String get chooseWeightGoalLabel {
     return Intl.message(
-      'Import',
-      name: 'importAction',
+      'Choose Weight Goal',
+      name: 'chooseWeightGoalLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Export to Supabase`
-  String get exportSupabaseLabel {
+  /// `Cloud synchronization problem.`
+  String get cloudSyncProblem {
     return Intl.message(
-      'Export to Supabase',
-      name: 'exportSupabaseLabel',
+      'Cloud synchronization problem.',
+      name: 'cloudSyncProblem',
       desc: '',
       args: [],
     );
   }
 
-  /// `Backup your data to Supabase storage as a zip file.`
-  String get exportSupabaseDescription {
+  /// `cm`
+  String get cmLabel {
     return Intl.message(
-      'Backup your data to Supabase storage as a zip file.',
-      name: 'exportSupabaseDescription',
+      'cm',
+      name: 'cmLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Import from Supabase`
-  String get importSupabaseLabel {
+  /// `My students`
+  String get coachStudentsLabel {
     return Intl.message(
-      'Import from Supabase',
-      name: 'importSupabaseLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Restore your data from a backup stored in Supabase.`
-  String get importSupabaseDescription {
-    return Intl.message(
-      'Restore your data from a backup stored in Supabase.',
-      name: 'importSupabaseDescription',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Export / Import with Supabase`
-  String get exportImportSupabaseLabel {
-    return Intl.message(
-      'Export / Import with Supabase',
-      name: 'exportImportSupabaseLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Backup your data to Supabase storage as a zip file or restore it from there.`
-  String get exportImportSupabaseDescription {
-    return Intl.message(
-      'Backup your data to Supabase storage as a zip file or restore it from there.',
-      name: 'exportImportSupabaseDescription',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Add new Item:`
-  String get addItemLabel {
-    return Intl.message(
-      'Add new Item:',
-      name: 'addItemLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Activity`
-  String get activityLabel {
-    return Intl.message(
-      'Activity',
-      name: 'activityLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. running, biking, yoga ...`
-  String get activityExample {
-    return Intl.message(
-      'e.g. running, biking, yoga ...',
-      name: 'activityExample',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Breakfast`
-  String get breakfastLabel {
-    return Intl.message(
-      'Breakfast',
-      name: 'breakfastLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. cereal, milk, coffee ...`
-  String get breakfastExample {
-    return Intl.message(
-      'e.g. cereal, milk, coffee ...',
-      name: 'breakfastExample',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lunch`
-  String get lunchLabel {
-    return Intl.message(
-      'Lunch',
-      name: 'lunchLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. pizza, salad, rice ...`
-  String get lunchExample {
-    return Intl.message(
-      'e.g. pizza, salad, rice ...',
-      name: 'lunchExample',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Dinner`
-  String get dinnerLabel {
-    return Intl.message(
-      'Dinner',
-      name: 'dinnerLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. soup, chicken, wine ...`
-  String get dinnerExample {
-    return Intl.message(
-      'e.g. soup, chicken, wine ...',
-      name: 'dinnerExample',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Snack`
-  String get snackLabel {
-    return Intl.message(
-      'Snack',
-      name: 'snackLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. apple, ice cream, chocolate ...`
-  String get snackExample {
-    return Intl.message(
-      'e.g. apple, ice cream, chocolate ...',
-      name: 'snackExample',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit item`
-  String get editItemDialogTitle {
-    return Intl.message(
-      'Edit item',
-      name: 'editItemDialogTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Item updated`
-  String get itemUpdatedSnackbar {
-    return Intl.message(
-      'Item updated',
-      name: 'itemUpdatedSnackbar',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delete Item?`
-  String get deleteTimeDialogTitle {
-    return Intl.message(
-      'Delete Item?',
-      name: 'deleteTimeDialogTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Do want to delete the selected item?`
-  String get deleteTimeDialogContent {
-    return Intl.message(
-      'Do want to delete the selected item?',
-      name: 'deleteTimeDialogContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delete Items?`
-  String get deleteTimeDialogPluralTitle {
-    return Intl.message(
-      'Delete Items?',
-      name: 'deleteTimeDialogPluralTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Do want to delete all items of this meal?`
-  String get deleteTimeDialogPluralContent {
-    return Intl.message(
-      'Do want to delete all items of this meal?',
-      name: 'deleteTimeDialogPluralContent',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Item deleted`
-  String get itemDeletedSnackbar {
-    return Intl.message(
-      'Item deleted',
-      name: 'itemDeletedSnackbar',
+      'My students',
+      name: 'coachStudentsLabel',
       desc: '',
       args: [],
     );
@@ -1272,6 +502,16 @@ class S {
     );
   }
 
+  /// `With "Copy to today" you can copy the meal to today. With "Delete" you can delete the meal.`
+  String get copyOrDeleteTimeDialogContent {
+    return Intl.message(
+      'With "Copy to today" you can copy the meal to today. With "Delete" you can delete the meal.',
+      name: 'copyOrDeleteTimeDialogContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `What do you want to do?`
   String get copyOrDeleteTimeDialogTitle {
     return Intl.message(
@@ -1282,11 +522,131 @@ class S {
     );
   }
 
-  /// `With "Copy to today" you can copy the meal to today. With "Delete" you can delete the meal.`
-  String get copyOrDeleteTimeDialogContent {
+  /// `Do you want create a custom meal item?`
+  String get createCustomDialogContent {
     return Intl.message(
-      'With "Copy to today" you can copy the meal to today. With "Delete" you can delete the meal.',
-      name: 'copyOrDeleteTimeDialogContent',
+      'Do you want create a custom meal item?',
+      name: 'createCustomDialogContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create custom meal item?`
+  String get createCustomDialogTitle {
+    return Intl.message(
+      'Create custom meal item?',
+      name: 'createCustomDialogTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create a meal`
+  String get createRecipeLabel {
+    return Intl.message(
+      'Create a meal',
+      name: 'createRecipeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Daily Kcal adjustment:`
+  String get dailyKcalAdjustmentLabel {
+    return Intl.message(
+      'Daily Kcal adjustment:',
+      name: 'dailyKcalAdjustmentLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Support development by providing anonymous usage data`
+  String get dataCollectionLabel {
+    return Intl.message(
+      'Support development by providing anonymous usage data',
+      name: 'dataCollectionLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete all`
+  String get deleteAllLabel {
+    return Intl.message(
+      'Delete all',
+      name: 'deleteAllLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do want to delete the selected item?`
+  String get deleteTimeDialogContent {
+    return Intl.message(
+      'Do want to delete the selected item?',
+      name: 'deleteTimeDialogContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do want to delete all items of this meal?`
+  String get deleteTimeDialogPluralContent {
+    return Intl.message(
+      'Do want to delete all items of this meal?',
+      name: 'deleteTimeDialogPluralContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete Items?`
+  String get deleteTimeDialogPluralTitle {
+    return Intl.message(
+      'Delete Items?',
+      name: 'deleteTimeDialogPluralTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete Item?`
+  String get deleteTimeDialogTitle {
+    return Intl.message(
+      'Delete Item?',
+      name: 'deleteTimeDialogTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The weight delta is the difference between the average weight and the current weight entered for this day.\nIf no weight is recorded for the current day, the last valid weight will be used.`
+  String get deltaWeightBody {
+    return Intl.message(
+      'The weight delta is the difference between the average weight and the current weight entered for this day.\nIf no weight is recorded for the current day, the last valid weight will be used.',
+      name: 'deltaWeightBody',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight Delta`
+  String get deltaWeightLabel {
+    return Intl.message(
+      'Weight Delta',
+      name: 'deltaWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `CANCEL`
+  String get dialogCancelLabel {
+    return Intl.message(
+      'CANCEL',
+      name: 'dialogCancelLabel',
       desc: '',
       args: [],
     );
@@ -1312,501 +672,51 @@ class S {
     );
   }
 
-  /// `Delete all`
-  String get deleteAllLabel {
+  /// `OK`
+  String get dialogOKLabel {
     return Intl.message(
-      'Delete all',
-      name: 'deleteAllLabel',
+      'OK',
+      name: 'dialogOKLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `supplied`
-  String get suppliedLabel {
+  /// `Diary`
+  String get diaryLabel {
     return Intl.message(
-      'supplied',
-      name: 'suppliedLabel',
+      'Diary',
+      name: 'diaryLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `burned`
-  String get burnedLabel {
+  /// `e.g. soup, chicken, wine ...`
+  String get dinnerExample {
     return Intl.message(
-      'burned',
-      name: 'burnedLabel',
+      'e.g. soup, chicken, wine ...',
+      name: 'dinnerExample',
       desc: '',
       args: [],
     );
   }
 
-  /// `steps`
-  String get stepsLabel {
+  /// `Dinner`
+  String get dinnerLabel {
     return Intl.message(
-      'steps',
-      name: 'stepsLabel',
+      'Dinner',
+      name: 'dinnerLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `kcal left`
-  String get kcalLeftLabel {
+  /// `Edit item`
+  String get editItemDialogTitle {
     return Intl.message(
-      'kcal left',
-      name: 'kcalLeftLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Nutrition Information`
-  String get nutritionInfoLabel {
-    return Intl.message(
-      'Nutrition Information',
-      name: 'nutritionInfoLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `kcal`
-  String get kcalLabel {
-    return Intl.message(
-      'kcal',
-      name: 'kcalLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `carbs`
-  String get carbsLabel {
-    return Intl.message(
-      'carbs',
-      name: 'carbsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `fat`
-  String get fatLabel {
-    return Intl.message(
-      'fat',
-      name: 'fatLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `protein`
-  String get proteinLabel {
-    return Intl.message(
-      'protein',
-      name: 'proteinLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Calories`
-  String get caloriesLabel {
-    return Intl.message(
-      'Calories',
-      name: 'caloriesLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Last goal applied on {date}`
-  String previousGoalAppliedOn(Object date) {
-    return Intl.message(
-      'Last goal applied on $date',
-      name: 'previousGoalAppliedOn',
-      desc: '',
-      args: [date],
-    );
-  }
-
-  /// `Learn more: atlas-tracker.fr`
-  String get learnMoreLabel {
-    return Intl.message(
-      'Learn more: atlas-tracker.fr',
-      name: 'learnMoreLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Could not save preference.`
-  String get savePreferenceFailed {
-    return Intl.message(
-      'Could not save preference.',
-      name: 'savePreferenceFailed',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `User not connected.`
-  String get userNotConnected {
-    return Intl.message(
-      'User not connected.',
-      name: 'userNotConnected',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Account successfully deleted.`
-  String get accountDeletedSuccess {
-    return Intl.message(
-      'Account successfully deleted.',
-      name: 'accountDeletedSuccess',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Failed to delete: {reason}`
-  String failedToDeleteWithReason(Object reason) {
-    return Intl.message(
-      'Failed to delete: $reason',
-      name: 'failedToDeleteWithReason',
-      desc: '',
-      args: [reason],
-    );
-  }
-
-  /// `An error occurred.`
-  String get genericErrorOccurred {
-    return Intl.message(
-      'An error occurred.',
-      name: 'genericErrorOccurred',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Supabase error: {message}`
-  String supabaseError(Object message) {
-    return Intl.message(
-      'Supabase error: $message',
-      name: 'supabaseError',
-      desc: '',
-      args: [message],
-    );
-  }
-
-  /// `Your subscription is no longer active. Please contact your coach.`
-  String get subscriptionInactiveMessage {
-    return Intl.message(
-      'Your subscription is no longer active. Please contact your coach.',
-      name: 'subscriptionInactiveMessage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cloud synchronization problem.`
-  String get cloudSyncProblem {
-    return Intl.message(
-      'Cloud synchronization problem.',
-      name: 'cloudSyncProblem',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `min`
-  String get minutesAbbrevLabel {
-    return Intl.message(
-      'min',
-      name: 'minutesAbbrevLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Carbohydrates`
-  String get carbohydratesLabel {
-    return Intl.message(
-      'Carbohydrates',
-      name: 'carbohydratesLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Fats`
-  String get fatsLabel {
-    return Intl.message(
-      'Fats',
-      name: 'fatsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Proteins`
-  String get proteinsLabel {
-    return Intl.message(
-      'Proteins',
-      name: 'proteinsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `energy`
-  String get energyLabel {
-    return Intl.message(
-      'energy',
-      name: 'energyLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `saturated fat`
-  String get saturatedFatLabel {
-    return Intl.message(
-      'saturated fat',
-      name: 'saturatedFatLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `carbohydrate`
-  String get carbohydrateLabel {
-    return Intl.message(
-      'carbohydrate',
-      name: 'carbohydrateLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `sugar`
-  String get sugarLabel {
-    return Intl.message(
-      'sugar',
-      name: 'sugarLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `fiber`
-  String get fiberLabel {
-    return Intl.message(
-      'fiber',
-      name: 'fiberLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Per 100g/ml`
-  String get per100gmlLabel {
-    return Intl.message(
-      'Per 100g/ml',
-      name: 'per100gmlLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `More Information at\nOpenFoodFacts`
-  String get additionalInfoLabelOFF {
-    return Intl.message(
-      'More Information at\nOpenFoodFacts',
-      name: 'additionalInfoLabelOFF',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `More Information at\nFoodData Central`
-  String get additionalInfoLabelFDC {
-    return Intl.message(
-      'More Information at\nFoodData Central',
-      name: 'additionalInfoLabelFDC',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Unknown Meal Item`
-  String get additionalInfoLabelUnknown {
-    return Intl.message(
-      'Unknown Meal Item',
-      name: 'additionalInfoLabelUnknown',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Custom Meal Item`
-  String get additionalInfoLabelCustom {
-    return Intl.message(
-      'Custom Meal Item',
-      name: 'additionalInfoLabelCustom',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Information provided\n by the \n'2011 Compendium\n of Physical Activities'`
-  String get additionalInfoLabelCompendium2011 {
-    return Intl.message(
-      'Information provided\n by the \n\'2011 Compendium\n of Physical Activities\'',
-      name: 'additionalInfoLabelCompendium2011',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Quantity`
-  String get quantityLabel {
-    return Intl.message(
-      'Quantity',
-      name: 'quantityLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Base quantity (g/ml)`
-  String get baseQuantityLabel {
-    return Intl.message(
-      'Base quantity (g/ml)',
-      name: 'baseQuantityLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Unit`
-  String get unitLabel {
-    return Intl.message(
-      'Unit',
-      name: 'unitLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Scan Product`
-  String get scanProductLabel {
-    return Intl.message(
-      'Scan Product',
-      name: 'scanProductLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `g`
-  String get gramUnit {
-    return Intl.message(
-      'g',
-      name: 'gramUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `ml`
-  String get milliliterUnit {
-    return Intl.message(
-      'ml',
-      name: 'milliliterUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `g/ml`
-  String get gramMilliliterUnit {
-    return Intl.message(
-      'g/ml',
-      name: 'gramMilliliterUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `oz`
-  String get ozUnit {
-    return Intl.message(
-      'oz',
-      name: 'ozUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `fl.oz`
-  String get flOzUnit {
-    return Intl.message(
-      'fl.oz',
-      name: 'flOzUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `N/A`
-  String get notAvailableLabel {
-    return Intl.message(
-      'N/A',
-      name: 'notAvailableLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Product missing required kcal or macronutrients information`
-  String get missingProductInfo {
-    return Intl.message(
-      'Product missing required kcal or macronutrients information',
-      name: 'missingProductInfo',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Problem while saving macro goals.`
-  String get saveMacroGoalsError {
-    return Intl.message(
-      'Problem while saving macro goals.',
-      name: 'saveMacroGoalsError',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Added new intake`
-  String get infoAddedIntakeLabel {
-    return Intl.message(
-      'Added new intake',
-      name: 'infoAddedIntakeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Added new activity`
-  String get infoAddedActivityLabel {
-    return Intl.message(
-      'Added new activity',
-      name: 'infoAddedActivityLabel',
+      'Edit item',
+      name: 'editItemDialogTitle',
       desc: '',
       args: [],
     );
@@ -1822,131 +732,31 @@ class S {
     );
   }
 
-  /// `Meal name`
-  String get mealNameLabel {
+  /// `energy`
+  String get energyLabel {
     return Intl.message(
-      'Meal name',
-      name: 'mealNameLabel',
+      'energy',
+      name: 'energyLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Brands`
-  String get mealBrandsLabel {
+  /// `Error while fetching product data`
+  String get errorFetchingProductData {
     return Intl.message(
-      'Brands',
-      name: 'mealBrandsLabel',
+      'Error while fetching product data',
+      name: 'errorFetchingProductData',
       desc: '',
       args: [],
     );
   }
 
-  /// `Meal size (g/ml)`
-  String get mealSizeLabel {
+  /// `Error while loading activities`
+  String get errorLoadingActivities {
     return Intl.message(
-      'Meal size (g/ml)',
-      name: 'mealSizeLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Meal size (oz/fl oz)`
-  String get mealSizeLabelImperial {
-    return Intl.message(
-      'Meal size (oz/fl oz)',
-      name: 'mealSizeLabelImperial',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Serving`
-  String get servingLabel {
-    return Intl.message(
-      'Serving',
-      name: 'servingLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Per Serving`
-  String get perServingLabel {
-    return Intl.message(
-      'Per Serving',
-      name: 'perServingLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Serving size (g/ml)`
-  String get servingSizeLabelMetric {
-    return Intl.message(
-      'Serving size (g/ml)',
-      name: 'servingSizeLabelMetric',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Serving size (oz/fl oz)`
-  String get servingSizeLabelImperial {
-    return Intl.message(
-      'Serving size (oz/fl oz)',
-      name: 'servingSizeLabelImperial',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Meal unit`
-  String get mealUnitLabel {
-    return Intl.message(
-      'Meal unit',
-      name: 'mealUnitLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `kcal per`
-  String get mealKcalLabel {
-    return Intl.message(
-      'kcal per',
-      name: 'mealKcalLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `carbs per`
-  String get mealCarbsLabel {
-    return Intl.message(
-      'carbs per',
-      name: 'mealCarbsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `fat per`
-  String get mealFatLabel {
-    return Intl.message(
-      'fat per',
-      name: 'mealFatLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `protein per 100 g/ml`
-  String get mealProteinLabel {
-    return Intl.message(
-      'protein per 100 g/ml',
-      name: 'mealProteinLabel',
+      'Error while loading activities',
+      name: 'errorLoadingActivities',
       desc: '',
       args: [],
     );
@@ -1962,221 +772,271 @@ class S {
     );
   }
 
-  /// `BMI`
-  String get bmiLabel {
+  /// `Error while opening browser app`
+  String get errorOpeningBrowser {
     return Intl.message(
-      'BMI',
-      name: 'bmiLabel',
+      'Error while opening browser app',
+      name: 'errorOpeningBrowser',
       desc: '',
       args: [],
     );
   }
 
-  /// `Body Mass Index (BMI) is a index to classify overweight and obesity in adults. It is defined as weight in kilograms divided by the square of height in meters (kg/m²).\n\nBMI does not differentiate between fat and muscle mass and can be misleading for some individuals.`
-  String get bmiInfo {
+  /// `Error while opening email app`
+  String get errorOpeningEmail {
     return Intl.message(
-      'Body Mass Index (BMI) is a index to classify overweight and obesity in adults. It is defined as weight in kilograms divided by the square of height in meters (kg/m²).\n\nBMI does not differentiate between fat and muscle mass and can be misleading for some individuals.',
-      name: 'bmiInfo',
+      'Error while opening email app',
+      name: 'errorOpeningEmail',
       desc: '',
       args: [],
     );
   }
 
-  /// `I have read and accept the privacy policy.`
-  String get readLabel {
+  /// `Error:`
+  String get errorPrefix {
     return Intl.message(
-      'I have read and accept the privacy policy.',
-      name: 'readLabel',
+      'Error:',
+      name: 'errorPrefix',
       desc: '',
       args: [],
     );
   }
 
-  /// `Privacy policy`
-  String get privacyPolicyLabel {
+  /// `Product not found`
+  String get errorProductNotFound {
     return Intl.message(
-      'Privacy policy',
-      name: 'privacyPolicyLabel',
+      'Product not found',
+      name: 'errorProductNotFound',
       desc: '',
       args: [],
     );
   }
 
-  /// `Support development by providing anonymous usage data`
-  String get dataCollectionLabel {
+  /// `No recipe found`
+  String get errorRecipeLabel {
     return Intl.message(
-      'Support development by providing anonymous usage data',
-      name: 'dataCollectionLabel',
+      'No recipe found',
+      name: 'errorRecipeLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sedentary`
-  String get palSedentaryLabel {
+  /// `e.g. biking`
+  String get exampleOfActivityLabel {
     return Intl.message(
-      'Sedentary',
-      name: 'palSedentaryLabel',
+      'e.g. biking',
+      name: 'exampleOfActivityLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `e.g. office job and mostly sitting free time activities`
-  String get palSedentaryDescriptionLabel {
+  /// `Export`
+  String get exportAction {
     return Intl.message(
-      'e.g. office job and mostly sitting free time activities',
-      name: 'palSedentaryDescriptionLabel',
+      'Export',
+      name: 'exportAction',
       desc: '',
       args: [],
     );
   }
 
-  /// `Low Active`
-  String get palLowLActiveLabel {
+  /// `You can export the app data to a zip file and import it later. This is useful if you want to backup your data or transfer it to another device.\n\nThe app does not use any cloud service to store your data.`
+  String get exportImportDescription {
     return Intl.message(
-      'Low Active',
-      name: 'palLowLActiveLabel',
+      'You can export the app data to a zip file and import it later. This is useful if you want to backup your data or transfer it to another device.\n\nThe app does not use any cloud service to store your data.',
+      name: 'exportImportDescription',
       desc: '',
       args: [],
     );
   }
 
-  /// `e.g. sitting or standing in job and light free time activities`
-  String get palLowActiveDescriptionLabel {
+  /// `Export / Import error`
+  String get exportImportErrorLabel {
     return Intl.message(
-      'e.g. sitting or standing in job and light free time activities',
-      name: 'palLowActiveDescriptionLabel',
+      'Export / Import error',
+      name: 'exportImportErrorLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Active`
-  String get palActiveLabel {
+  /// `Export / Import data`
+  String get exportImportLabel {
     return Intl.message(
-      'Active',
-      name: 'palActiveLabel',
+      'Export / Import data',
+      name: 'exportImportLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Mostly standing or walking in job and active free time activities`
-  String get palActiveDescriptionLabel {
+  /// `Export / Import successful`
+  String get exportImportSuccessLabel {
     return Intl.message(
-      'Mostly standing or walking in job and active free time activities',
-      name: 'palActiveDescriptionLabel',
+      'Export / Import successful',
+      name: 'exportImportSuccessLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Very Active`
-  String get palVeryActiveLabel {
+  /// `Backup your data to Supabase storage as a zip file or restore it from there.`
+  String get exportImportSupabaseDescription {
     return Intl.message(
-      'Very Active',
-      name: 'palVeryActiveLabel',
+      'Backup your data to Supabase storage as a zip file or restore it from there.',
+      name: 'exportImportSupabaseDescription',
       desc: '',
       args: [],
     );
   }
 
-  /// `Mostly walking, running or carrying weight in job and active free time activities`
-  String get palVeryActiveDescriptionLabel {
+  /// `Export / Import with Supabase`
+  String get exportImportSupabaseLabel {
     return Intl.message(
-      'Mostly walking, running or carrying weight in job and active free time activities',
-      name: 'palVeryActiveDescriptionLabel',
+      'Export / Import with Supabase',
+      name: 'exportImportSupabaseLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Select Activity Level`
-  String get selectPalCategoryLabel {
+  /// `Backup your data to Supabase storage as a zip file.`
+  String get exportSupabaseDescription {
     return Intl.message(
-      'Select Activity Level',
-      name: 'selectPalCategoryLabel',
+      'Backup your data to Supabase storage as a zip file.',
+      name: 'exportSupabaseDescription',
       desc: '',
       args: [],
     );
   }
 
-  /// `Choose Weight Goal`
-  String get chooseWeightGoalLabel {
+  /// `Export to Supabase`
+  String get exportSupabaseLabel {
     return Intl.message(
-      'Choose Weight Goal',
-      name: 'chooseWeightGoalLabel',
+      'Export to Supabase',
+      name: 'exportSupabaseLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Lose Weight`
-  String get goalLoseWeight {
+  /// `Failed to delete: {reason}`
+  String failedToDeleteWithReason(Object reason) {
     return Intl.message(
-      'Lose Weight',
-      name: 'goalLoseWeight',
+      'Failed to delete: $reason',
+      name: 'failedToDeleteWithReason',
+      desc: '',
+      args: [reason],
+    );
+  }
+
+  /// `fat`
+  String get fatLabel {
+    return Intl.message(
+      'fat',
+      name: 'fatLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Maintain Weight`
-  String get goalMaintainWeight {
+  /// `Fats`
+  String get fatsLabel {
     return Intl.message(
-      'Maintain Weight',
-      name: 'goalMaintainWeight',
+      'Fats',
+      name: 'fatsLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Gain Weight`
-  String get goalGainWeight {
+  /// `fiber`
+  String get fiberLabel {
     return Intl.message(
-      'Gain Weight',
-      name: 'goalGainWeight',
+      'fiber',
+      name: 'fiberLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Goal`
-  String get goalLabel {
+  /// `fl.oz`
+  String get flOzUnit {
     return Intl.message(
-      'Goal',
-      name: 'goalLabel',
+      'fl.oz',
+      name: 'flOzUnit',
       desc: '',
       args: [],
     );
   }
 
-  /// `Select Height`
-  String get selectHeightDialogLabel {
+  /// `Back to sign in`
+  String get forgotPasswordBackToLogin {
     return Intl.message(
-      'Select Height',
-      name: 'selectHeightDialogLabel',
+      'Back to sign in',
+      name: 'forgotPasswordBackToLogin',
       desc: '',
       args: [],
     );
   }
 
-  /// `Height`
-  String get heightLabel {
+  /// `Send password reset email`
+  String get forgotPasswordButton {
     return Intl.message(
-      'Height',
-      name: 'heightLabel',
+      'Send password reset email',
+      name: 'forgotPasswordButton',
       desc: '',
       args: [],
     );
   }
 
-  /// `cm`
-  String get cmLabel {
+  /// `Enter your email`
+  String get forgotPasswordEmailLabel {
     return Intl.message(
-      'cm',
-      name: 'cmLabel',
+      'Enter your email',
+      name: 'forgotPasswordEmailLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email sent! Click the link in your email to choose a new password.`
+  String get forgotPasswordEmailSent {
+    return Intl.message(
+      'Email sent! Click the link in your email to choose a new password.',
+      name: 'forgotPasswordEmailSent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `If the password reset doesn't work:\n- exit the app and try again, or\n- make the request from the website: `
+  String get forgotPasswordHelp {
+    return Intl.message(
+      'If the password reset doesn\'t work:\n- exit the app and try again, or\n- make the request from the website: ',
+      name: 'forgotPasswordHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error sending email:`
+  String get forgotPasswordSendError {
+    return Intl.message(
+      'Error sending email:',
+      name: 'forgotPasswordSendError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forgot your password?`
+  String get forgotPasswordTitle {
+    return Intl.message(
+      'Forgot your password?',
+      name: 'forgotPasswordTitle',
       desc: '',
       args: [],
     );
@@ -2192,71 +1052,11 @@ class S {
     );
   }
 
-  /// `Select Weight`
-  String get selectWeightDialogLabel {
+  /// `♀ female`
+  String get genderFemaleLabel {
     return Intl.message(
-      'Select Weight',
-      name: 'selectWeightDialogLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Weight`
-  String get weightLabel {
-    return Intl.message(
-      'Weight',
-      name: 'weightLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `kg`
-  String get kgLabel {
-    return Intl.message(
-      'kg',
-      name: 'kgLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `lbs`
-  String get lbsLabel {
-    return Intl.message(
-      'lbs',
-      name: 'lbsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Age`
-  String get ageLabel {
-    return Intl.message(
-      'Age',
-      name: 'ageLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{age} years`
-  String yearsLabel(Object age) {
-    return Intl.message(
-      '$age years',
-      name: 'yearsLabel',
-      desc: '',
-      args: [age],
-    );
-  }
-
-  /// `Select Gender`
-  String get selectGenderDialogLabel {
-    return Intl.message(
-      'Select Gender',
-      name: 'selectGenderDialogLabel',
+      '♀ female',
+      name: 'genderFemaleLabel',
       desc: '',
       args: [],
     );
@@ -2282,51 +1082,641 @@ class S {
     );
   }
 
-  /// `♀ female`
-  String get genderFemaleLabel {
+  /// `An error occurred.`
+  String get genericErrorOccurred {
     return Intl.message(
-      '♀ female',
-      name: 'genderFemaleLabel',
+      'An error occurred.',
+      name: 'genericErrorOccurred',
       desc: '',
       args: [],
     );
   }
 
-  /// `Select Role`
-  String get selectRoleDialogLabel {
+  /// `Gain Weight`
+  String get goalGainWeight {
     return Intl.message(
-      'Select Role',
-      name: 'selectRoleDialogLabel',
+      'Gain Weight',
+      name: 'goalGainWeight',
       desc: '',
       args: [],
     );
   }
 
-  /// `Role`
-  String get roleLabel {
+  /// `Goal`
+  String get goalLabel {
     return Intl.message(
-      'Role',
-      name: 'roleLabel',
+      'Goal',
+      name: 'goalLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Coach`
-  String get roleCoachLabel {
+  /// `Lose Weight`
+  String get goalLoseWeight {
     return Intl.message(
-      'Coach',
-      name: 'roleCoachLabel',
+      'Lose Weight',
+      name: 'goalLoseWeight',
       desc: '',
       args: [],
     );
   }
 
-  /// `Student`
-  String get roleStudentLabel {
+  /// `Maintain Weight`
+  String get goalMaintainWeight {
     return Intl.message(
-      'Student',
-      name: 'roleStudentLabel',
+      'Maintain Weight',
+      name: 'goalMaintainWeight',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `g/ml`
+  String get gramMilliliterUnit {
+    return Intl.message(
+      'g/ml',
+      name: 'gramMilliliterUnit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `g`
+  String get gramUnit {
+    return Intl.message(
+      'g',
+      name: 'gramUnit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Height`
+  String get heightLabel {
+    return Intl.message(
+      'Height',
+      name: 'heightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Home`
+  String get homeLabel {
+    return Intl.message(
+      'Home',
+      name: 'homeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import`
+  String get importAction {
+    return Intl.message(
+      'Import',
+      name: 'importAction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Restore your data from a backup stored in Supabase.`
+  String get importSupabaseDescription {
+    return Intl.message(
+      'Restore your data from a backup stored in Supabase.',
+      name: 'importSupabaseDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Import from Supabase`
+  String get importSupabaseLabel {
+    return Intl.message(
+      'Import from Supabase',
+      name: 'importSupabaseLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Added new activity`
+  String get infoAddedActivityLabel {
+    return Intl.message(
+      'Added new activity',
+      name: 'infoAddedActivityLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Added new intake`
+  String get infoAddedIntakeLabel {
+    return Intl.message(
+      'Added new intake',
+      name: 'infoAddedIntakeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Item deleted`
+  String get itemDeletedSnackbar {
+    return Intl.message(
+      'Item deleted',
+      name: 'itemDeletedSnackbar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Item updated`
+  String get itemUpdatedSnackbar {
+    return Intl.message(
+      'Item updated',
+      name: 'itemUpdatedSnackbar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kcal`
+  String get kcalLabel {
+    return Intl.message(
+      'kcal',
+      name: 'kcalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kcal left`
+  String get kcalLeftLabel {
+    return Intl.message(
+      'kcal left',
+      name: 'kcalLeftLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kg`
+  String get kgLabel {
+    return Intl.message(
+      'kg',
+      name: 'kgLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `lbs`
+  String get lbsLabel {
+    return Intl.message(
+      'lbs',
+      name: 'lbsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Learn more: atlas-tracker.fr`
+  String get learnMoreLabel {
+    return Intl.message(
+      'Learn more: atlas-tracker.fr',
+      name: 'learnMoreLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Log out`
+  String get logOutLabel {
+    return Intl.message(
+      'Log out',
+      name: 'logOutLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Already signed in on another device. Please sign out first.`
+  String get loginAlreadySignedIn {
+    return Intl.message(
+      'Already signed in on another device. Please sign out first.',
+      name: 'loginAlreadySignedIn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign In`
+  String get loginButton {
+    return Intl.message(
+      'Sign In',
+      name: 'loginButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid email address`
+  String get loginEmailInvalid {
+    return Intl.message(
+      'Invalid email address',
+      name: 'loginEmailInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get loginEmailLabel {
+    return Intl.message(
+      'Email',
+      name: 'loginEmailLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email required`
+  String get loginEmailRequired {
+    return Intl.message(
+      'Email required',
+      name: 'loginEmailRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in error`
+  String get loginError {
+    return Intl.message(
+      'Sign in error',
+      name: 'loginError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forgot password?`
+  String get loginForgotPassword {
+    return Intl.message(
+      'Forgot password?',
+      name: 'loginForgotPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password`
+  String get loginPasswordLabel {
+    return Intl.message(
+      'Password',
+      name: 'loginPasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign In`
+  String get loginTitle {
+    return Intl.message(
+      'Sign In',
+      name: 'loginTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unknown error`
+  String get loginUnknownError {
+    return Intl.message(
+      'Unknown error',
+      name: 'loginUnknownError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `e.g. pizza, salad, rice ...`
+  String get lunchExample {
+    return Intl.message(
+      'e.g. pizza, salad, rice ...',
+      name: 'lunchExample',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lunch`
+  String get lunchLabel {
+    return Intl.message(
+      'Lunch',
+      name: 'lunchLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Macronutrient Distribution:`
+  String get macroDistributionLabel {
+    return Intl.message(
+      'Macronutrient Distribution:',
+      name: 'macroDistributionLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Deletion`
+  String get manageAccountConfirmAction {
+    return Intl.message(
+      'Confirm Deletion',
+      name: 'manageAccountConfirmAction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This action cannot be undone.`
+  String get manageAccountConfirmMessage {
+    return Intl.message(
+      'This action cannot be undone.',
+      name: 'manageAccountConfirmMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure?`
+  String get manageAccountConfirmTitle {
+    return Intl.message(
+      'Are you sure?',
+      name: 'manageAccountConfirmTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete My Account`
+  String get manageAccountDelete {
+    return Intl.message(
+      'Delete My Account',
+      name: 'manageAccountDelete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `We only collect data essential to the proper functioning of the app:\n\nEmail address: used for login and account identification.\n\nNutrition data: your daily weight, calories, protein, fat, and carbohydrate intake.\n\nGoals: your personalized targets for calories, protein, fat, and carbs.\n\nAll data is securely stored on Supabase. We do not share any of your data with third parties.`
+  String get manageAccountDescription {
+    return Intl.message(
+      'We only collect data essential to the proper functioning of the app:\n\nEmail address: used for login and account identification.\n\nNutrition data: your daily weight, calories, protein, fat, and carbohydrate intake.\n\nGoals: your personalized targets for calories, protein, fat, and carbs.\n\nAll data is securely stored on Supabase. We do not share any of your data with third parties.',
+      name: 'manageAccountDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enable Supabase Sync`
+  String get manageAccountEnableSync {
+    return Intl.message(
+      'Enable Supabase Sync',
+      name: 'manageAccountEnableSync',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage account`
+  String get manageAccountTitle {
+    return Intl.message(
+      'Manage account',
+      name: 'manageAccountTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Brands`
+  String get mealBrandsLabel {
+    return Intl.message(
+      'Brands',
+      name: 'mealBrandsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `carbs per`
+  String get mealCarbsLabel {
+    return Intl.message(
+      'carbs per',
+      name: 'mealCarbsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `fat per`
+  String get mealFatLabel {
+    return Intl.message(
+      'fat per',
+      name: 'mealFatLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kcal per`
+  String get mealKcalLabel {
+    return Intl.message(
+      'kcal per',
+      name: 'mealKcalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Meal name`
+  String get mealNameLabel {
+    return Intl.message(
+      'Meal name',
+      name: 'mealNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Number of portions`
+  String get mealPortionLabel {
+    return Intl.message(
+      'Number of portions',
+      name: 'mealPortionLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `protein per 100 g/ml`
+  String get mealProteinLabel {
+    return Intl.message(
+      'protein per 100 g/ml',
+      name: 'mealProteinLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Meal size (g/ml)`
+  String get mealSizeLabel {
+    return Intl.message(
+      'Meal size (g/ml)',
+      name: 'mealSizeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Meal size (oz/fl oz)`
+  String get mealSizeLabelImperial {
+    return Intl.message(
+      'Meal size (oz/fl oz)',
+      name: 'mealSizeLabelImperial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Meal unit`
+  String get mealUnitLabel {
+    return Intl.message(
+      'Meal unit',
+      name: 'mealUnitLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ml`
+  String get milliliterUnit {
+    return Intl.message(
+      'ml',
+      name: 'milliliterUnit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `min`
+  String get minutesAbbrevLabel {
+    return Intl.message(
+      'min',
+      name: 'minutesAbbrevLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Product missing required kcal or macronutrients information`
+  String get missingProductInfo {
+    return Intl.message(
+      'Product missing required kcal or macronutrients information',
+      name: 'missingProductInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `My students`
+  String get myStudentsTitle {
+    return Intl.message(
+      'My students',
+      name: 'myStudentsTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No activity recently added`
+  String get noActivityRecentlyAddedLabel {
+    return Intl.message(
+      'No activity recently added',
+      name: 'noActivityRecentlyAddedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No data for today`
+  String get noDataToday {
+    return Intl.message(
+      'No data for today',
+      name: 'noDataToday',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No food added`
+  String get noFoodAddedLabel {
+    return Intl.message(
+      'No food added',
+      name: 'noFoodAddedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No internet connection. Feature unavailable.`
+  String get noInternetConnectionMessage {
+    return Intl.message(
+      'No internet connection. Feature unavailable.',
+      name: 'noInternetConnectionMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No meals recently added`
+  String get noMealsRecentlyAddedLabel {
+    return Intl.message(
+      'No meals recently added',
+      name: 'noMealsRecentlyAddedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No results found`
+  String get noResultsFound {
+    return Intl.message(
+      'No results found',
+      name: 'noResultsFound',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No students`
+  String get noStudents {
+    return Intl.message(
+      'No students',
+      name: 'noStudents',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `N/A`
+  String get notAvailableLabel {
+    return Intl.message(
+      'N/A',
+      name: 'notAvailableLabel',
       desc: '',
       args: [],
     );
@@ -2342,11 +1732,31 @@ class S {
     );
   }
 
-  /// `Underweight`
-  String get nutritionalStatusUnderweight {
+  /// `Notification activation problem. Please try again later.`
+  String get notificationActivationError {
     return Intl.message(
-      'Underweight',
-      name: 'nutritionalStatusUnderweight',
+      'Notification activation problem. Please try again later.',
+      name: 'notificationActivationError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Notifications`
+  String get notificationsLabel {
+    return Intl.message(
+      'Notifications',
+      name: 'notificationsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nutrition Information`
+  String get nutritionInfoLabel {
+    return Intl.message(
+      'Nutrition Information',
+      name: 'nutritionInfoLabel',
       desc: '',
       args: [],
     );
@@ -2357,16 +1767,6 @@ class S {
     return Intl.message(
       'Normal Weight',
       name: 'nutritionalStatusNormalWeight',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Pre-obesity`
-  String get nutritionalStatusPreObesity {
-    return Intl.message(
-      'Pre-obesity',
-      name: 'nutritionalStatusPreObesity',
       desc: '',
       args: [],
     );
@@ -2402,21 +1802,11 @@ class S {
     );
   }
 
-  /// `Risk of comorbidities: {riskValue}`
-  String nutritionalStatusRiskLabel(Object riskValue) {
+  /// `Pre-obesity`
+  String get nutritionalStatusPreObesity {
     return Intl.message(
-      'Risk of comorbidities: $riskValue',
-      name: 'nutritionalStatusRiskLabel',
-      desc: '',
-      args: [riskValue],
-    );
-  }
-
-  /// `Low \n(but risk of other \nclinical problems increased)`
-  String get nutritionalStatusRiskLow {
-    return Intl.message(
-      'Low \n(but risk of other \nclinical problems increased)',
-      name: 'nutritionalStatusRiskLow',
+      'Pre-obesity',
+      name: 'nutritionalStatusPreObesity',
       desc: '',
       args: [],
     );
@@ -2437,6 +1827,26 @@ class S {
     return Intl.message(
       'Increased',
       name: 'nutritionalStatusRiskIncreased',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Risk of comorbidities: {riskValue}`
+  String nutritionalStatusRiskLabel(Object riskValue) {
+    return Intl.message(
+      'Risk of comorbidities: $riskValue',
+      name: 'nutritionalStatusRiskLabel',
+      desc: '',
+      args: [riskValue],
+    );
+  }
+
+  /// `Low \n(but risk of other \nclinical problems increased)`
+  String get nutritionalStatusRiskLow {
+    return Intl.message(
+      'Low \n(but risk of other \nclinical problems increased)',
+      name: 'nutritionalStatusRiskLow',
       desc: '',
       args: [],
     );
@@ -2472,161 +1882,141 @@ class S {
     );
   }
 
-  /// `Error while opening email app`
-  String get errorOpeningEmail {
+  /// `Underweight`
+  String get nutritionalStatusUnderweight {
     return Intl.message(
-      'Error while opening email app',
-      name: 'errorOpeningEmail',
+      'Underweight',
+      name: 'nutritionalStatusUnderweight',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error while opening browser app`
-  String get errorOpeningBrowser {
+  /// `oz`
+  String get ozUnit {
     return Intl.message(
-      'Error while opening browser app',
-      name: 'errorOpeningBrowser',
+      'oz',
+      name: 'ozUnit',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error while fetching product data`
-  String get errorFetchingProductData {
+  /// `football`
+  String get paAmericanFootballGeneral {
     return Intl.message(
-      'Error while fetching product data',
-      name: 'errorFetchingProductData',
+      'football',
+      name: 'paAmericanFootballGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `Product not found`
-  String get errorProductNotFound {
+  /// `touch, flag, general`
+  String get paAmericanFootballGeneralDesc {
     return Intl.message(
-      'Product not found',
-      name: 'errorProductNotFound',
+      'touch, flag, general',
+      name: 'paAmericanFootballGeneralDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error while loading activities`
-  String get errorLoadingActivities {
+  /// `archery`
+  String get paArcheryGeneral {
     return Intl.message(
-      'Error while loading activities',
-      name: 'errorLoadingActivities',
+      'archery',
+      name: 'paArcheryGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `No results found`
-  String get noResultsFound {
+  /// `non-hunting`
+  String get paArcheryGeneralDesc {
     return Intl.message(
-      'No results found',
-      name: 'noResultsFound',
+      'non-hunting',
+      name: 'paArcheryGeneralDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `Retry`
-  String get retryLabel {
+  /// `auto racing`
+  String get paAutoRacing {
     return Intl.message(
-      'Retry',
-      name: 'retryLabel',
+      'auto racing',
+      name: 'paAutoRacing',
       desc: '',
       args: [],
     );
   }
 
-  /// `bicycling`
-  String get paHeadingBicycling {
+  /// `open wheel`
+  String get paAutoRacingDesc {
     return Intl.message(
-      'bicycling',
-      name: 'paHeadingBicycling',
+      'open wheel',
+      name: 'paAutoRacingDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `conditioning exercise`
-  String get paHeadingConditionalExercise {
+  /// `backpacking`
+  String get paBackpackingGeneral {
     return Intl.message(
-      'conditioning exercise',
-      name: 'paHeadingConditionalExercise',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `dancing`
-  String get paHeadingDancing {
-    return Intl.message(
-      'dancing',
-      name: 'paHeadingDancing',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `running`
-  String get paHeadingRunning {
-    return Intl.message(
-      'running',
-      name: 'paHeadingRunning',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `sports`
-  String get paHeadingSports {
-    return Intl.message(
-      'sports',
-      name: 'paHeadingSports',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `walking`
-  String get paHeadingWalking {
-    return Intl.message(
-      'walking',
-      name: 'paHeadingWalking',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water activities`
-  String get paHeadingWaterActivities {
-    return Intl.message(
-      'water activities',
-      name: 'paHeadingWaterActivities',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `winter activities`
-  String get paHeadingWinterActivities {
-    return Intl.message(
-      'winter activities',
-      name: 'paHeadingWinterActivities',
+      'backpacking',
+      name: 'paBackpackingGeneral',
       desc: '',
       args: [],
     );
   }
 
   /// `general`
-  String get paGeneralDesc {
+  String get paBackpackingGeneralDesc {
     return Intl.message(
       'general',
-      name: 'paGeneralDesc',
+      name: 'paBackpackingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `badminton`
+  String get paBadmintonGeneral {
+    return Intl.message(
+      'badminton',
+      name: 'paBadmintonGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `social singles and doubles, general`
+  String get paBadmintonGeneralDesc {
+    return Intl.message(
+      'social singles and doubles, general',
+      name: 'paBadmintonGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `basketball`
+  String get paBasketballGeneral {
+    return Intl.message(
+      'basketball',
+      name: 'paBasketballGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paBasketballGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paBasketballGeneralDesc',
       desc: '',
       args: [],
     );
@@ -2672,26 +2062,6 @@ class S {
     );
   }
 
-  /// `unicycling`
-  String get paUnicyclingGeneral {
-    return Intl.message(
-      'unicycling',
-      name: 'paUnicyclingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paUnicyclingGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paUnicyclingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `bicycling, stationary`
   String get paBicyclingStationaryGeneral {
     return Intl.message(
@@ -2707,226 +2077,6 @@ class S {
     return Intl.message(
       'general',
       name: 'paBicyclingStationaryGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `calisthenics`
-  String get paCalisthenicsGeneral {
-    return Intl.message(
-      'calisthenics',
-      name: 'paCalisthenicsGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `light or moderate effort, general (e.g., back exercises)`
-  String get paCalisthenicsGeneralDesc {
-    return Intl.message(
-      'light or moderate effort, general (e.g., back exercises)',
-      name: 'paCalisthenicsGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `resistance training`
-  String get paResistanceTraining {
-    return Intl.message(
-      'resistance training',
-      name: 'paResistanceTraining',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `weight lifting, free weight, nautilus or universal`
-  String get paResistanceTrainingDesc {
-    return Intl.message(
-      'weight lifting, free weight, nautilus or universal',
-      name: 'paResistanceTrainingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `rope skipping`
-  String get paRopeSkippingGeneral {
-    return Intl.message(
-      'rope skipping',
-      name: 'paRopeSkippingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paRopeSkippingGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paRopeSkippingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water exercise`
-  String get paWaterAerobics {
-    return Intl.message(
-      'water exercise',
-      name: 'paWaterAerobics',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water aerobics, water calisthenics`
-  String get paWaterAerobicsDesc {
-    return Intl.message(
-      'water aerobics, water calisthenics',
-      name: 'paWaterAerobicsDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `aerobic`
-  String get paDancingAerobicGeneral {
-    return Intl.message(
-      'aerobic',
-      name: 'paDancingAerobicGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paDancingAerobicGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paDancingAerobicGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general dancing`
-  String get paDancingGeneral {
-    return Intl.message(
-      'general dancing',
-      name: 'paDancingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `e.g. disco, folk, Irish step dancing, line dancing, polka, contra, country`
-  String get paDancingGeneralDesc {
-    return Intl.message(
-      'e.g. disco, folk, Irish step dancing, line dancing, polka, contra, country',
-      name: 'paDancingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `jogging`
-  String get paJoggingGeneral {
-    return Intl.message(
-      'jogging',
-      name: 'paJoggingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paJoggingGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paJoggingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `running`
-  String get paRunningGeneral {
-    return Intl.message(
-      'running',
-      name: 'paRunningGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paRunningGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paRunningGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `archery`
-  String get paArcheryGeneral {
-    return Intl.message(
-      'archery',
-      name: 'paArcheryGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `non-hunting`
-  String get paArcheryGeneralDesc {
-    return Intl.message(
-      'non-hunting',
-      name: 'paArcheryGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `badminton`
-  String get paBadmintonGeneral {
-    return Intl.message(
-      'badminton',
-      name: 'paBadmintonGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `social singles and doubles, general`
-  String get paBadmintonGeneralDesc {
-    return Intl.message(
-      'social singles and doubles, general',
-      name: 'paBadmintonGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `basketball`
-  String get paBasketballGeneral {
-    return Intl.message(
-      'basketball',
-      name: 'paBasketballGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paBasketballGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paBasketballGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3032,21 +2182,61 @@ class S {
     );
   }
 
-  /// `children’s games`
-  String get paChildrenGame {
+  /// `calisthenics`
+  String get paCalisthenicsGeneral {
     return Intl.message(
-      'children’s games',
-      name: 'paChildrenGame',
+      'calisthenics',
+      name: 'paCalisthenicsGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `(e.g., hopscotch, 4-square, dodgeball, playground apparatus, t-ball, tetherball, marbles, arcade games), moderate effort`
-  String get paChildrenGameDesc {
+  /// `light or moderate effort, general (e.g., back exercises)`
+  String get paCalisthenicsGeneralDesc {
     return Intl.message(
-      '(e.g., hopscotch, 4-square, dodgeball, playground apparatus, t-ball, tetherball, marbles, arcade games), moderate effort',
-      name: 'paChildrenGameDesc',
+      'light or moderate effort, general (e.g., back exercises)',
+      name: 'paCalisthenicsGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `canoeing`
+  String get paCanoeingGeneral {
+    return Intl.message(
+      'canoeing',
+      name: 'paCanoeingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `rowing, for pleasure, general`
+  String get paCanoeingGeneralDesc {
+    return Intl.message(
+      'rowing, for pleasure, general',
+      name: 'paCanoeingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `football or baseball`
+  String get paCatch {
+    return Intl.message(
+      'football or baseball',
+      name: 'paCatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `playing catch`
+  String get paCatchDesc {
+    return Intl.message(
+      'playing catch',
+      name: 'paCatchDesc',
       desc: '',
       args: [],
     );
@@ -3067,6 +2257,46 @@ class S {
     return Intl.message(
       'gymnastic moves, competitive',
       name: 'paCheerleadingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `children’s games`
+  String get paChildrenGame {
+    return Intl.message(
+      'children’s games',
+      name: 'paChildrenGame',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `(e.g., hopscotch, 4-square, dodgeball, playground apparatus, t-ball, tetherball, marbles, arcade games), moderate effort`
+  String get paChildrenGameDesc {
+    return Intl.message(
+      '(e.g., hopscotch, 4-square, dodgeball, playground apparatus, t-ball, tetherball, marbles, arcade games), moderate effort',
+      name: 'paChildrenGameDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `climbing hills, no load`
+  String get paClimbingHillsNoLoadGeneral {
+    return Intl.message(
+      'climbing hills, no load',
+      name: 'paClimbingHillsNoLoadGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `no load`
+  String get paClimbingHillsNoLoadGeneralDesc {
+    return Intl.message(
+      'no load',
+      name: 'paClimbingHillsNoLoadGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3132,6 +2362,46 @@ class S {
     );
   }
 
+  /// `aerobic`
+  String get paDancingAerobicGeneral {
+    return Intl.message(
+      'aerobic',
+      name: 'paDancingAerobicGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paDancingAerobicGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paDancingAerobicGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general dancing`
+  String get paDancingGeneral {
+    return Intl.message(
+      'general dancing',
+      name: 'paDancingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `e.g. disco, folk, Irish step dancing, line dancing, polka, contra, country`
+  String get paDancingGeneralDesc {
+    return Intl.message(
+      'e.g. disco, folk, Irish step dancing, line dancing, polka, contra, country',
+      name: 'paDancingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `darts`
   String get paDartsWall {
     return Intl.message(
@@ -3152,21 +2422,41 @@ class S {
     );
   }
 
-  /// `auto racing`
-  String get paAutoRacing {
+  /// `diving`
+  String get paDivingGeneral {
     return Intl.message(
-      'auto racing',
-      name: 'paAutoRacing',
+      'diving',
+      name: 'paDivingGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `open wheel`
-  String get paAutoRacingDesc {
+  /// `skindiving, scuba diving, general`
+  String get paDivingGeneralDesc {
     return Intl.message(
-      'open wheel',
-      name: 'paAutoRacingDesc',
+      'skindiving, scuba diving, general',
+      name: 'paDivingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `diving`
+  String get paDivingSpringboardPlatform {
+    return Intl.message(
+      'diving',
+      name: 'paDivingSpringboardPlatform',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `springboard or platform`
+  String get paDivingSpringboardPlatformDesc {
+    return Intl.message(
+      'springboard or platform',
+      name: 'paDivingSpringboardPlatformDesc',
       desc: '',
       args: [],
     );
@@ -3192,46 +2482,6 @@ class S {
     );
   }
 
-  /// `football`
-  String get paAmericanFootballGeneral {
-    return Intl.message(
-      'football',
-      name: 'paAmericanFootballGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `touch, flag, general`
-  String get paAmericanFootballGeneralDesc {
-    return Intl.message(
-      'touch, flag, general',
-      name: 'paAmericanFootballGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `football or baseball`
-  String get paCatch {
-    return Intl.message(
-      'football or baseball',
-      name: 'paCatch',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `playing catch`
-  String get paCatchDesc {
-    return Intl.message(
-      'playing catch',
-      name: 'paCatchDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `frisbee playing`
   String get paFrisbee {
     return Intl.message(
@@ -3247,6 +2497,16 @@ class S {
     return Intl.message(
       'general',
       name: 'paFrisbeeDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3352,6 +2612,106 @@ class S {
     );
   }
 
+  /// `bicycling`
+  String get paHeadingBicycling {
+    return Intl.message(
+      'bicycling',
+      name: 'paHeadingBicycling',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `conditioning exercise`
+  String get paHeadingConditionalExercise {
+    return Intl.message(
+      'conditioning exercise',
+      name: 'paHeadingConditionalExercise',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `dancing`
+  String get paHeadingDancing {
+    return Intl.message(
+      'dancing',
+      name: 'paHeadingDancing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `running`
+  String get paHeadingRunning {
+    return Intl.message(
+      'running',
+      name: 'paHeadingRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `sports`
+  String get paHeadingSports {
+    return Intl.message(
+      'sports',
+      name: 'paHeadingSports',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `walking`
+  String get paHeadingWalking {
+    return Intl.message(
+      'walking',
+      name: 'paHeadingWalking',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `water activities`
+  String get paHeadingWaterActivities {
+    return Intl.message(
+      'water activities',
+      name: 'paHeadingWaterActivities',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `winter activities`
+  String get paHeadingWinterActivities {
+    return Intl.message(
+      'winter activities',
+      name: 'paHeadingWinterActivities',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `hiking`
+  String get paHikingCrossCountry {
+    return Intl.message(
+      'hiking',
+      name: 'paHikingCrossCountry',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `cross country`
+  String get paHikingCrossCountryDesc {
+    return Intl.message(
+      'cross country',
+      name: 'paHikingCrossCountryDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `hockey, field`
   String get paHockeyField {
     return Intl.message(
@@ -3367,26 +2727,6 @@ class S {
     return Intl.message(
       'general',
       name: 'paHockeyFieldDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `ice hockey`
-  String get paIceHockeyGeneral {
-    return Intl.message(
-      'ice hockey',
-      name: 'paIceHockeyGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paIceHockeyGeneralDesc {
-    return Intl.message(
-      'general',
-      name: 'paIceHockeyGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3412,6 +2752,46 @@ class S {
     );
   }
 
+  /// `ice hockey`
+  String get paIceHockeyGeneral {
+    return Intl.message(
+      'ice hockey',
+      name: 'paIceHockeyGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paIceHockeyGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paIceHockeyGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ice skating`
+  String get paIceSkatingGeneral {
+    return Intl.message(
+      'ice skating',
+      name: 'paIceSkatingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paIceSkatingGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paIceSkatingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `jai alai`
   String get paJaiAlai {
     return Intl.message(
@@ -3432,41 +2812,21 @@ class S {
     );
   }
 
-  /// `martial arts`
-  String get paMartialArtsSlower {
+  /// `jogging`
+  String get paJoggingGeneral {
     return Intl.message(
-      'martial arts',
-      name: 'paMartialArtsSlower',
+      'jogging',
+      name: 'paJoggingGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `different types, slower pace, novice performers, practice`
-  String get paMartialArtsSlowerDesc {
+  /// `general`
+  String get paJoggingGeneralDesc {
     return Intl.message(
-      'different types, slower pace, novice performers, practice',
-      name: 'paMartialArtsSlowerDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `martial arts`
-  String get paMartialArtsModerate {
-    return Intl.message(
-      'martial arts',
-      name: 'paMartialArtsModerate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `different types, moderate pace (e.g., judo, jujitsu, karate, kick boxing, tae kwan do, tai-bo, Muay Thai boxing)`
-  String get paMartialArtsModerateDesc {
-    return Intl.message(
-      'different types, moderate pace (e.g., judo, jujitsu, karate, kick boxing, tae kwan do, tai-bo, Muay Thai boxing)',
-      name: 'paMartialArtsModerateDesc',
+      'general',
+      name: 'paJoggingGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3487,6 +2847,26 @@ class S {
     return Intl.message(
       'general',
       name: 'paJugglingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kayaking`
+  String get paKayakingModerate {
+    return Intl.message(
+      'kayaking',
+      name: 'paKayakingModerate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `moderate effort`
+  String get paKayakingModerateDesc {
+    return Intl.message(
+      'moderate effort',
+      name: 'paKayakingModerateDesc',
       desc: '',
       args: [],
     );
@@ -3552,6 +2932,46 @@ class S {
     );
   }
 
+  /// `martial arts`
+  String get paMartialArtsModerate {
+    return Intl.message(
+      'martial arts',
+      name: 'paMartialArtsModerate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `different types, moderate pace (e.g., judo, jujitsu, karate, kick boxing, tae kwan do, tai-bo, Muay Thai boxing)`
+  String get paMartialArtsModerateDesc {
+    return Intl.message(
+      'different types, moderate pace (e.g., judo, jujitsu, karate, kick boxing, tae kwan do, tai-bo, Muay Thai boxing)',
+      name: 'paMartialArtsModerateDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `martial arts`
+  String get paMartialArtsSlower {
+    return Intl.message(
+      'martial arts',
+      name: 'paMartialArtsSlower',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `different types, slower pace, novice performers, practice`
+  String get paMartialArtsSlowerDesc {
+    return Intl.message(
+      'different types, slower pace, novice performers, practice',
+      name: 'paMartialArtsSlowerDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `moto-cross`
   String get paMotoCross {
     return Intl.message(
@@ -3572,6 +2992,26 @@ class S {
     );
   }
 
+  /// `climbing`
+  String get paMountainClimbing {
+    return Intl.message(
+      'climbing',
+      name: 'paMountainClimbing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `rock or mountain climbing`
+  String get paMountainClimbingDesc {
+    return Intl.message(
+      'rock or mountain climbing',
+      name: 'paMountainClimbingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `orienteering`
   String get paOrienteering {
     return Intl.message(
@@ -3587,6 +3027,46 @@ class S {
     return Intl.message(
       'general',
       name: 'paOrienteeringDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `paddle boarding`
+  String get paPaddleBoarding {
+    return Intl.message(
+      'paddle boarding',
+      name: 'paPaddleBoarding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `standing`
+  String get paPaddleBoardingDesc {
+    return Intl.message(
+      'standing',
+      name: 'paPaddleBoardingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `paddle boat`
+  String get paPaddleBoat {
+    return Intl.message(
+      'paddle boat',
+      name: 'paPaddleBoat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paPaddleBoatDesc {
+    return Intl.message(
+      'general',
+      name: 'paPaddleBoatDesc',
       desc: '',
       args: [],
     );
@@ -3652,21 +3132,21 @@ class S {
     );
   }
 
-  /// `climbing`
-  String get paMountainClimbing {
+  /// `resistance training`
+  String get paResistanceTraining {
     return Intl.message(
-      'climbing',
-      name: 'paMountainClimbing',
+      'resistance training',
+      name: 'paResistanceTraining',
       desc: '',
       args: [],
     );
   }
 
-  /// `rock or mountain climbing`
-  String get paMountainClimbingDesc {
+  /// `weight lifting, free weight, nautilus or universal`
+  String get paResistanceTrainingDesc {
     return Intl.message(
-      'rock or mountain climbing',
-      name: 'paMountainClimbingDesc',
+      'weight lifting, free weight, nautilus or universal',
+      name: 'paResistanceTrainingDesc',
       desc: '',
       args: [],
     );
@@ -3692,6 +3172,26 @@ class S {
     );
   }
 
+  /// `rollerblading`
+  String get paRollerbladingLight {
+    return Intl.message(
+      'rollerblading',
+      name: 'paRollerbladingLight',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `in-line skating`
+  String get paRollerbladingLightDesc {
+    return Intl.message(
+      'in-line skating',
+      name: 'paRollerbladingLightDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `rope jumping`
   String get paRopeJumpingGeneral {
     return Intl.message(
@@ -3707,6 +3207,26 @@ class S {
     return Intl.message(
       'moderate pace, 100-120 skips/min, general, 2 foot skip, plain bounce',
       name: 'paRopeJumpingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `rope skipping`
+  String get paRopeSkippingGeneral {
+    return Intl.message(
+      'rope skipping',
+      name: 'paRopeSkippingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paRopeSkippingGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paRopeSkippingGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3747,6 +3267,46 @@ class S {
     return Intl.message(
       'touch, non-competitive',
       name: 'paRugbyNonCompetitiveDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `running`
+  String get paRunningGeneral {
+    return Intl.message(
+      'running',
+      name: 'paRunningGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paRunningGeneralDesc {
+    return Intl.message(
+      'general',
+      name: 'paRunningGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `sailing`
+  String get paSailingGeneral {
+    return Intl.message(
+      'sailing',
+      name: 'paSailingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `boat and board sailing, windsurfing, ice sailing, general`
+  String get paSailingGeneralDesc {
+    return Intl.message(
+      'boat and board sailing, windsurfing, ice sailing, general',
+      name: 'paSailingGeneralDesc',
       desc: '',
       args: [],
     );
@@ -3812,21 +3372,41 @@ class S {
     );
   }
 
-  /// `rollerblading`
-  String get paRollerbladingLight {
+  /// `skiing`
+  String get paSkiingGeneral {
     return Intl.message(
-      'rollerblading',
-      name: 'paRollerbladingLight',
+      'skiing',
+      name: 'paSkiingGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `in-line skating`
-  String get paRollerbladingLightDesc {
+  /// `general`
+  String get paSkiingGeneralDesc {
     return Intl.message(
-      'in-line skating',
-      name: 'paRollerbladingLightDesc',
+      'general',
+      name: 'paSkiingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `water skiing`
+  String get paSkiingWaterWakeboarding {
+    return Intl.message(
+      'water skiing',
+      name: 'paSkiingWaterWakeboarding',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `water or wakeboarding`
+  String get paSkiingWaterWakeboardingDesc {
+    return Intl.message(
+      'water or wakeboarding',
+      name: 'paSkiingWaterWakeboardingDesc',
       desc: '',
       args: [],
     );
@@ -3847,6 +3427,46 @@ class S {
     return Intl.message(
       'skydiving, base jumping, bungee jumping',
       name: 'paSkydivingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `snorkeling`
+  String get paSnorkeling {
+    return Intl.message(
+      'snorkeling',
+      name: 'paSnorkeling',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `general`
+  String get paSnorkelingDesc {
+    return Intl.message(
+      'general',
+      name: 'paSnorkelingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `snow shoveling`
+  String get paSnowShovingModerate {
+    return Intl.message(
+      'snow shoveling',
+      name: 'paSnowShovingModerate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `by hand, moderate effort`
+  String get paSnowShovingModerateDesc {
+    return Intl.message(
+      'by hand, moderate effort',
+      name: 'paSnowShovingModerateDesc',
       desc: '',
       args: [],
     );
@@ -3912,6 +3532,46 @@ class S {
     );
   }
 
+  /// `surfing`
+  String get paSurfing {
+    return Intl.message(
+      'surfing',
+      name: 'paSurfing',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `body or board, general`
+  String get paSurfingDesc {
+    return Intl.message(
+      'body or board, general',
+      name: 'paSurfingDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `swimming`
+  String get paSwimmingGeneral {
+    return Intl.message(
+      'swimming',
+      name: 'paSwimmingGeneral',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `treading water, moderate effort, general`
+  String get paSwimmingGeneralDesc {
+    return Intl.message(
+      'treading water, moderate effort, general',
+      name: 'paSwimmingGeneralDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `table tennis`
   String get paTableTennisGeneral {
     return Intl.message(
@@ -3972,86 +3632,6 @@ class S {
     );
   }
 
-  /// `trampoline`
-  String get paTrampolineLight {
-    return Intl.message(
-      'trampoline',
-      name: 'paTrampolineLight',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `recreational`
-  String get paTrampolineLightDesc {
-    return Intl.message(
-      'recreational',
-      name: 'paTrampolineLightDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `volleyball`
-  String get paVolleyballGeneral {
-    return Intl.message(
-      'volleyball',
-      name: 'paVolleyballGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `non-competitive, 6 - 9 member team, general`
-  String get paVolleyballGeneralDesc {
-    return Intl.message(
-      'non-competitive, 6 - 9 member team, general',
-      name: 'paVolleyballGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `wrestling`
-  String get paWrestling {
-    return Intl.message(
-      'wrestling',
-      name: 'paWrestling',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paWrestlingDesc {
-    return Intl.message(
-      'general',
-      name: 'paWrestlingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `wallyball`
-  String get paWallyball {
-    return Intl.message(
-      'wallyball',
-      name: 'paWallyball',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paWallyballDesc {
-    return Intl.message(
-      'general',
-      name: 'paWallyballDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `track and field`
   String get paTrackField {
     return Intl.message(
@@ -4092,61 +3672,61 @@ class S {
     );
   }
 
-  /// `backpacking`
-  String get paBackpackingGeneral {
+  /// `trampoline`
+  String get paTrampolineLight {
     return Intl.message(
-      'backpacking',
-      name: 'paBackpackingGeneral',
+      'trampoline',
+      name: 'paTrampolineLight',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `recreational`
+  String get paTrampolineLightDesc {
+    return Intl.message(
+      'recreational',
+      name: 'paTrampolineLightDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `unicycling`
+  String get paUnicyclingGeneral {
+    return Intl.message(
+      'unicycling',
+      name: 'paUnicyclingGeneral',
       desc: '',
       args: [],
     );
   }
 
   /// `general`
-  String get paBackpackingGeneralDesc {
+  String get paUnicyclingGeneralDesc {
     return Intl.message(
       'general',
-      name: 'paBackpackingGeneralDesc',
+      name: 'paUnicyclingGeneralDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `climbing hills, no load`
-  String get paClimbingHillsNoLoadGeneral {
+  /// `volleyball`
+  String get paVolleyballGeneral {
     return Intl.message(
-      'climbing hills, no load',
-      name: 'paClimbingHillsNoLoadGeneral',
+      'volleyball',
+      name: 'paVolleyballGeneral',
       desc: '',
       args: [],
     );
   }
 
-  /// `no load`
-  String get paClimbingHillsNoLoadGeneralDesc {
+  /// `non-competitive, 6 - 9 member team, general`
+  String get paVolleyballGeneralDesc {
     return Intl.message(
-      'no load',
-      name: 'paClimbingHillsNoLoadGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `hiking`
-  String get paHikingCrossCountry {
-    return Intl.message(
-      'hiking',
-      name: 'paHikingCrossCountry',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `cross country`
-  String get paHikingCrossCountryDesc {
-    return Intl.message(
-      'cross country',
-      name: 'paHikingCrossCountryDesc',
+      'non-competitive, 6 - 9 member team, general',
+      name: 'paVolleyballGeneralDesc',
       desc: '',
       args: [],
     );
@@ -4192,241 +3772,41 @@ class S {
     );
   }
 
-  /// `canoeing`
-  String get paCanoeingGeneral {
+  /// `wallyball`
+  String get paWallyball {
     return Intl.message(
-      'canoeing',
-      name: 'paCanoeingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `rowing, for pleasure, general`
-  String get paCanoeingGeneralDesc {
-    return Intl.message(
-      'rowing, for pleasure, general',
-      name: 'paCanoeingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `diving`
-  String get paDivingSpringboardPlatform {
-    return Intl.message(
-      'diving',
-      name: 'paDivingSpringboardPlatform',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `springboard or platform`
-  String get paDivingSpringboardPlatformDesc {
-    return Intl.message(
-      'springboard or platform',
-      name: 'paDivingSpringboardPlatformDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `kayaking`
-  String get paKayakingModerate {
-    return Intl.message(
-      'kayaking',
-      name: 'paKayakingModerate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `moderate effort`
-  String get paKayakingModerateDesc {
-    return Intl.message(
-      'moderate effort',
-      name: 'paKayakingModerateDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `paddle boat`
-  String get paPaddleBoat {
-    return Intl.message(
-      'paddle boat',
-      name: 'paPaddleBoat',
+      'wallyball',
+      name: 'paWallyball',
       desc: '',
       args: [],
     );
   }
 
   /// `general`
-  String get paPaddleBoatDesc {
+  String get paWallyballDesc {
     return Intl.message(
       'general',
-      name: 'paPaddleBoatDesc',
+      name: 'paWallyballDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `sailing`
-  String get paSailingGeneral {
+  /// `water exercise`
+  String get paWaterAerobics {
     return Intl.message(
-      'sailing',
-      name: 'paSailingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `boat and board sailing, windsurfing, ice sailing, general`
-  String get paSailingGeneralDesc {
-    return Intl.message(
-      'boat and board sailing, windsurfing, ice sailing, general',
-      name: 'paSailingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water skiing`
-  String get paSkiingWaterWakeboarding {
-    return Intl.message(
-      'water skiing',
-      name: 'paSkiingWaterWakeboarding',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water or wakeboarding`
-  String get paSkiingWaterWakeboardingDesc {
-    return Intl.message(
-      'water or wakeboarding',
-      name: 'paSkiingWaterWakeboardingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `diving`
-  String get paDivingGeneral {
-    return Intl.message(
-      'diving',
-      name: 'paDivingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `skindiving, scuba diving, general`
-  String get paDivingGeneralDesc {
-    return Intl.message(
-      'skindiving, scuba diving, general',
-      name: 'paDivingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `snorkeling`
-  String get paSnorkeling {
-    return Intl.message(
-      'snorkeling',
-      name: 'paSnorkeling',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `general`
-  String get paSnorkelingDesc {
-    return Intl.message(
-      'general',
-      name: 'paSnorkelingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `surfing`
-  String get paSurfing {
-    return Intl.message(
-      'surfing',
-      name: 'paSurfing',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `body or board, general`
-  String get paSurfingDesc {
-    return Intl.message(
-      'body or board, general',
-      name: 'paSurfingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `paddle boarding`
-  String get paPaddleBoarding {
-    return Intl.message(
-      'paddle boarding',
-      name: 'paPaddleBoarding',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `standing`
-  String get paPaddleBoardingDesc {
-    return Intl.message(
-      'standing',
-      name: 'paPaddleBoardingDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `swimming`
-  String get paSwimmingGeneral {
-    return Intl.message(
-      'swimming',
-      name: 'paSwimmingGeneral',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `treading water, moderate effort, general`
-  String get paSwimmingGeneralDesc {
-    return Intl.message(
-      'treading water, moderate effort, general',
-      name: 'paSwimmingGeneralDesc',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `water aerobics`
-  String get paWateraerobicsCalisthenics {
-    return Intl.message(
-      'water aerobics',
-      name: 'paWateraerobicsCalisthenics',
+      'water exercise',
+      name: 'paWaterAerobics',
       desc: '',
       args: [],
     );
   }
 
   /// `water aerobics, water calisthenics`
-  String get paWateraerobicsCalisthenicsDesc {
+  String get paWaterAerobicsDesc {
     return Intl.message(
       'water aerobics, water calisthenics',
-      name: 'paWateraerobicsCalisthenicsDesc',
+      name: 'paWaterAerobicsDesc',
       desc: '',
       args: [],
     );
@@ -4472,111 +3852,201 @@ class S {
     );
   }
 
-  /// `ice skating`
-  String get paIceSkatingGeneral {
+  /// `water aerobics`
+  String get paWateraerobicsCalisthenics {
     return Intl.message(
-      'ice skating',
-      name: 'paIceSkatingGeneral',
+      'water aerobics',
+      name: 'paWateraerobicsCalisthenics',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `water aerobics, water calisthenics`
+  String get paWateraerobicsCalisthenicsDesc {
+    return Intl.message(
+      'water aerobics, water calisthenics',
+      name: 'paWateraerobicsCalisthenicsDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `wrestling`
+  String get paWrestling {
+    return Intl.message(
+      'wrestling',
+      name: 'paWrestling',
       desc: '',
       args: [],
     );
   }
 
   /// `general`
-  String get paIceSkatingGeneralDesc {
+  String get paWrestlingDesc {
     return Intl.message(
       'general',
-      name: 'paIceSkatingGeneralDesc',
+      name: 'paWrestlingDesc',
       desc: '',
       args: [],
     );
   }
 
-  /// `skiing`
-  String get paSkiingGeneral {
+  /// `Mostly standing or walking in job and active free time activities`
+  String get palActiveDescriptionLabel {
     return Intl.message(
-      'skiing',
-      name: 'paSkiingGeneral',
+      'Mostly standing or walking in job and active free time activities',
+      name: 'palActiveDescriptionLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `general`
-  String get paSkiingGeneralDesc {
+  /// `Active`
+  String get palActiveLabel {
     return Intl.message(
-      'general',
-      name: 'paSkiingGeneralDesc',
+      'Active',
+      name: 'palActiveLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `snow shoveling`
-  String get paSnowShovingModerate {
+  /// `e.g. sitting or standing in job and light free time activities`
+  String get palLowActiveDescriptionLabel {
     return Intl.message(
-      'snow shoveling',
-      name: 'paSnowShovingModerate',
+      'e.g. sitting or standing in job and light free time activities',
+      name: 'palLowActiveDescriptionLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `by hand, moderate effort`
-  String get paSnowShovingModerateDesc {
+  /// `Low Active`
+  String get palLowLActiveLabel {
     return Intl.message(
-      'by hand, moderate effort',
-      name: 'paSnowShovingModerateDesc',
+      'Low Active',
+      name: 'palLowLActiveLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `e.g. biking`
-  String get exampleOfActivityLabel {
+  /// `e.g. office job and mostly sitting free time activities`
+  String get palSedentaryDescriptionLabel {
     return Intl.message(
-      'e.g. biking',
-      name: 'exampleOfActivityLabel',
+      'e.g. office job and mostly sitting free time activities',
+      name: 'palSedentaryDescriptionLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Recipe`
-  String get recipeLabel {
+  /// `Sedentary`
+  String get palSedentaryLabel {
     return Intl.message(
-      'Recipe',
-      name: 'recipeLabel',
+      'Sedentary',
+      name: 'palSedentaryLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Create a meal`
-  String get createRecipeLabel {
+  /// `Mostly walking, running or carrying weight in job and active free time activities`
+  String get palVeryActiveDescriptionLabel {
     return Intl.message(
-      'Create a meal',
-      name: 'createRecipeLabel',
+      'Mostly walking, running or carrying weight in job and active free time activities',
+      name: 'palVeryActiveDescriptionLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `No recipe found`
-  String get errorRecipeLabel {
+  /// `Very Active`
+  String get palVeryActiveLabel {
     return Intl.message(
-      'No recipe found',
-      name: 'errorRecipeLabel',
+      'Very Active',
+      name: 'palVeryActiveLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Number of portions`
-  String get mealPortionLabel {
+  /// `At least 1 digit`
+  String get passwordDigit {
     return Intl.message(
-      'Number of portions',
-      name: 'mealPortionLabel',
+      'At least 1 digit',
+      name: 'passwordDigit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At least 1 lowercase letter`
+  String get passwordLowercase {
+    return Intl.message(
+      'At least 1 lowercase letter',
+      name: 'passwordLowercase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At least 8 characters`
+  String get passwordMinLength {
+    return Intl.message(
+      'At least 8 characters',
+      name: 'passwordMinLength',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password required`
+  String get passwordRequired {
+    return Intl.message(
+      'Password required',
+      name: 'passwordRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At least 1 special character`
+  String get passwordSpecialChar {
+    return Intl.message(
+      'At least 1 special character',
+      name: 'passwordSpecialChar',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `At least 1 uppercase letter`
+  String get passwordUppercase {
+    return Intl.message(
+      'At least 1 uppercase letter',
+      name: 'passwordUppercase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Per 100g/ml`
+  String get per100gmlLabel {
+    return Intl.message(
+      'Per 100g/ml',
+      name: 'per100gmlLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Per Serving`
+  String get perServingLabel {
+    return Intl.message(
+      'Per Serving',
+      name: 'perServingLabel',
       desc: '',
       args: [],
     );
@@ -4592,51 +4062,591 @@ class S {
     );
   }
 
-  /// `No food added`
-  String get noFoodAddedLabel {
+  /// `Last goal applied on {date}`
+  String previousGoalAppliedOn(Object date) {
     return Intl.message(
-      'No food added',
-      name: 'noFoodAddedLabel',
+      'Last goal applied on $date',
+      name: 'previousGoalAppliedOn',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Privacy policy`
+  String get privacyPolicyLabel {
+    return Intl.message(
+      'Privacy policy',
+      name: 'privacyPolicyLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `My students`
-  String get myStudentsTitle {
+  /// `Profile`
+  String get profileLabel {
     return Intl.message(
-      'My students',
-      name: 'myStudentsTitle',
+      'Profile',
+      name: 'profileLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `No students`
-  String get noStudents {
+  /// `protein`
+  String get proteinLabel {
     return Intl.message(
-      'No students',
-      name: 'noStudents',
+      'protein',
+      name: 'proteinLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error:`
-  String get errorPrefix {
+  /// `Proteins`
+  String get proteinsLabel {
     return Intl.message(
-      'Error:',
-      name: 'errorPrefix',
+      'Proteins',
+      name: 'proteinsLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `No data for today`
-  String get noDataToday {
+  /// `Quantity`
+  String get quantityLabel {
     return Intl.message(
-      'No data for today',
-      name: 'noDataToday',
+      'Quantity',
+      name: 'quantityLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `I have read and accept the privacy policy.`
+  String get readLabel {
+    return Intl.message(
+      'I have read and accept the privacy policy.',
+      name: 'readLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recently`
+  String get recentlyAddedLabel {
+    return Intl.message(
+      'Recently',
+      name: 'recentlyAddedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recipe`
+  String get recipeLabel {
+    return Intl.message(
+      'Recipe',
+      name: 'recipeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do you want to report an error to the developer?`
+  String get reportErrorDialogText {
+    return Intl.message(
+      'Do you want to report an error to the developer?',
+      name: 'reportErrorDialogText',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change password`
+  String get resetPasswordButton {
+    return Intl.message(
+      'Change password',
+      name: 'resetPasswordButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password changed! You can now sign in with your new password.`
+  String get resetPasswordChanged {
+    return Intl.message(
+      'Password changed! You can now sign in with your new password.',
+      name: 'resetPasswordChanged',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm password`
+  String get resetPasswordConfirmLabel {
+    return Intl.message(
+      'Confirm password',
+      name: 'resetPasswordConfirmLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password`
+  String get resetPasswordNewLabel {
+    return Intl.message(
+      'New password',
+      name: 'resetPasswordNewLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get resetPasswordNoMatch {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'resetPasswordNoMatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `• Use at least 8 characters\n• Mix numbers & special characters\n• Uppercase + lowercase`
+  String get resetPasswordTips {
+    return Intl.message(
+      '• Use at least 8 characters\n• Mix numbers & special characters\n• Uppercase + lowercase',
+      name: 'resetPasswordTips',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password`
+  String get resetPasswordTitle {
+    return Intl.message(
+      'New password',
+      name: 'resetPasswordTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retry`
+  String get retryLabel {
+    return Intl.message(
+      'Retry',
+      name: 'retryLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coach`
+  String get roleCoachLabel {
+    return Intl.message(
+      'Coach',
+      name: 'roleCoachLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Role`
+  String get roleLabel {
+    return Intl.message(
+      'Role',
+      name: 'roleLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Student`
+  String get roleStudentLabel {
+    return Intl.message(
+      'Student',
+      name: 'roleStudentLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `saturated fat`
+  String get saturatedFatLabel {
+    return Intl.message(
+      'saturated fat',
+      name: 'saturatedFatLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Problem while saving macro goals.`
+  String get saveMacroGoalsError {
+    return Intl.message(
+      'Problem while saving macro goals.',
+      name: 'saveMacroGoalsError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not save preference.`
+  String get savePreferenceFailed {
+    return Intl.message(
+      'Could not save preference.',
+      name: 'savePreferenceFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Scan Product`
+  String get scanProductLabel {
+    return Intl.message(
+      'Scan Product',
+      name: 'scanProductLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please enter a search word`
+  String get searchDefaultLabel {
+    return Intl.message(
+      'Please enter a search word',
+      name: 'searchDefaultLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Food`
+  String get searchFoodPage {
+    return Intl.message(
+      'Food',
+      name: 'searchFoodPage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search`
+  String get searchLabel {
+    return Intl.message(
+      'Search',
+      name: 'searchLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get searchProductsPage {
+    return Intl.message(
+      'Products',
+      name: 'searchProductsPage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search results`
+  String get searchResultsLabel {
+    return Intl.message(
+      'Search results',
+      name: 'searchResultsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Gender`
+  String get selectGenderDialogLabel {
+    return Intl.message(
+      'Select Gender',
+      name: 'selectGenderDialogLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Height`
+  String get selectHeightDialogLabel {
+    return Intl.message(
+      'Select Height',
+      name: 'selectHeightDialogLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Activity Level`
+  String get selectPalCategoryLabel {
+    return Intl.message(
+      'Select Activity Level',
+      name: 'selectPalCategoryLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Role`
+  String get selectRoleDialogLabel {
+    return Intl.message(
+      'Select Role',
+      name: 'selectRoleDialogLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Weight`
+  String get selectWeightDialogLabel {
+    return Intl.message(
+      'Select Weight',
+      name: 'selectWeightDialogLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send anonymous usage data`
+  String get sendAnonymousUserData {
+    return Intl.message(
+      'Send anonymous usage data',
+      name: 'sendAnonymousUserData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Serving`
+  String get servingLabel {
+    return Intl.message(
+      'Serving',
+      name: 'servingLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Serving size (oz/fl oz)`
+  String get servingSizeLabelImperial {
+    return Intl.message(
+      'Serving size (oz/fl oz)',
+      name: 'servingSizeLabelImperial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Serving size (g/ml)`
+  String get servingSizeLabelMetric {
+    return Intl.message(
+      'Serving size (g/ml)',
+      name: 'servingSizeLabelMetric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set macros`
+  String get setMacrosLabel {
+    return Intl.message(
+      'Set macros',
+      name: 'setMacrosLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `About`
+  String get settingAboutLabel {
+    return Intl.message(
+      'About',
+      name: 'settingAboutLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Feedback`
+  String get settingFeedbackLabel {
+    return Intl.message(
+      'Feedback',
+      name: 'settingFeedbackLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculations`
+  String get settingsCalculationsLabel {
+    return Intl.message(
+      'Calculations',
+      name: 'settingsCalculationsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Distance`
+  String get settingsDistanceLabel {
+    return Intl.message(
+      'Distance',
+      name: 'settingsDistanceLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Imperial (lbs, ft, oz)`
+  String get settingsImperialLabel {
+    return Intl.message(
+      'Imperial (lbs, ft, oz)',
+      name: 'settingsImperialLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get settingsLabel {
+    return Intl.message(
+      'Settings',
+      name: 'settingsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Licenses`
+  String get settingsLicensesLabel {
+    return Intl.message(
+      'Licenses',
+      name: 'settingsLicensesLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mass`
+  String get settingsMassLabel {
+    return Intl.message(
+      'Mass',
+      name: 'settingsMassLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Metric (kg, cm, ml)`
+  String get settingsMetricLabel {
+    return Intl.message(
+      'Metric (kg, cm, ml)',
+      name: 'settingsMetricLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy Settings`
+  String get settingsPrivacySettings {
+    return Intl.message(
+      'Privacy Settings',
+      name: 'settingsPrivacySettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Report Error`
+  String get settingsReportErrorLabel {
+    return Intl.message(
+      'Report Error',
+      name: 'settingsReportErrorLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Source Code`
+  String get settingsSourceCodeLabel {
+    return Intl.message(
+      'Source Code',
+      name: 'settingsSourceCodeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System`
+  String get settingsSystemLabel {
+    return Intl.message(
+      'System',
+      name: 'settingsSystemLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dark`
+  String get settingsThemeDarkLabel {
+    return Intl.message(
+      'Dark',
+      name: 'settingsThemeDarkLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Theme`
+  String get settingsThemeLabel {
+    return Intl.message(
+      'Theme',
+      name: 'settingsThemeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Light`
+  String get settingsThemeLightLabel {
+    return Intl.message(
+      'Light',
+      name: 'settingsThemeLightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System default`
+  String get settingsThemeSystemDefaultLabel {
+    return Intl.message(
+      'System default',
+      name: 'settingsThemeSystemDefaultLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Units`
+  String get settingsUnitsLabel {
+    return Intl.message(
+      'Units',
+      name: 'settingsUnitsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Volume`
+  String get settingsVolumeLabel {
+    return Intl.message(
+      'Volume',
+      name: 'settingsVolumeLabel',
       desc: '',
       args: [],
     );
@@ -4662,121 +4672,81 @@ class S {
     );
   }
 
-  /// `My students`
-  String get coachStudentsLabel {
+  /// `e.g. apple, ice cream, chocolate ...`
+  String get snackExample {
     return Intl.message(
-      'My students',
-      name: 'coachStudentsLabel',
+      'e.g. apple, ice cream, chocolate ...',
+      name: 'snackExample',
       desc: '',
       args: [],
     );
   }
 
-  /// `No internet connection. Feature unavailable.`
-  String get noInternetConnectionMessage {
+  /// `Snack`
+  String get snackLabel {
     return Intl.message(
-      'No internet connection. Feature unavailable.',
-      name: 'noInternetConnectionMessage',
+      'Snack',
+      name: 'snackLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Set macros`
-  String get setMacrosLabel {
+  /// `Your subscription is no longer active. Please contact your coach.`
+  String get subscriptionInactiveMessage {
     return Intl.message(
-      'Set macros',
-      name: 'setMacrosLabel',
+      'Your subscription is no longer active. Please contact your coach.',
+      name: 'subscriptionInactiveMessage',
       desc: '',
       args: [],
     );
   }
 
-  /// `Manage account`
-  String get manageAccountTitle {
+  /// `sugar`
+  String get sugarLabel {
     return Intl.message(
-      'Manage account',
-      name: 'manageAccountTitle',
+      'sugar',
+      name: 'sugarLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `We only collect data essential to the proper functioning of the app:\n\nEmail address: used for login and account identification.\n\nNutrition data: your daily weight, calories, protein, fat, and carbohydrate intake.\n\nGoals: your personalized targets for calories, protein, fat, and carbs.\n\nAll data is securely stored on Supabase. We do not share any of your data with third parties.`
-  String get manageAccountDescription {
+  /// `Supabase error: {message}`
+  String supabaseError(Object message) {
     return Intl.message(
-      'We only collect data essential to the proper functioning of the app:\n\nEmail address: used for login and account identification.\n\nNutrition data: your daily weight, calories, protein, fat, and carbohydrate intake.\n\nGoals: your personalized targets for calories, protein, fat, and carbs.\n\nAll data is securely stored on Supabase. We do not share any of your data with third parties.',
-      name: 'manageAccountDescription',
+      'Supabase error: $message',
+      name: 'supabaseError',
+      desc: '',
+      args: [message],
+    );
+  }
+
+  /// `supplied`
+  String get suppliedLabel {
+    return Intl.message(
+      'supplied',
+      name: 'suppliedLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Enable Supabase Sync`
-  String get manageAccountEnableSync {
+  /// `Unit`
+  String get unitLabel {
     return Intl.message(
-      'Enable Supabase Sync',
-      name: 'manageAccountEnableSync',
+      'Unit',
+      name: 'unitLabel',
       desc: '',
       args: [],
     );
   }
 
-  /// `Delete My Account`
-  String get manageAccountDelete {
+  /// `User not connected.`
+  String get userNotConnected {
     return Intl.message(
-      'Delete My Account',
-      name: 'manageAccountDelete',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Are you sure?`
-  String get manageAccountConfirmTitle {
-    return Intl.message(
-      'Are you sure?',
-      name: 'manageAccountConfirmTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `This action cannot be undone.`
-  String get manageAccountConfirmMessage {
-    return Intl.message(
-      'This action cannot be undone.',
-      name: 'manageAccountConfirmMessage',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Confirm Deletion`
-  String get manageAccountConfirmAction {
-    return Intl.message(
-      'Confirm Deletion',
-      name: 'manageAccountConfirmAction',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Log out`
-  String get logOutLabel {
-    return Intl.message(
-      'Log out',
-      name: 'logOutLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `If the password reset doesn't work:\n- exit the app and try again, or\n- make the request from the website: `
-  String get forgotPasswordHelp {
-    return Intl.message(
-      'If the password reset doesn\'t work:\n- exit the app and try again, or\n- make the request from the website: ',
-      name: 'forgotPasswordHelp',
+      'User not connected.',
+      name: 'userNotConnected',
       desc: '',
       args: [],
     );
@@ -4789,6 +4759,26 @@ class S {
       name: 'websiteLabel',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Weight`
+  String get weightLabel {
+    return Intl.message(
+      'Weight',
+      name: 'weightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{age} years`
+  String yearsLabel(Object age) {
+    return Intl.message(
+      '$age years',
+      name: 'yearsLabel',
+      desc: '',
+      args: [age],
     );
   }
 }
