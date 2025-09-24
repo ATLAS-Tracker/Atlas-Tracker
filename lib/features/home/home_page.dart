@@ -4,14 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 import 'package:daily_pedometer2/daily_pedometer2.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'dart:io' show Platform;
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
-// TEMP: hide activities UI
-// import 'package:opennutritracker/core/presentation/widgets/activity_vertial_list.dart';
 import 'package:opennutritracker/core/presentation/widgets/weight_vertical_list.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
@@ -40,104 +37,53 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   late HomeBloc _homeBloc;
   bool _isDragging = false;
-  StreamSubscription<StepCount>? _dailyStepCountSubscription;
-  int _dailySteps = 0;
-  int lastValue = 0;
-  late HiveDBProvider _hive;
   late DailyStepsRecorder _stepsRecorder;
+  late Stream<StepCount> _dailyStepCountStream;
+  late final HiveDBProvider _hive;
+  late int _dailySteps = 0;
 
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
     _hive = locator<HiveDBProvider>();
-    _stepsRecorder = DailyStepsRecorder(
-      _hive,
-      onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
-    );
-    final key = DateUtils.dateOnly(DateTime.now()).toIso8601String();
-    lastValue = _hive.dailyStepsBox.get(key, defaultValue: 0) as int;
-    _dailySteps = lastValue;
+    _stepsRecorder = DailyStepsRecorder(_hive, onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps);
+    _dailySteps = _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ?? 0;
     initPlatformState();
     super.initState();
   }
 
   @override
   void dispose() {
-    _dailyStepCountSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   void onDailyStepCount(StepCount event) {
-    // Try to determine the event's date from the StepCount payload.
-    // Different plugins expose different field names; be defensive.
-    DateTime? eventTime;
-    try {
-      // Common in pedometer packages
-      eventTime = (event as dynamic).timeStamp as DateTime?;
-    } catch (_) {}
-    if (eventTime == null) {
-      try {
-        eventTime = (event as dynamic).timestamp as DateTime?;
-      } catch (_) {}
-    }
-    if (eventTime == null) {
-      try {
-        eventTime = (event as dynamic).date as DateTime?;
-      } catch (_) {}
-    }
-
-    final now = DateTime.now();
-    final isToday = eventTime == null
-        ? true
-        : DateUtils.isSameDay(DateUtils.dateOnly(eventTime), now);
-
-    final stepsToUse = isToday ? event.steps : 0;
-
     setState(() {
-      _dailySteps = stepsToUse;
+      _dailySteps = event.steps.toInt();
     });
-    _maybeSaveSteps(stepsToUse);
+    _stepsRecorder.maybeSaveSteps(_dailySteps, event.timeStamp);
   }
 
   void onDailyStepCountError(error) {
-    log.severe('Daily step count error: $error');
     setState(() {
-      _dailySteps = lastValue;
+      _dailySteps = _hive.dailyStepsBox.get(_stepsRecorder.dayKeyFor(DateTime.now())) ?? 0;
     });
   }
 
-  Future<void> initPlatformState() async {
-    // Ensure Android runtime permission before subscribing
-    if (await _ensureActivityPermission()) {
-      _dailyStepCountSubscription = Pedometer.dailyStepCountStream
-          .listen(onDailyStepCount, onError: onDailyStepCountError);
-    } else {
-      log.warning('Activity Recognition permission not granted.');
+  void initPlatformState() async {
+    if (await Permission.activityRecognition.isDenied) {
+      await Permission.activityRecognition.request();
     }
-  }
+    if (!await Permission.activityRecognition.isGranted) return;
 
-  Future<bool> _ensureActivityPermission() async {
-    // iOS prompts automatically via Core Motion; nothing to do here.
-    if (!Platform.isAndroid) return true;
+    _dailyStepCountStream = DailyPedometer2.dailyStepCountStream;
+    _dailyStepCountStream
+        .listen(onDailyStepCount)
+        .onError(onDailyStepCountError);
 
-    final status = await Permission.activityRecognition.status;
-    if (status.isGranted) return true;
-
-    final result = await Permission.activityRecognition.request();
-    if (result.isGranted) return true;
-
-    if (result.isPermanentlyDenied) {
-      // Optionally guide user to settings; avoid blocking UI here.
-      log.warning('Activity Recognition permanently denied. Opening settings.');
-      unawaited(openAppSettings());
-    }
-    return false;
-  }
-
-  void _maybeSaveSteps(int steps) {
-    _stepsRecorder.maybeSaveSteps(steps);
+    if (!mounted) return;
   }
 
   @override
