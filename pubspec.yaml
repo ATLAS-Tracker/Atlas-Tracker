@@ -69,7 +69,7 @@ dependencies:
   firebase_crashlytics: ^4.3.10
   firebase_analytics: ^11.6.0
   health: ^13.2.0
-  background_fetch: ^1.4.0
+  workmanager: ^0.9.0+3
 
 dev_dependencies:
   flutter_test:
