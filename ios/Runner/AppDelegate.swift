@@ -20,7 +20,7 @@ import workmanager_apple
       
       WorkmanagerPlugin.registerPeriodicTask(
         withIdentifier: "com.exemple.atlas-tracker.dailySteps",
-        frequency: NSNumber(value: 60 * 60) // 1 hour, minimum 15 minutes
+        frequency: NSNumber(value: 15 * 60) // 15 minutes minimum allowed
       )
       
     GeneratedPluginRegistrant.register(with: self)

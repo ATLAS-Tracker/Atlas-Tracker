@@ -83,7 +83,7 @@ Future<void> _configureDailyStepsWorkmanager() async {
     await Workmanager().registerPeriodicTask(
       _dailyStepsWorkIdentifier,
       _dailyStepsWorkTaskName,
-      frequency: const Duration(hours: 1),
+      frequency: const Duration(minutes: 15),
     );
     final timestamp = DateTime.now().toIso8601String();
     log.info('[$timestamp] Workmanager scheduled hourly daily steps sync');
@@ -97,8 +97,8 @@ void _dailyStepsCallbackDispatcher() {
   Workmanager().executeTask((taskName, inputData) async {
     final log = Logger('DailyStepsWorkmanagerTask');
 
-    final isKnownTask =
-        taskName == _dailyStepsWorkTaskName || taskName == _dailyStepsWorkIdentifier;
+    final isKnownTask = taskName == _dailyStepsWorkTaskName ||
+        taskName == _dailyStepsWorkIdentifier;
 
     if (!isKnownTask) {
       log.warning('Unknown Workmanager task received: $taskName');
@@ -111,6 +111,8 @@ void _dailyStepsCallbackDispatcher() {
       }
 
       final service = locator<DailyStepsService>();
+      final timestamp = DateTime.now().toIso8601String();
+      log.info('[$timestamp] Workmanager fetchAndSyncTodaySteps');
       await service.fetchAndSyncTodaySteps();
       return true;
     } catch (error, stackTrace) {
