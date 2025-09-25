@@ -136,6 +136,7 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton<DailyStepsService>(
     () => DailyStepsService(locator()),
   );
+  await hive.triggerDailyStepsSync();
 
   // Repositories
   locator.registerLazySingleton(() => ConfigRepository(locator()));

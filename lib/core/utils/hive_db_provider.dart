@@ -25,6 +25,8 @@ import 'package:opennutritracker/core/data/dbo/user_weight_goal_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/user_role_dbo.dart';
 import 'package:opennutritracker/features/sync/tracked_day_change_isolate.dart';
 import 'package:opennutritracker/features/sync/user_weight_change_isolate.dart';
+import 'package:opennutritracker/services/daily_steps_queue_entry.dart';
+import 'package:opennutritracker/services/daily_steps_queue_isolate.dart';
 import 'package:opennutritracker/core/utils/secure_app_storage_provider.dart';
 import 'package:opennutritracker/core/data/data_source/config_data_source.dart';
 import 'package:logging/logging.dart';
@@ -40,6 +42,7 @@ class HiveDBProvider extends ChangeNotifier {
   static const recipeBoxName = "RecipeBox";
   static const userWeightBoxName = 'UserWeightBox';
   static const macroGoalBoxName = 'MacroGoalBox';
+  static const dailyStepsQueueBoxName = 'DailyStepsQueueBox';
 
   String? _userId;
   String _boxName(String base) => _userId == null ? base : '${_userId}_$base';
@@ -55,6 +58,8 @@ class HiveDBProvider extends ChangeNotifier {
   late UserWeightChangeIsolate userWeightWatcher;
   late Box<UserWeightDbo> userWeightBox;
   late Box<MacroGoalDbo> macroGoalBox;
+  late Box<DailyStepsQueueEntry> dailyStepsQueueBox;
+  late DailyStepsQueueIsolate dailyStepsQueueWatcher;
 
   List<StreamSubscription<BoxEvent>>? _updateSubs;
 
@@ -86,6 +91,7 @@ class HiveDBProvider extends ChangeNotifier {
     Hive.registerAdapter(AppThemeDBOAdapter());
     Hive.registerAdapter(UserWeightDboAdapter());
     Hive.registerAdapter(MacroGoalDboAdapter());
+    Hive.registerAdapter(DailyStepsQueueEntryAdapter());
     _adaptersRegistered = true;
   }
 
@@ -105,6 +111,7 @@ class HiveDBProvider extends ChangeNotifier {
         _log.fine('🔒 Closing boxes for user=$_userId');
         await trackedDayWatcher.stop();
         await userWeightWatcher.stop();
+        await dailyStepsQueueWatcher.stop();
         await stopUpdateWatchers();
 
         await Future.wait([
@@ -115,6 +122,7 @@ class HiveDBProvider extends ChangeNotifier {
           userBox.close(),
           trackedDayBox.close(),
           userWeightBox.close(),
+          dailyStepsQueueBox.close(),
         ]);
         _log.fine('✅ Boxes closed');
       }
@@ -154,6 +162,9 @@ class HiveDBProvider extends ChangeNotifier {
       userWeightWatcher = UserWeightChangeIsolate(userWeightBox);
       await userWeightWatcher.start();
       macroGoalBox = await openBox(macroGoalBoxName);
+      dailyStepsQueueBox = await openBox(dailyStepsQueueBoxName);
+      dailyStepsQueueWatcher = DailyStepsQueueIsolate(dailyStepsQueueBox);
+      await dailyStepsQueueWatcher.start();
       _log.info('✅ Hive initialised for user=$_userId');
     } catch (e, s) {
       _log.severe('Failed to initialize Hive DB', e, s);
@@ -193,6 +204,8 @@ class HiveDBProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> triggerDailyStepsSync() => dailyStepsQueueWatcher.attemptSync();
+
   /// Removes all user-specific data from the opened Hive boxes.
   ///
   /// The common configuration box (e.g., for theme settings) is not cleared,
@@ -208,6 +221,7 @@ class HiveDBProvider extends ChangeNotifier {
       trackedDayBox.clear(),
       userWeightBox.clear(),
       macroGoalBox.clear(),
+      dailyStepsQueueBox.clear(),
     ]);
   }
 
@@ -236,6 +250,7 @@ class HiveDBProvider extends ChangeNotifier {
     if (Hive.isBoxOpen(_boxName(configBoxName))) {
       await trackedDayWatcher.stop();
       await userWeightWatcher.stop();
+      await dailyStepsQueueWatcher.stop();
       await stopUpdateWatchers();
 
       await Future.wait([
@@ -247,6 +262,7 @@ class HiveDBProvider extends ChangeNotifier {
         trackedDayBox.close(),
         userWeightBox.close(),
         macroGoalBox.close(),
+        dailyStepsQueueBox.close(),
       ]);
     }
 
@@ -259,6 +275,7 @@ class HiveDBProvider extends ChangeNotifier {
       _deleteBox(recipeBoxName),
       _deleteBox(userWeightBoxName),
       _deleteBox(macroGoalBoxName),
+      _deleteBox(dailyStepsQueueBoxName),
     ]);
 
     _log.info('✅ Hive database deleted for user=$_userId');
@@ -274,6 +291,7 @@ class HiveDBProvider extends ChangeNotifier {
   void dispose() {
     trackedDayWatcher.stop();
     userWeightWatcher.stop();
+    dailyStepsQueueWatcher.stop();
     stopUpdateWatchers();
     super.dispose();
   }
