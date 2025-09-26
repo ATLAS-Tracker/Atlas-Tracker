@@ -32,15 +32,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:opennutritracker/firebase_options.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:opennutritracker/services/daily_steps_service.dart';
-import 'package:workmanager/workmanager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   LoggerConfig.intiLogger();
   await initLocator();
-  await _configureDailyStepsWorkmanager();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -70,56 +67,6 @@ Future<void> main() async {
     'Starting App with Crashlytics ${hasAcceptedAnonymousData ? 'enabled' : 'disabled'} ...',
   );
   runAppWithChangeNotifiers(isUserInitialized, hasAuthSession, savedAppTheme);
-}
-
-const _dailyStepsWorkIdentifier = 'com.exemple.atlas-tracker.dailySteps';
-const _dailyStepsWorkTaskName = 'daily_steps_hourly_task';
-
-Future<void> _configureDailyStepsWorkmanager() async {
-  final log = Logger('_DailyStepsWorkmanager');
-
-  try {
-    await Workmanager().initialize(_dailyStepsCallbackDispatcher);
-    await Workmanager().registerPeriodicTask(
-      _dailyStepsWorkIdentifier,
-      _dailyStepsWorkTaskName,
-      frequency: const Duration(minutes: 15),
-    );
-    final timestamp = DateTime.now().toIso8601String();
-    log.info('[$timestamp] Workmanager scheduled hourly daily steps sync');
-  } catch (error, stackTrace) {
-    log.warning('Failed to configure Workmanager', error, stackTrace);
-  }
-}
-
-@pragma('vm:entry-point')
-void _dailyStepsCallbackDispatcher() {
-  Workmanager().executeTask((taskName, inputData) async {
-    final log = Logger('DailyStepsWorkmanagerTask');
-
-    final isKnownTask = taskName == _dailyStepsWorkTaskName ||
-        taskName == _dailyStepsWorkIdentifier;
-
-    if (!isKnownTask) {
-      log.warning('Unknown Workmanager task received: $taskName');
-      return false;
-    }
-
-    try {
-      if (!locator.isRegistered<DailyStepsService>()) {
-        await initLocator();
-      }
-
-      final service = locator<DailyStepsService>();
-      final timestamp = DateTime.now().toIso8601String();
-      log.info('[$timestamp] Workmanager fetchAndSyncTodaySteps');
-      await service.fetchAndSyncTodaySteps();
-      return true;
-    } catch (error, stackTrace) {
-      log.warning('Daily steps Workmanager task failed', error, stackTrace);
-      return false;
-    }
-  });
 }
 
 void runAppWithChangeNotifiers(

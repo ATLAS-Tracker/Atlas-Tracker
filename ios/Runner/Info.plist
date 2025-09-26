@@ -38,10 +38,6 @@
 			</array>
 		</dict>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>processing</string>
-	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -50,23 +46,18 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Pick image from Camera</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Pick an image from gallery</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>We use your activity data to display your daily steps inside the app.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>We use your activity data to display your daily steps inside the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pick an image from gallery</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-  <key>UIBackgroundModes</key>
-  <array>
-    <string>remote-notification</string>
-    <string>processing</string>
-  </array>
-  <key>BGTaskSchedulerPermittedIdentifiers</key>
-  <array>
-    <string>com.exemple.atlas-tracker.dailySteps</string>
-  </array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
