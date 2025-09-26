@@ -30,7 +30,7 @@ class UserWeightChangeIsolate extends ChangeIsolate<_UserWeightSyncOp> {
   final SupabaseUserWeightService _service;
   final Connectivity _connectivity;
   final int batchSize;
-  StreamSubscription<ConnectivityResult>? _connectivitySub;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _syncing = false;
   final Logger _log = Logger('UserWeightChangeIsolate');
 
@@ -82,7 +82,7 @@ class UserWeightChangeIsolate extends ChangeIsolate<_UserWeightSyncOp> {
 
   /* ---------- Connectivity management ---------- */
 
-  void _onConnectivityChanged(ConnectivityResult result) {
+  void _onConnectivityChanged(List<ConnectivityResult> result) {
     _log.fine('Connectivity changed: $result');
     if (result != ConnectivityResult.none) {
       _log.fine('Internet available, attempting sync...');

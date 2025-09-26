@@ -38,7 +38,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   envied: ^1.0.0
   archive: 4.0.6
-  file_picker: 10.1.2
+  file_picker: 10.3.3
 
   flutter_bloc: ^8.1.6
   equatable: ^2.0.7
@@ -52,7 +52,7 @@ dependencies:
   auto_size_text: ^3.0.0
   animated_flip_counter: ^0.3.4
 
-  connectivity_plus: ^5.0.2
+  connectivity_plus: ^6.0.1
 
   mobile_scanner: ^6.0.2
 
