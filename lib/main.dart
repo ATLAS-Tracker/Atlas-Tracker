@@ -13,11 +13,8 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/logger_config.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/core/utils/theme_mode_provider.dart';
-// TEMP: activities screens disabled
-// import 'package:opennutritracker/features/activity_detail/activity_detail_screen.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_screen.dart';
 import 'package:opennutritracker/features/add_weight/presentation/add_weight_screen.dart';
-// import 'package:opennutritracker/features/add_activity/presentation/add_activity_screen.dart';
 import 'package:opennutritracker/features/edit_meal/presentation/edit_meal_screen.dart';
 import 'package:opennutritracker/features/scanner/scanner_screen.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
@@ -32,6 +29,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:opennutritracker/firebase_options.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:opennutritracker/services/daily_steps_service.dart';
+import 'package:workmanager/workmanager.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,7 +65,46 @@ Future<void> main() async {
   log.info(
     'Starting App with Crashlytics ${hasAcceptedAnonymousData ? 'enabled' : 'disabled'} ...',
   );
+
+  Workmanager().registerOneOffTask(
+    "sync-task",
+    "data_sync",
+    initialDelay: Duration(minutes: 1),
+  );
+
+  Workmanager().initialize(callbackDispatcher);
+
   runAppWithChangeNotifiers(isUserInitialized, hasAuthSession, savedAppTheme);
+}
+
+void syncDataWithServer() async {
+  final log = Logger('DailyStepsWorkmanagerTask');
+  try {
+    if (!locator.isRegistered<DailyStepsService>()) {
+      await initLocator();
+    }
+    final service = locator<DailyStepsService>();
+    final timestamp = DateTime.now().toIso8601String();
+    log.info('[$timestamp] Workmanager fetchAndSyncTodaySteps');
+    await service.fetchAndSyncTodaySteps();
+  } catch (error, stackTrace) {
+    log.warning('Daily steps Workmanager task failed', error, stackTrace);
+  }
+}
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    print('[iOS BG] Task started: $task at ${DateTime.now()}');
+    switch (task) {
+      case "data_sync":
+        syncDataWithServer();
+        break;
+      default:
+        break;
+    }
+    return Future.value(true);
+  });
 }
 
 void runAppWithChangeNotifiers(

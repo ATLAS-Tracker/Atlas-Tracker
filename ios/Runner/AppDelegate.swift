@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import workmanager_apple
 import flutter_local_notifications
 
 @main
@@ -15,6 +16,11 @@ import flutter_local_notifications
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     }
+
+    WorkmanagerPlugin.registerPeriodicTask(
+      withIdentifier: "com.yourapp.periodic_task",
+      frequency: NSNumber(value: 20 * 60) // 20 minutes (15 min minimum)
+    )
 
     GeneratedPluginRegistrant.register(with: self)
     // Exclude the documents folder from iCloud backup.
