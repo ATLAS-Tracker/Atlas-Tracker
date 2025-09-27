@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -22,6 +21,7 @@ import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
 import 'package:opennutritracker/services/daily_steps_sync_service.dart';
+import 'package:opennutritracker/services/step_count_service.dart';
 import 'package:pedometer/pedometer.dart';
 
 class HomePage extends StatefulWidget {
@@ -35,16 +35,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final log = Logger('HomePage');
   late HomeBloc _homeBloc;
   bool _isDragging = false;
-  late Stream<StepCount> _stepCountStream;
   late DailyStepsRecorder _stepsRecorder;
   late StepsDateDbo _stepsBox;
   int _steps = 0;
+  late final StepCountService _stepCountService;
+  StreamSubscription<StepCount>? _stepCountSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
+    _stepCountService = locator<StepCountService>();
     _stepsBox = locator<HiveDBProvider>().stepsDateBox.get(HiveDBProvider.stepsDateEntryKey)!; // TODO refactor
     _stepsRecorder = DailyStepsRecorder(
       _stepsBox,
@@ -71,32 +73,33 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     });
   }
 
-  Future<bool> _checkActivityRecognitionPermission() async {
-    bool granted = await Permission.activityRecognition.isGranted;
-
-    if (!granted) {
-      granted = await Permission.activityRecognition.request() ==
-          PermissionStatus.granted;
-    }
-
-    return granted;
-  }
-
   Future<void> initPlatformState() async {
-    bool granted = await _checkActivityRecognitionPermission();
-    if (!granted) {
-      // tell user, the app will not work
+    final stream = await _stepCountService.getStepCountStream();
+    if (!mounted) return;
+
+    if (stream == null) {
+      log.warning('Activity recognition permission not granted; disabling step tracking.');
+      return;
     }
 
-    _stepCountStream = Pedometer.stepCountStream;
-    _stepCountStream.listen(onStepCount).onError(onStepCountError);
+    final previousSubscription = _stepCountSubscription;
+    if (previousSubscription != null) {
+      unawaited(previousSubscription.cancel());
+    }
 
-    if (!mounted) return;
+    _stepCountSubscription = stream.listen(
+      onStepCount,
+      onError: onStepCountError,
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    final subscription = _stepCountSubscription;
+    if (subscription != null) {
+      unawaited(subscription.cancel());
+    }
     super.dispose();
   }
 
