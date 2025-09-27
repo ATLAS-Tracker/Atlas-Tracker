@@ -1,39 +1,76 @@
-import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'dart:async';
 
-/// Records daily step counts into Hive with a configurable threshold.
-///
-/// This encapsulates the logic previously embedded in HomePage to make
-/// persistence easy to test without pumping widgets or mocking plugins.
+import 'package:flutter/material.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
+
 class DailyStepsRecorder {
-  final HiveDBProvider hive;
-  final int saveThreshold;
+  final StepsDateDbo stepsBox;
   final Future<void> Function()? onThresholdReached;
 
   DailyStepsRecorder(
-    this.hive, {
-    this.saveThreshold = 100,
+    this.stepsBox, {
     this.onThresholdReached,
   });
 
-  /// Returns the ISO-8601 key used for the given date (00:00 time).
   String dayKeyFor(DateTime date) => DateUtils.dateOnly(date).toIso8601String();
 
-  /// Maybe persists the provided [steps] for [now]'s day, only if it advanced
-  /// by at least [saveThreshold] since the last saved value.
-  ///
-  /// Returns the last saved steps value after this call (either unchanged
-  /// or updated to [steps] if it was saved).
-  int maybeSaveSteps(int steps, {DateTime? now}) {
-    final date = now ?? DateTime.now();
-    final key = dayKeyFor(date);
-    final lastSaved = hive.dailyStepsBox.get(key, defaultValue: 0) as int;
-    if (steps - lastSaved >= saveThreshold) {
-      hive.dailyStepsBox.put(key, steps);
-      onThresholdReached?.call();
+  int maybeSaveSteps(int steps) {
+
+    debugPrint('Steps recorded: $steps');
+
+    final positiveSteps = getStepsWithoutNegative(steps);
+    final initialSteps = initialStep(positiveSteps);
+    stepsBox.nowSteps = getTotalStepsSinceAppInstall(initialSteps);
+    unawaited(stepsBox.save());
+
+    onThresholdReached?.call();
+
+    return stepsBox.nowSteps - stepsBox.lastSteps;
+  }
+
+  int getTotalStepsSinceAppInstall(int steps) {
+
+    if(steps + stepsBox.diff < stepsBox.nowSteps)
+    {
+      // A reset happened of the phone
+      stepsBox.diff = stepsBox.nowSteps;
+      unawaited(stepsBox.save());
+    }
+
+    return steps + stepsBox.diff;
+  }
+
+  int getStepsWithoutNegative(int steps) {
+    if(steps >= 0)
+    {
       return steps;
     }
-    return lastSaved;
+    else if(steps + stepsBox.errorSteps < 0)
+    {
+      stepsBox.errorSteps = -steps;
+      unawaited(stepsBox.save());
+      return steps + stepsBox.errorSteps;
+    } 
+    else if(steps + stepsBox.errorSteps >= 0)
+    {
+      return steps + stepsBox.errorSteps;
+    }
+    return steps;
+  }
+
+  int initialStep(int steps) {
+
+    if(stepsBox.nowSteps == 0)
+    {
+      stepsBox.initialStep = steps;
+      unawaited(stepsBox.save());
+    } 
+    else if(steps + stepsBox.diff < stepsBox.nowSteps)
+    {
+      stepsBox.initialStep = 0;
+      unawaited(stepsBox.save());
+    }
+
+    return steps - stepsBox.initialStep + 1;
   }
 }
-

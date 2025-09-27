@@ -28,6 +28,7 @@ import 'package:opennutritracker/features/sync/user_weight_change_isolate.dart';
 import 'package:opennutritracker/core/utils/secure_app_storage_provider.dart';
 import 'package:opennutritracker/core/data/data_source/config_data_source.dart';
 import 'package:logging/logging.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 
 class HiveDBProvider extends ChangeNotifier {
   static final Logger _log = Logger('HiveDBProvider');
@@ -41,6 +42,8 @@ class HiveDBProvider extends ChangeNotifier {
   static const userWeightBoxName = 'UserWeightBox';
   static const macroGoalBoxName = 'MacroGoalBox';
   static const dailyStepsBoxName = 'DailyStepsBox';
+  static const stepsDateBoxName = 'steps_date';
+  static const stepsDateEntryKey = 'steps_date';
 
   String? _userId;
   String _boxName(String base) => _userId == null ? base : '${_userId}_$base';
@@ -57,6 +60,7 @@ class HiveDBProvider extends ChangeNotifier {
   late Box<UserWeightDbo> userWeightBox;
   late Box<MacroGoalDbo> macroGoalBox;
   late Box<int> dailyStepsBox;
+  late Box<StepsDateDbo> stepsDateBox;
 
   List<StreamSubscription<BoxEvent>>? _updateSubs;
 
@@ -88,6 +92,7 @@ class HiveDBProvider extends ChangeNotifier {
     Hive.registerAdapter(AppThemeDBOAdapter());
     Hive.registerAdapter(UserWeightDboAdapter());
     Hive.registerAdapter(MacroGoalDboAdapter());
+    Hive.registerAdapter(StepsDateDboAdapter());
     _adaptersRegistered = true;
   }
 
@@ -117,6 +122,9 @@ class HiveDBProvider extends ChangeNotifier {
           userBox.close(),
           trackedDayBox.close(),
           userWeightBox.close(),
+          macroGoalBox.close(),
+          dailyStepsBox.close(),
+          stepsDateBox.close(),
         ]);
         _log.fine('✅ Boxes closed');
       }
@@ -157,6 +165,19 @@ class HiveDBProvider extends ChangeNotifier {
       await userWeightWatcher.start();
       macroGoalBox = await openBox(macroGoalBoxName);
       dailyStepsBox = await openBox(dailyStepsBoxName);
+      stepsDateBox = await openBox(stepsDateBoxName);
+
+      if (!stepsDateBox.containsKey(stepsDateEntryKey)) {
+        await stepsDateBox.put(
+          stepsDateEntryKey,
+          StepsDateDbo(
+            lastSteps: 0,
+            nowSteps: 0,
+            diff: 0,
+            lastDate: DateTime.now(),
+          ),
+        );
+      }
       _log.info('✅ Hive initialised for user=$_userId');
     } catch (e, s) {
       _log.severe('Failed to initialize Hive DB', e, s);
@@ -187,6 +208,9 @@ class HiveDBProvider extends ChangeNotifier {
       dailyStepsBox
           .watch()
           .listen((_) => config.setLastDataUpdate(DateTime.now().toUtc())),
+      stepsDateBox
+          .watch()
+          .listen((_) => config.setLastDataUpdate(DateTime.now().toUtc())),
     ];
   }
 
@@ -215,6 +239,7 @@ class HiveDBProvider extends ChangeNotifier {
       userWeightBox.clear(),
       macroGoalBox.clear(),
       dailyStepsBox.clear(),
+      stepsDateBox.clear(),
     ]);
   }
 
@@ -255,6 +280,7 @@ class HiveDBProvider extends ChangeNotifier {
         userWeightBox.close(),
         macroGoalBox.close(),
         dailyStepsBox.close(),
+        stepsDateBox.close(),
       ]);
     }
 
@@ -268,6 +294,7 @@ class HiveDBProvider extends ChangeNotifier {
       _deleteBox(userWeightBoxName),
       _deleteBox(macroGoalBoxName),
       _deleteBox(dailyStepsBoxName),
+      _deleteBox(stepsDateBoxName),
     ]);
 
     _log.info('✅ Hive database deleted for user=$_userId');
