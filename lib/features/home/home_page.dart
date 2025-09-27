@@ -47,11 +47,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
     _stepCountService = locator<StepCountService>();
-    _stepsBox = locator<HiveDBProvider>().stepsDateBox.get(HiveDBProvider.stepsDateEntryKey)!; // TODO refactor
+    _stepsBox = locator<HiveDBProvider>()
+        .stepsDateBox
+        .get(HiveDBProvider.stepsDateEntryKey)!; // TODO refactor
     _stepsRecorder = DailyStepsRecorder(
       _stepsBox,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
+    unawaited(_resetStepsIfDayChanged());
     _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
 
     initPlatformState();
@@ -59,7 +62,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   void onStepCount(StepCount event) {
     final correctedStep = _stepsRecorder.maybeSaveSteps(event.steps);
-    
+
     setState(() {
       _steps = correctedStep;
     });
@@ -78,7 +81,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (!mounted) return;
 
     if (stream == null) {
-      log.warning('Activity recognition permission not granted; disabling step tracking.');
+      log.warning(
+          'Activity recognition permission not granted; disabling step tracking.');
       return;
     }
 
@@ -406,7 +410,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         ..lastDate = today
         ..lastSteps = _stepsBox.nowSteps
         ..nowSteps = _stepsBox.nowSteps
-        ..diff = _stepsBox.diff;
+        ..diff = _stepsBox.diff
+        ..errorSteps = _stepsBox.errorSteps;
 
       await _stepsBox.save();
       if (!mounted) return;
@@ -415,5 +420,4 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       });
     }
   }
-
 }
