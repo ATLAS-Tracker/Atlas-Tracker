@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 
@@ -18,6 +20,8 @@ class DailyStepsRecorder {
 
     final positiveSteps = getStepsWithoutNegative(steps);
     stepsBox.nowSteps = getTotalStepsSinceAppInstall(positiveSteps);
+
+    unawaited(stepsBox.save());
 
     onThresholdReached?.call();
 
