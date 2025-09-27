@@ -19,8 +19,8 @@ class DailyStepsRecorder {
     debugPrint('Steps recorded: $steps');
 
     final positiveSteps = getStepsWithoutNegative(steps);
-    stepsBox.nowSteps = getTotalStepsSinceAppInstall(positiveSteps);
-
+    final initialSteps = initialStep(positiveSteps);
+    stepsBox.nowSteps = getTotalStepsSinceAppInstall(initialSteps);
     unawaited(stepsBox.save());
 
     onThresholdReached?.call();
@@ -34,6 +34,7 @@ class DailyStepsRecorder {
     {
       // A reset happened of the phone
       stepsBox.diff = stepsBox.nowSteps;
+      unawaited(stepsBox.save());
     }
 
     return steps + stepsBox.diff;
@@ -47,6 +48,7 @@ class DailyStepsRecorder {
     else if(steps + stepsBox.errorSteps < 0)
     {
       stepsBox.errorSteps = -steps;
+      unawaited(stepsBox.save());
       return steps + stepsBox.errorSteps;
     } 
     else if(steps + stepsBox.errorSteps >= 0)
@@ -54,5 +56,21 @@ class DailyStepsRecorder {
       return steps + stepsBox.errorSteps;
     }
     return steps;
+  }
+
+  int initialStep(int steps) {
+
+    if(stepsBox.nowSteps == 0)
+    {
+      stepsBox.initialStep = steps;
+      unawaited(stepsBox.save());
+    } 
+    else if(steps + stepsBox.diff < stepsBox.nowSteps)
+    {
+      stepsBox.initialStep = 0;
+      unawaited(stepsBox.save());
+    }
+
+    return steps - stepsBox.initialStep + 1;
   }
 }

@@ -21,13 +21,15 @@ class StepsDateDboAdapter extends TypeAdapter<StepsDateDbo> {
       nowSteps: fields[1] as int,
       diff: fields[2] as int,
       lastDate: fields[3] as DateTime,
-    )..errorSteps = fields[4] as int;
+    )
+      ..errorSteps = fields[4] as int
+      ..initialStep = fields[5] as int;
   }
 
   @override
   void write(BinaryWriter writer, StepsDateDbo obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.lastSteps)
       ..writeByte(1)
@@ -37,7 +39,9 @@ class StepsDateDboAdapter extends TypeAdapter<StepsDateDbo> {
       ..writeByte(3)
       ..write(obj.lastDate)
       ..writeByte(4)
-      ..write(obj.errorSteps);
+      ..write(obj.errorSteps)
+      ..writeByte(5)
+      ..write(obj.initialStep);
   }
 
   @override

@@ -25,4 +25,7 @@ class StepsDateDbo extends HiveObject {
 
   @HiveField(4)
   int errorSteps = 0;
+
+  @HiveField(5)
+  int initialStep = 0;
 }
