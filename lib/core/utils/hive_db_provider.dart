@@ -168,7 +168,15 @@ class HiveDBProvider extends ChangeNotifier {
       stepsDateBox = await openBox(stepsDateBoxName);
 
       if (!stepsDateBox.containsKey(stepsDateEntryKey)) {
-        await stepsDateBox.put(stepsDateEntryKey, StepsDateDbo());
+        await stepsDateBox.put(
+          stepsDateEntryKey,
+          StepsDateDbo(
+            lastSteps: 0,
+            nowSteps: 0,
+            diff: 0,
+            lastDate: DateTime.now(),
+          ),
+        );
       }
       _log.info('✅ Hive initialised for user=$_userId');
     } catch (e, s) {

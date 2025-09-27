@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   bool _isDragging = false;
   late Stream<StepCount> _stepCountStream;
   late DailyStepsRecorder _stepsRecorder;
-  late HiveDBProvider _hive;
+  late StepsDateDbo _stepsBox;
   int _steps = 0;
 
   @override
@@ -45,28 +45,29 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
-    _hive = locator<HiveDBProvider>();
+    _stepsBox = locator<HiveDBProvider>().stepsDateBox.get(HiveDBProvider.stepsDateEntryKey)!; // TODO refactor
     _stepsRecorder = DailyStepsRecorder(
-      _hive,
+      _stepsBox,
       onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
     );
+    _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
 
     initPlatformState();
   }
 
   void onStepCount(StepCount event) {
+    final correctedStep = _stepsRecorder.maybeSaveSteps(event.steps);
+    
     setState(() {
-      _steps = event.steps.toInt();
+      _steps = correctedStep;
     });
-    _stepsRecorder.maybeSaveSteps(event.steps, event.timeStamp);
   }
 
   void onStepCountError(error) {
     log.severe('StepCount error: $error');
-    final StepsDateDbo? stepsDate =
-        _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+
     setState(() {
-      _steps = stepsDate?.nowSteps ?? 0;
+      _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
     });
   }
 
@@ -394,44 +395,22 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   Future<void> _resetStepsIfDayChanged() async {
-    final StepsDateDbo? stepsDate =
-        _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
-
     final today = DateUtils.dateOnly(DateTime.now());
+    final lastDate = _stepsBox.lastDate;
 
-    if (stepsDate == null) {
-      final newEntry = StepsDateDbo(
-        lastDate: today,
-        nowDate: today,
-        lastSteps: 0,
-        nowSteps: 0,
-      );
-      await _hive.stepsDateBox.put(
-        HiveDBProvider.stepsDateEntryKey,
-        newEntry,
-      );
-      if (!mounted) return;
-      setState(() {
-        _steps = 0;
-      });
-      return;
-    }
+    if (lastDate.isBefore(today)) {
+      _stepsBox
+        ..lastDate = today
+        ..lastSteps = _stepsBox.nowSteps
+        ..nowSteps = _stepsBox.nowSteps
+        ..diff = _stepsBox.diff;
 
-    final DateTime? storedNowDate = stepsDate.nowDate == null
-        ? null
-        : DateUtils.dateOnly(stepsDate.nowDate!);
-
-    if (storedNowDate == null || storedNowDate.isBefore(today)) {
-      stepsDate
-        ..lastDate = stepsDate.nowDate
-        ..nowDate = today
-        ..lastSteps = (stepsDate.lastSteps ?? 0) + (stepsDate.nowSteps ?? 0)
-        ..nowSteps = 0;
-      await stepsDate.save();
+      await _stepsBox.save();
       if (!mounted) return;
       setState(() {
         _steps = 0;
       });
     }
   }
+
 }

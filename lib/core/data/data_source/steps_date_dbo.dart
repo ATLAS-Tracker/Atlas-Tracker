@@ -5,21 +5,21 @@ part 'steps_date_dbo.g.dart';
 @HiveType(typeId: 21)
 class StepsDateDbo extends HiveObject {
   StepsDateDbo({
-    this.lastDate,
-    this.nowDate,
-    this.lastSteps,
-    this.nowSteps,
+    required this.lastSteps,
+    required this.nowSteps,
+    required this.diff,
+    required this.lastDate,
   });
 
   @HiveField(0)
-  DateTime? lastDate;
+  int lastSteps = 0;
 
   @HiveField(1)
-  DateTime? nowDate;
+  int nowSteps = 0;
 
   @HiveField(2)
-  int? lastSteps;
+  int diff = 0;
 
   @HiveField(3)
-  int? nowSteps;
+  DateTime lastDate = DateTime.now();
 }

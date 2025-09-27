@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 
 class DailyStepsRecorder {
-  final HiveDBProvider hive;
+  final StepsDateDbo stepsBox;
   final Future<void> Function()? onThresholdReached;
 
   DailyStepsRecorder(
-    this.hive, {
+    this.stepsBox, {
     this.onThresholdReached,
   });
 
   String dayKeyFor(DateTime date) => DateUtils.dateOnly(date).toIso8601String();
 
-  int maybeSaveSteps(int steps, DateTime eventTime) {
+  int maybeSaveSteps(int steps) {
 
-    // Get the box for steps
-    final stepsBox = hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+    debugPrint('Steps recorded: $steps');
 
-    // get last saved steps
-    final int lastStep = stepsBox?.lastSteps ?? 0;
-
-    if (steps - lastStep >= 0) {
-      stepsBox?.nowSteps = steps - lastStep;
-    } else {
-      stepsBox?.nowSteps = (stepsBox.nowSteps ?? 0) + steps;
-
-    }
+    stepsBox.nowSteps = getTotalStepsSinceAppInstall(steps);
 
     onThresholdReached?.call();
-    return stepsBox?.nowSteps ?? 0;
+
+    return stepsBox.nowSteps - stepsBox.lastSteps;
+  }
+
+  int getTotalStepsSinceAppInstall(int steps) {
+
+    if(steps + stepsBox.diff < stepsBox.nowSteps)
+    {
+      // A reset happened of the phone
+      stepsBox.diff = stepsBox.nowSteps;
+    }
+
+    return steps + stepsBox.diff;
   }
 }

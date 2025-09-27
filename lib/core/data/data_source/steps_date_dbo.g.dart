@@ -2,6 +2,10 @@
 
 part of 'steps_date_dbo.dart';
 
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
+
 class StepsDateDboAdapter extends TypeAdapter<StepsDateDbo> {
   @override
   final int typeId = 21;
@@ -13,10 +17,10 @@ class StepsDateDboAdapter extends TypeAdapter<StepsDateDbo> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return StepsDateDbo(
-      lastDate: fields[0] as DateTime?,
-      nowDate: fields[1] as DateTime?,
-      lastSteps: fields[2] as int?,
-      nowSteps: fields[3] as int?,
+      lastSteps: fields[0] as int,
+      nowSteps: fields[1] as int,
+      diff: fields[2] as int,
+      lastDate: fields[3] as DateTime,
     );
   }
 
@@ -25,13 +29,13 @@ class StepsDateDboAdapter extends TypeAdapter<StepsDateDbo> {
     writer
       ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.lastDate)
-      ..writeByte(1)
-      ..write(obj.nowDate)
-      ..writeByte(2)
       ..write(obj.lastSteps)
+      ..writeByte(1)
+      ..write(obj.nowSteps)
+      ..writeByte(2)
+      ..write(obj.diff)
       ..writeByte(3)
-      ..write(obj.nowSteps);
+      ..write(obj.lastDate);
   }
 
   @override

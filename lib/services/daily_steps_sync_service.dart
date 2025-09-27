@@ -7,7 +7,6 @@ import 'package:opennutritracker/features/sync/supabase_client.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DailyStepsSyncService with WidgetsBindingObserver {
-  static const _lastSyncKey = '_lastStepsSync';
 
   final HiveDBProvider _hive;
   final SupabaseDailyStepsService _service;
@@ -59,17 +58,17 @@ class DailyStepsSyncService with WidgetsBindingObserver {
 
       final stepsBox = _hive.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
 
-      if (stepsBox == null || stepsBox.nowDate == null || stepsBox.nowSteps == null) {
+      if (stepsBox == null) {
         _log.fine('No steps data to sync.');
         return;
       }
 
-      final steps = stepsBox.nowSteps!;
+      final steps = stepsBox.nowSteps - stepsBox.lastSteps;
       if (steps % 100 >= 0 && steps % 100 <= 10) {
         final entries = [
           {
         'user_id': userId,
-        'date': stepsBox.nowDate!.toIso8601String().split('T').first,
+        'date': DateUtils.dateOnly(DateTime.now()).toIso8601String(),
         'steps': steps,
           }
         ];
