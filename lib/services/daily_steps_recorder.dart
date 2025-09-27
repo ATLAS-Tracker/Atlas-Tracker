@@ -16,7 +16,8 @@ class DailyStepsRecorder {
 
     debugPrint('Steps recorded: $steps');
 
-    stepsBox.nowSteps = getTotalStepsSinceAppInstall(steps);
+    final positiveSteps = getStepsWithoutNegative(steps);
+    stepsBox.nowSteps = getTotalStepsSinceAppInstall(positiveSteps);
 
     onThresholdReached?.call();
 
@@ -32,5 +33,22 @@ class DailyStepsRecorder {
     }
 
     return steps + stepsBox.diff;
+  }
+
+  int getStepsWithoutNegative(int steps) {
+    if(steps >= 0)
+    {
+      return steps;
+    }
+    else if(steps + stepsBox.errorSteps < 0)
+    {
+      stepsBox.errorSteps = -steps;
+      return steps + stepsBox.errorSteps;
+    } 
+    else if(steps + stepsBox.errorSteps >= 0)
+    {
+      return steps + stepsBox.errorSteps;
+    }
+    return steps;
   }
 }

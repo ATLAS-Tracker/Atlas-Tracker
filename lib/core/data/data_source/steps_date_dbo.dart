@@ -22,4 +22,7 @@ class StepsDateDbo extends HiveObject {
 
   @HiveField(3)
   DateTime lastDate = DateTime.now();
+
+  @HiveField(4)
+  int errorSteps = 0;
 }
