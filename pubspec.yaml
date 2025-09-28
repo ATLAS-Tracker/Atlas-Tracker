@@ -45,6 +45,7 @@ dependencies:
   equatable: ^2.0.7
   app_links: ^6.4.0
   email_validator: ^2.1.17
+  cm_pedometer: ^1.2.0
 
   percent_indicator: ^4.2.4
   horizontal_picker: ^1.2.0

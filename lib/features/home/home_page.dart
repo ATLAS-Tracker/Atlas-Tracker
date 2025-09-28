@@ -22,7 +22,8 @@ import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
 import 'package:opennutritracker/services/daily_steps_sync_service.dart';
 import 'package:opennutritracker/services/step_count_service.dart';
-import 'package:pedometer/pedometer.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:cm_pedometer/cm_pedometer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late StepsDateDbo _stepsBox;
   int _steps = 0;
   late final StepCountService _stepCountService;
-  StreamSubscription<StepCount>? _stepCountSubscription;
+  late Stream<CMPedometerData> _stepCountFromStream;
 
   @override
   void initState() {
@@ -60,50 +61,53 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     initPlatformState();
   }
 
-  void onStepCount(StepCount event) {
-    final correctedStep = _stepsRecorder.maybeSaveSteps(event.steps);
-
+  void onStepCount(CMPedometerData event) {
+    //final correctedStep = _stepsRecorder.maybeSaveSteps(event.numberOfSteps);
+    log.info('StepCount: ${event.numberOfSteps} steps');
     setState(() {
-      _steps = correctedStep;
+      _steps = event.numberOfSteps;
     });
   }
 
   void onStepCountError(error) {
-    log.severe('StepCount error: $error');
+    //log.severe('StepCount error: $error');
 
-    setState(() {
-      _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
-    });
+    //setState(() {
+    //  _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
+    //});
   }
 
   Future<void> initPlatformState() async {
-    final stream = await _stepCountService.getStepCountStream();
+    bool granted = await _checkActivityRecognitionPermission();
+    if (!granted) {
+    }
+
+    // Start time for step count from
+    final DateTime now = DateTime.now();
+    final DateTime _from = DateTime(now.year, now.month, now.day);
+
+    // Stream for step count from a specific start time
+    _stepCountFromStream = CMPedometer.stepCounterFirstStream(from: _from);
+    _stepCountFromStream.listen(onStepCount).onError(onStepCountError);
+
     if (!mounted) return;
+  }
 
-    if (stream == null) {
-      log.warning(
-          'Activity recognition permission not granted; disabling step tracking.');
-      return;
+    // Check if activity recognition permission is granted
+  Future<bool> _checkActivityRecognitionPermission() async {
+    bool granted = await Permission.activityRecognition.isGranted;
+
+    if (!granted) {
+      granted = await Permission.activityRecognition.request() ==
+          PermissionStatus.granted;
     }
 
-    final previousSubscription = _stepCountSubscription;
-    if (previousSubscription != null) {
-      unawaited(previousSubscription.cancel());
-    }
-
-    _stepCountSubscription = stream.listen(
-      onStepCount,
-      onError: onStepCountError,
-    );
+    return granted;
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    final subscription = _stepCountSubscription;
-    if (subscription != null) {
-      unawaited(subscription.cancel());
-    }
     super.dispose();
   }
 
@@ -149,7 +153,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
       _refreshPageOnDayChange();
-      unawaited(_resetStepsIfDayChanged());
+      unawaited(initPlatformState());
     }
     super.didChangeAppLifecycleState(state);
   }
