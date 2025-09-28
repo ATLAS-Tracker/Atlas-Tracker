@@ -61,6 +61,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void onStepCount(StepCount event) {
+    if(_stepsBox.lastDate.isBefore(event.timeStamp))
+    {
+      unawaited(_resetStepsIfDayChanged());
+    }
+
     final correctedStep = _stepsRecorder.maybeSaveSteps(event.steps);
 
     setState(() {
