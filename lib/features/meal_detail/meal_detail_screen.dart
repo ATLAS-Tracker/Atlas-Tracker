@@ -70,11 +70,10 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
     // Set initial unit
     if (_initialUnit == "") {
-      if (meal.mealUnit != null) {
-        _initialUnit =
-            UnitDropdownItem.g.fromString(meal.mealUnit!).toString();
-      } else if (meal.hasServingValues) {
+      if (meal.hasServingValues) {
         _initialUnit = UnitDropdownItem.serving.toString();
+      } else if (meal.mealUnit != null) {
+        _initialUnit = UnitDropdownItem.g.fromString(meal.mealUnit!).toString();
       } else if (meal.isLiquid) {
         _initialUnit = _usesImperialUnits
             ? UnitDropdownItem.flOz.toString()
