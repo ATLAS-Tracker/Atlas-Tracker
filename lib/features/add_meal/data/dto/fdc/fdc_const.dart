@@ -24,7 +24,7 @@ class FDCConst {
     _fdcDataTypeSRLegacyValue
   ];
 
-  static const fdcDefaultUnit = 'g/ml';
+  static const fdcDefaultUnit = 'g';
 
   // TODO Make translation keys
   static const Map<int, String> measureUnits = {
@@ -149,6 +149,7 @@ class FDCConst {
     1118: "Tablespoons",
     1119: "Banana",
     1120: "Onion",
+    1121: "ml",
     9999: "portion", // undetermined
   };
 

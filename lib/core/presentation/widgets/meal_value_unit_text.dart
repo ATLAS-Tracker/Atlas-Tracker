@@ -23,7 +23,7 @@ class MealValueUnitText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mealUnit = meal.mealUnit ?? 'g/ml';
+    final mealUnit = meal.mealUnit ?? 'g';
     final targetUnit = displayUnit ?? _convertUnit(mealUnit);
     final convertedValue = _convertValue(value, mealUnit, targetUnit);
     final unitToDisplay = _localizeUnit(context, targetUnit);
@@ -91,9 +91,6 @@ class MealValueUnitText extends StatelessWidget {
       case 'fl oz':
       case 'fl.oz':
         return S.of(context).flOzUnit;
-      case 'g/ml':
-      case 'gml':
-        return S.of(context).gramMilliliterUnit;
       case 'serving':
         return S.of(context).servingLabel;
       default:
@@ -106,7 +103,7 @@ class MealValueUnitText extends StatelessWidget {
     return formattedValue.endsWith('.00')
         ? formattedValue.substring(0, formattedValue.length - 3)
         : formattedValue.endsWith('0')
-        ? formattedValue.substring(0, formattedValue.length - 1)
-        : formattedValue;
+            ? formattedValue.substring(0, formattedValue.length - 1)
+            : formattedValue;
   }
 }

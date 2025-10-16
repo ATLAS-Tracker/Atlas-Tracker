@@ -22,17 +22,15 @@ class MealDetailNutrimentsTable extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyleNormal =
         Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
-    final textStyleBold =
-        Theme.of(
+    final textStyleBold = Theme.of(
           context,
         ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold) ??
         const TextStyle();
 
-    final headerText =
-        (usesImperialUnits && servingQuantity != null) ||
+    final headerText = (usesImperialUnits && servingQuantity != null) ||
             product.mealOrRecipe == MealOrRecipeEntity.recipe
         ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${_localizedUnit(context, servingUnit)})"
-        : S.of(context).per100gmlLabel;
+        : "${S.of(context).per100gmlLabel} ${product.mealUnit}";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,32 +56,32 @@ class MealDetailNutrimentsTable extends StatelessWidget {
             ),
             _getNutrimentsTableRow(
               S.of(context).fatLabel,
-              "${_adjustValueForServing(product.nutriments.fatPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.fatPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
             _getNutrimentsTableRow(
               '   ${S.of(context).saturatedFatLabel}',
-              "${_adjustValueForServing(product.nutriments.saturatedFatPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.saturatedFatPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
             _getNutrimentsTableRow(
               S.of(context).carbohydrateLabel,
-              "${_adjustValueForServing(product.nutriments.carbohydratesPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.carbohydratesPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
             _getNutrimentsTableRow(
               '    ${S.of(context).sugarLabel}',
-              "${_adjustValueForServing(product.nutriments.sugarsPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.sugarsPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
             _getNutrimentsTableRow(
               S.of(context).fiberLabel,
-              "${_adjustValueForServing(product.nutriments.fiberPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.fiberPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
             _getNutrimentsTableRow(
               S.of(context).proteinLabel,
-              "${_adjustValueForServing(product.nutriments.proteinsPerQuantity ?? 0).roundToPrecision(2)}g",
+              "${_adjustValueForServing(product.nutriments.proteinsPerQuantity ?? 0).roundToPrecision(2)} g",
               textStyleNormal,
             ),
           ],
@@ -133,11 +131,8 @@ class MealDetailNutrimentsTable extends StatelessWidget {
       case 'fl oz':
       case 'fl.oz':
         return S.of(context).flOzUnit;
-      case 'g/ml':
-      case 'gml':
-        return S.of(context).gramMilliliterUnit;
       default:
-        return unit ?? S.of(context).gramMilliliterUnit;
+        return unit ?? S.of(context).gramUnit;
     }
   }
 }

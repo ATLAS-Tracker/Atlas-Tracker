@@ -130,6 +130,9 @@ class MealEntity extends Equatable {
   factory MealEntity.fromSpFDCFood(SpFdcFoodDTO foodItem) {
     final fdcId = foodItem.fdcId?.toInt().toString();
 
+    final unit = FDCConst.measureUnits[foodItem.portion?.measureUnitId] ??
+        FDCConst.fdcDefaultUnit;
+
     return MealEntity(
         code: fdcId,
         name: foodItem.getLocaleDescription(
@@ -139,9 +142,9 @@ class MealEntity extends Equatable {
         mainImageUrl: foodItem.pictureUrl,
         url: FDCConst.getFoodDetailUrlString(fdcId),
         mealQuantity: null,
-        mealUnit: FDCConst.fdcDefaultUnit,
+        mealUnit: unit,
         servingQuantity: foodItem.servingSize,
-        servingUnit: FDCConst.fdcDefaultUnit,
+        servingUnit: unit,
         servingSize:
             "${(foodItem.servingAmount ?? 1).toInt()} ${foodItem.servingSizeUnit}",
         nutriments: MealNutrimentsEntity.fromFDCNutriments(foodItem.nutrients),

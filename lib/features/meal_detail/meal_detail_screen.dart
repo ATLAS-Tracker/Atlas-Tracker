@@ -83,7 +83,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             ? UnitDropdownItem.oz.toString()
             : UnitDropdownItem.g.toString();
       } else {
-        _initialUnit = UnitDropdownItem.gml.toString();
+        _initialUnit = UnitDropdownItem.g.toString();
       }
       _mealDetailBloc
           .add(UpdateKcalEvent(meal: meal, selectedUnit: _initialUnit));
@@ -91,12 +91,12 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
     // Set initial quantity
     if (_initialQuantity == "") {
-      if (meal.mealQuantity != null) {
-        _initialQuantity = meal.mealQuantity!;
-        quantityTextController.text = meal.mealQuantity!;
-      } else if (meal.hasServingValues) {
+      if (meal.hasServingValues) {
         _initialQuantity = "1";
         quantityTextController.text = "1";
+      } else if (meal.mealQuantity != null) {
+        _initialQuantity = meal.mealQuantity!;
+        quantityTextController.text = meal.mealQuantity!;
       } else if (_usesImperialUnits) {
         _initialQuantity = _initialQuantityImperial;
         quantityTextController.text = _initialQuantityImperial;

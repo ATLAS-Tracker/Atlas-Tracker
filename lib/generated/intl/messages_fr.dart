@@ -69,7 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "averageWeightLabel":
             MessageLookupByLibrary.simpleMessage("Poids moyen"),
         "baseQuantityLabel":
-            MessageLookupByLibrary.simpleMessage("Quantité de base (g/ml)"),
+            MessageLookupByLibrary.simpleMessage("Quantité de base"),
         "betaVersionName": MessageLookupByLibrary.simpleMessage("[Bêta]"),
         "bmiInfo": MessageLookupByLibrary.simpleMessage(
             "L\'indice de masse corporelle (IMC) est un indice permettant de classer le surpoids et l\'obésité chez les adultes. Il est défini comme le poids en kilogrammes divisé par le carré de la taille en mètres (kg/m²).\n\nL\'IMC ne fait pas de distinction entre la masse grasse et la masse musculaire et peut être trompeur pour certaines personnes."),
@@ -276,7 +276,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Activer la synchronisation Supabase"),
         "manageAccountTitle":
             MessageLookupByLibrary.simpleMessage("Gérer le compte"),
-        "mealBrandsLabel": MessageLookupByLibrary.simpleMessage("Marques"),
+        "mealBrandsLabel": MessageLookupByLibrary.simpleMessage("Marque"),
         "mealCarbsLabel": MessageLookupByLibrary.simpleMessage("glucides par"),
         "mealFatLabel": MessageLookupByLibrary.simpleMessage("lipides par"),
         "mealKcalLabel": MessageLookupByLibrary.simpleMessage("kcal par"),
@@ -284,11 +284,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealPortionLabel":
             MessageLookupByLibrary.simpleMessage("Nombre de portions"),
         "mealProteinLabel":
-            MessageLookupByLibrary.simpleMessage("protéines par 100 g/ml"),
+            MessageLookupByLibrary.simpleMessage("protéines par"),
         "mealSizeLabel":
-            MessageLookupByLibrary.simpleMessage("Taille du repas (g/ml)"),
+            MessageLookupByLibrary.simpleMessage("Quantité par défaut"),
         "mealSizeLabelImperial":
-            MessageLookupByLibrary.simpleMessage("Taille du repas (oz/fl oz)"),
+            MessageLookupByLibrary.simpleMessage("Quantité par défaut"),
         "mealUnitLabel": MessageLookupByLibrary.simpleMessage("Unité de repas"),
         "milliliterUnit": MessageLookupByLibrary.simpleMessage("ml"),
         "minutesAbbrevLabel": MessageLookupByLibrary.simpleMessage("min"),
@@ -676,7 +676,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Au moins 1 caractère spécial"),
         "passwordUppercase":
             MessageLookupByLibrary.simpleMessage("Au moins 1 majuscule"),
-        "per100gmlLabel": MessageLookupByLibrary.simpleMessage("Pour 100g/ml"),
+        "per100gmlLabel": MessageLookupByLibrary.simpleMessage("Pour 100"),
         "perServingLabel": MessageLookupByLibrary.simpleMessage("Par portion"),
         "portionEatLabel":
             MessageLookupByLibrary.simpleMessage("Portion mangée"),
@@ -741,10 +741,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "sendAnonymousUserData": MessageLookupByLibrary.simpleMessage(
             "Envoyer des données d\'utilisation anonymes"),
         "servingLabel": MessageLookupByLibrary.simpleMessage("Portion"),
-        "servingSizeLabelImperial": MessageLookupByLibrary.simpleMessage(
-            "Taille de la portion (oz/fl oz)"),
+        "servingSizeLabelImperial":
+            MessageLookupByLibrary.simpleMessage("Quantité par portion"),
         "servingSizeLabelMetric":
-            MessageLookupByLibrary.simpleMessage("Taille de la portion (g/ml)"),
+            MessageLookupByLibrary.simpleMessage("Quantité par portion"),
         "setMacrosLabel":
             MessageLookupByLibrary.simpleMessage("Définir les macros"),
         "settingAboutLabel": MessageLookupByLibrary.simpleMessage("À propos"),
