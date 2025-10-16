@@ -15,9 +15,10 @@ SpFdcFoodDTO _$SpFdcFoodDTOFromJson(Map<String, dynamic> json) => SpFdcFoodDTO(
       nutrients: (json['fdc_nutrients'] as List<dynamic>)
           .map((e) => FDCFoodNutrimentDTO.fromJson(e as Map<String, dynamic>))
           .toList(),
-      portions: (json['fdc_portions'] as List<dynamic>)
-          .map((e) => SpFdcPortionDTO.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      portion: json['fdc_portions'] == null
+          ? null
+          : SpFdcPortionDTO.fromJson(
+              json['fdc_portions'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$SpFdcFoodDTOToJson(SpFdcFoodDTO instance) =>
@@ -27,6 +28,6 @@ Map<String, dynamic> _$SpFdcFoodDTOToJson(SpFdcFoodDTO instance) =>
       'description_de': instance.descriptionDe,
       'description_fr': instance.descriptionFr,
       'fdc_nutrients': instance.nutrients,
-      'fdc_portions': instance.portions,
+      'fdc_portions': instance.portion,
       'picture_url': instance.pictureUrl,
     };
