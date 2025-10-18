@@ -4,6 +4,7 @@ import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/sync/supabase_client.dart';
+import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DailyStepsSyncService with WidgetsBindingObserver {
@@ -12,6 +13,7 @@ class DailyStepsSyncService with WidgetsBindingObserver {
   final SupabaseDailyStepsService _service;
   final Connectivity _connectivity;
   final Logger _log = Logger('DailyStepsSyncService');
+  final StepTrackingControllerFactory _stepTrackingFactory;
   final String? Function()? _userIdProvider;
 
   DailyStepsSyncService({
@@ -19,11 +21,13 @@ class DailyStepsSyncService with WidgetsBindingObserver {
     SupabaseDailyStepsService? service,
     Connectivity? connectivity,
     String? Function()? userIdProvider,
-    DateTime Function()? nowProvider,
+    StepTrackingControllerFactory? stepTrackingFactory,
   })  : _hive = hive ?? locator<HiveDBProvider>(),
         _service = service ?? SupabaseDailyStepsService(),
         _connectivity = connectivity ?? locator<Connectivity>(),
-        _userIdProvider = userIdProvider;
+        _userIdProvider = userIdProvider,
+        _stepTrackingFactory =
+            stepTrackingFactory ?? locator<StepTrackingControllerFactory>();
 
   Future<void> init() async {
     WidgetsBinding.instance.addObserver(this);
@@ -63,13 +67,13 @@ class DailyStepsSyncService with WidgetsBindingObserver {
         return;
       }
 
-      final steps = stepsBox.nowSteps - stepsBox.lastSteps;
+      final steps = _stepTrackingFactory.dailyStepsFromBox(stepsBox);
       if (steps % 100 >= 0 && steps % 100 <= 10) {
         final entries = [
           {
-        'user_id': userId,
-        'date': DateUtils.dateOnly(DateTime.now()).toIso8601String(),
-        'steps': steps,
+            'user_id': userId,
+            'date': DateUtils.dateOnly(DateTime.now()).toIso8601String(),
+            'steps': steps,
           }
         ];
 

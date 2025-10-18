@@ -11,6 +11,7 @@ import 'package:opennutritracker/core/data/data_source/tracked_day_data_source.d
 import 'package:opennutritracker/core/data/data_source/user_activity_data_source.dart';
 import 'package:opennutritracker/core/data/data_source/user_data_source.dart';
 import 'package:opennutritracker/core/data/data_source/user_weight_data_source.dart';
+import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/core/data/repository/config_repository.dart';
 import 'package:opennutritracker/core/data/repository/intake_repository.dart';
 import 'package:opennutritracker/core/data/repository/recipe_repository.dart';
@@ -354,7 +355,10 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton<StepTrackingControllerFactory>(
     () => PlatformStepTrackingControllerFactory(
       androidBuilder: () => _createAndroidStepTrackingController(locator),
-      appleBuilder: _createAppleStepTrackingController,
+      appleBuilder: () => _createAppleStepTrackingController(locator),
+      androidStepsCalculator: _calculateAndroidDailySteps,
+      appleStepsCalculator: _calculateAppleDailySteps,
+      defaultStepsCalculator: _calculateDefaultDailySteps,
     ),
   );
 
@@ -393,8 +397,29 @@ StepTrackingController? _createAndroidStepTrackingController(GetIt locator) {
   );
 }
 
-StepTrackingController? _createAppleStepTrackingController() {
-  return AppleStepTrackingController();
+StepTrackingController? _createAppleStepTrackingController(GetIt locator) {
+  final hiveProvider = locator<HiveDBProvider>();
+  final stepsBox =
+      hiveProvider.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+  if (stepsBox == null) {
+    return null;
+  }
+  return AppleStepTrackingController(
+    stepsBox: stepsBox,
+    dailyStepsSyncService: locator<DailyStepsSyncService>(),
+  );
+}
+
+int _calculateAndroidDailySteps(StepsDateDbo stepsBox) {
+  return stepsBox.nowSteps - stepsBox.lastSteps;
+}
+
+int _calculateAppleDailySteps(StepsDateDbo stepsBox) {
+  return stepsBox.nowSteps;
+}
+
+int _calculateDefaultDailySteps(StepsDateDbo stepsBox) {
+  return stepsBox.nowSteps;
 }
 
 Future<void> _initializeConfig(ConfigDataSource configDataSource) async {
