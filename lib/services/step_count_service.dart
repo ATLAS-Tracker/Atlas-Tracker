@@ -3,17 +3,25 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:pedometer/pedometer.dart';
+import 'package:opennutritracker/services/step_count/step_count_event.dart';
+import 'package:opennutritracker/services/step_count/step_count_provider.dart';
 
 class StepCountService {
-  StepCountService();
+  StepCountService(this._stepCountProvider);
 
-  Stream<StepCount>? _stepCountStream;
+  final StepCountProvider? _stepCountProvider;
+
+  Stream<StepCountEvent>? _stepCountStream;
   Future<bool>? _permissionRequest;
 
-  Future<Stream<StepCount>?> getStepCountStream() async {
+  Future<Stream<StepCountEvent>?> getStepCountStream() async {
     if (_stepCountStream != null) {
       return _stepCountStream;
+    }
+
+    final provider = _stepCountProvider;
+    if (provider == null) {
+      return null;
     }
 
     final hasPermission = await _ensureActivityRecognitionPermission();
@@ -21,7 +29,7 @@ class StepCountService {
       return null;
     }
 
-    _stepCountStream ??= Pedometer.stepCountStream.asBroadcastStream();
+    _stepCountStream ??= provider.getStepCountStream().asBroadcastStream();
     return _stepCountStream;
   }
 

@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get_it/get_it.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -76,7 +78,13 @@ import 'package:opennutritracker/features/settings/presentation/bloc/export_impo
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/services/daily_steps_sync_service.dart';
+import 'package:opennutritracker/services/step_count/android_step_count_provider.dart';
+import 'package:opennutritracker/services/step_count/step_count_provider.dart';
 import 'package:opennutritracker/services/step_count_service.dart';
+import 'package:opennutritracker/services/step_tracking/android_step_tracking_controller.dart';
+import 'package:opennutritracker/services/step_tracking/apple_step_tracking_controller.dart';
+import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
+import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
 
 final locator = GetIt.instance;
 const _userScope = 'user_scope';
@@ -340,7 +348,15 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     () => RecipeSearchBloc(locator(), locator(), locator()),
   );
   locator.registerLazySingleton(() => WeightBloc());
-  locator.registerLazySingleton(() => StepCountService());
+  locator.registerLazySingleton(
+    () => StepCountService(_createStepCountProvider()),
+  );
+  locator.registerLazySingleton<StepTrackingControllerFactory>(
+    () => PlatformStepTrackingControllerFactory(
+      androidBuilder: () => _createAndroidStepTrackingController(locator),
+      appleBuilder: _createAppleStepTrackingController,
+    ),
+  );
 
   final stepsSyncService = DailyStepsSyncService();
   await stepsSyncService.init();
@@ -350,6 +366,35 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   );
 
   await _initializeConfig(locator());
+}
+
+StepCountProvider? _createStepCountProvider() {
+  try {
+    if (Platform.isAndroid) {
+      return AndroidStepCountProvider();
+    }
+  } catch (_) {
+    // Platform may throw if not supported (e.g. tests). Assume no provider.
+  }
+  return null;
+}
+
+StepTrackingController? _createAndroidStepTrackingController(GetIt locator) {
+  final hiveProvider = locator<HiveDBProvider>();
+  final stepsBox =
+      hiveProvider.stepsDateBox.get(HiveDBProvider.stepsDateEntryKey);
+  if (stepsBox == null) {
+    return null;
+  }
+  return AndroidStepTrackingController(
+    stepCountService: locator<StepCountService>(),
+    stepsBox: stepsBox,
+    dailyStepsSyncService: locator<DailyStepsSyncService>(),
+  );
+}
+
+StepTrackingController? _createAppleStepTrackingController() {
+  return AppleStepTrackingController();
 }
 
 Future<void> _initializeConfig(ConfigDataSource configDataSource) async {

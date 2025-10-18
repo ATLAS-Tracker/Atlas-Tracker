@@ -17,12 +17,8 @@ import 'package:opennutritracker/features/home/presentation/widgets/dashboard_wi
 import 'package:opennutritracker/features/home/presentation/widgets/intake_vertical_list.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:opennutritracker/core/utils/hive_db_provider.dart';
-import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
-import 'package:opennutritracker/services/daily_steps_recorder.dart';
-import 'package:opennutritracker/services/daily_steps_sync_service.dart';
-import 'package:opennutritracker/services/step_count_service.dart';
-import 'package:pedometer/pedometer.dart';
+import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
+import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,80 +31,46 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final log = Logger('HomePage');
   late HomeBloc _homeBloc;
   bool _isDragging = false;
-  late DailyStepsRecorder _stepsRecorder;
-  late StepsDateDbo _stepsBox;
   int _steps = 0;
-  late final StepCountService _stepCountService;
-  StreamSubscription<StepCount>? _stepCountSubscription;
+  StepTrackingController? _stepTrackingController;
+  StreamSubscription<int>? _stepSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _homeBloc = locator<HomeBloc>();
-    _stepCountService = locator<StepCountService>();
-    _stepsBox = locator<HiveDBProvider>()
-        .stepsDateBox
-        .get(HiveDBProvider.stepsDateEntryKey)!; // TODO refactor
-    _stepsRecorder = DailyStepsRecorder(
-      _stepsBox,
-      onThresholdReached: locator<DailyStepsSyncService>().syncPendingSteps,
-    );
-    unawaited(_resetStepsIfDayChanged());
-    _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
-
-    initPlatformState();
+    _initializeStepTracking();
   }
 
-  void onStepCount(StepCount event) {
-    if(_stepsBox.lastDate.isBefore(event.timeStamp))
-    {
-      unawaited(_resetStepsIfDayChanged());
-    }
-
-    final correctedStep = _stepsRecorder.maybeSaveSteps(event.steps);
-
-    setState(() {
-      _steps = correctedStep;
-    });
-  }
-
-  void onStepCountError(error) {
-    log.severe('StepCount error: $error');
-
-    setState(() {
-      _steps = _stepsBox.nowSteps - _stepsBox.lastSteps;
-    });
-  }
-
-  Future<void> initPlatformState() async {
-    final stream = await _stepCountService.getStepCountStream();
-    if (!mounted) return;
-
-    if (stream == null) {
-      log.warning(
-          'Activity recognition permission not granted; disabling step tracking.');
+  Future<void> _initializeStepTracking() async {
+    final factory = locator<StepTrackingControllerFactory>();
+    _stepTrackingController = factory.create();
+    final controller = _stepTrackingController;
+    if (controller == null) {
+      log.info('No step tracking controller available for this platform.');
       return;
     }
 
-    final previousSubscription = _stepCountSubscription;
-    if (previousSubscription != null) {
-      unawaited(previousSubscription.cancel());
-    }
+    final initialSteps = await controller.initialize();
+    if (!mounted) return;
+    setState(() {
+      _steps = initialSteps;
+    });
 
-    _stepCountSubscription = stream.listen(
-      onStepCount,
-      onError: onStepCountError,
-    );
+    _stepSubscription = controller.stepsStream.listen((steps) {
+      if (!mounted) return;
+      setState(() {
+        _steps = steps;
+      });
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    final subscription = _stepCountSubscription;
-    if (subscription != null) {
-      unawaited(subscription.cancel());
-    }
+    unawaited(_stepSubscription?.cancel());
+    unawaited(_stepTrackingController?.dispose());
     super.dispose();
   }
 
@@ -154,7 +116,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       log.info('App resumed');
       _refreshPageOnDayChange();
-      unawaited(_resetStepsIfDayChanged());
+      final controller = _stepTrackingController;
+      if (controller != null) {
+        unawaited(controller.handleAppResumed());
+      }
     }
     super.didChangeAppLifecycleState(state);
   }
@@ -406,23 +371,4 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _resetStepsIfDayChanged() async {
-    final today = DateUtils.dateOnly(DateTime.now());
-    final lastDate = _stepsBox.lastDate;
-
-    if (lastDate.isBefore(today)) {
-      _stepsBox
-        ..lastDate = today
-        ..lastSteps = _stepsBox.nowSteps
-        ..nowSteps = _stepsBox.nowSteps
-        ..diff = _stepsBox.diff
-        ..errorSteps = _stepsBox.errorSteps;
-
-      await _stepsBox.save();
-      if (!mounted) return;
-      setState(() {
-        _steps = 0;
-      });
-    }
-  }
 }
