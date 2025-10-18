@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
+import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -27,10 +28,12 @@ class MealDetailNutrimentsTable extends StatelessWidget {
         ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold) ??
         const TextStyle();
 
+    final unit = product.mealUnit ?? FDCConst.fdcDefaultUnit;
+
     final headerText = (usesImperialUnits && servingQuantity != null) ||
             product.mealOrRecipe == MealOrRecipeEntity.recipe
         ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${_localizedUnit(context, servingUnit)})"
-        : "${S.of(context).per100gmlLabel} ${product.mealUnit}";
+        : "${S.of(context).per100gmlLabel} $unit";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
