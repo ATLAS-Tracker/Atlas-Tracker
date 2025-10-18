@@ -1,23 +1,15 @@
 # Development Agents – Guidelines
 
-## Mandatory Testing
+## Context7 Usage
+- Always route code generation, setup, configuration, or library/API documentation requests through the Context7 MCP tools.
+- Resolve the library ID first with `resolve-library-id`, then fetch focused docs via `get-library-docs` without waiting for an explicit prompt.
 
-Every time a change is made to the code (feature, bug fix, refactoring…), **you must run the tests** to ensure the stability of the project.
+## Mandatory Testing Workflow
+- After every code change (feature, bug fix, refactor), run the full Flutter validation suite to protect stability.
+- Execute the commands below in order and address any failures immediately.
 
-### How to run the tests
-
-1. Make sure all dependencies are installed:
-
-   ```bash
-   flutter pub get
-   ```
-2. Run the analysis:
-
-   ```bash
-   flutter analyze
-   ```   
-3. Run the tests:
-
-   ```bash
-   flutter test
-   ```
+```bash
+flutter pub get
+flutter analyze
+flutter test
+```

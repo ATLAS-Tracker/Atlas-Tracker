@@ -281,6 +281,16 @@ class S {
     );
   }
 
+  /// `Requests can take up to 20 seconds. After that only Atlas Tracker results are shown.`
+  String get productSearchMayTakeLongerMessage {
+    return Intl.message(
+      'Requests can take up to 20 seconds. After that only Atlas Tracker results are shown.',
+      name: 'productSearchMayTakeLongerMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `All`
   String get allItemsLabel {
     return Intl.message(
@@ -1308,6 +1318,17 @@ class S {
       'DELETE',
       name: 'dialogDeleteLabel',
       desc: '',
+      args: [],
+    );
+  }
+
+  /// `View product page`
+  String get viewProductSheetButtonLabel {
+    return Intl.message(
+      'View product page',
+      name: 'viewProductSheetButtonLabel',
+      desc:
+          'Button label in the intake edit dialog that opens the meal detail screen.',
       args: [],
     );
   }

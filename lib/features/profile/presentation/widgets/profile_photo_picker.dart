@@ -79,10 +79,13 @@ class _ProfilePhotoPickerState extends State<ProfilePhotoPicker> {
       onTap: _pickImage,
       child: CircleAvatar(
         radius: widget.size / 2,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         backgroundImage:
             _imagePath != null ? FileImage(File(_imagePath!)) : null,
         child: _imagePath == null
-            ? Icon(Icons.camera_alt, size: widget.size / 3)
+            ? Icon(Icons.camera_alt,
+                size: widget.size / 3,
+                color: Theme.of(context).colorScheme.onPrimary)
             : null,
       ),
     );

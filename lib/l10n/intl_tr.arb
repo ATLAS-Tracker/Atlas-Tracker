@@ -20,6 +20,7 @@
   "searchFoodPage": "Yiyecek",
   "searchResultsLabel": "Arama sonuçları",
   "searchDefaultLabel": "Lütfen bir arama kelimesi girin",
+  "productSearchMayTakeLongerMessage": "İstekler 20 saniyeye kadar sürebilir. Bu süreden sonra yalnızca Atlas Tracker sonuçları gösterilir.",
   "allItemsLabel": "Tümü",
   "recentlyAddedLabel": "Son Eklenenler",
   "noMealsRecentlyAddedLabel": "Son zamanlarda eklenen yemek yok",
@@ -123,6 +124,10 @@
   "copyOrDeleteTimeDialogContent": "\"Bugüne Kopyala\" ile yemeği bugüne kopyalayabilirsiniz. \"Sil\" ile yemeği silebilirsiniz.",
   "dialogCopyLabel": "BUGÜNE KOPYALA",
   "dialogDeleteLabel": "SİL",
+  "viewProductSheetButtonLabel": "Ürün sayfasını aç",
+  "@viewProductSheetButtonLabel": {
+    "description": "Ürün sayfasını açan düzenleme iletişim kutusu düğmesi etiketi."
+  },
   "suppliedLabel": "tüketilen",
   "burnedLabel": "yakılan",
   "stepsLabel": "adım",

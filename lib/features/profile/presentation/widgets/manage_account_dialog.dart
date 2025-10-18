@@ -156,7 +156,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
 
         final hive2 = locator<HiveDBProvider>();
         await hive2.initForUser(null);
-        await registerUserScope(hive2);
+        await registerUserScope(hive2, userId: null);
         if (!mounted) return;
 
         Navigator.of(context, rootNavigator: true)

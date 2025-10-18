@@ -38,7 +38,7 @@ class _AddMealScreenState extends State<AddMealScreen>
   late ProductsBloc _productsBloc;
   late RecentMealBloc _recentMealBloc;
   late RecipeSearchBloc _recipeSearchBloc;
-  int _resultsLimit = 10;
+  late final ScrollController _productsScrollController;
 
   late TabController _tabController;
 
@@ -48,6 +48,8 @@ class _AddMealScreenState extends State<AddMealScreen>
     _recentMealBloc = locator<RecentMealBloc>();
     _recipeSearchBloc = locator<RecipeSearchBloc>();
     _tabController = TabController(length: 3, vsync: this);
+    _productsScrollController = ScrollController();
+    _productsScrollController.addListener(_onProductsScroll);
     _tabController.addListener(() {
       // Update search results when tab changes
       _onSearchSubmit(_searchStringListener.value);
@@ -68,6 +70,8 @@ class _AddMealScreenState extends State<AddMealScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _productsScrollController.removeListener(_onProductsScroll);
+    _productsScrollController.dispose();
     super.dispose();
   }
 
@@ -122,59 +126,80 @@ class _AddMealScreenState extends State<AddMealScreen>
                           child: Text(S.of(context).searchResultsLabel,
                               style:
                                   Theme.of(context).textTheme.headlineSmall)),
-                      BlocBuilder<ProductsBloc, ProductsState>(
-                        bloc: _productsBloc,
-                        builder: (context, state) {
-                          if (state is ProductsInitial) {
-                            return const DefaultsResultsWidget();
-                          } else if (state is ProductsLoadingState) {
-                            return const Padding(
-                              padding: EdgeInsets.only(top: 32),
-                              child: CircularProgressIndicator(),
-                            );
-                          } else if (state is ProductsLoadedState) {
-                            final visibleCount = state.products.length < _resultsLimit
-                                ? state.products.length
-                                : _resultsLimit;
-                            return state.products.isNotEmpty
-                                ? Flexible(
-                                    child: Column(
-                                      children: [
-                                        Expanded(
-                                          child: ListView.builder(
-                                              itemCount: visibleCount,
-                                              itemBuilder: (context, index) {
-                                                return MealItemCard(
-                                                  day: _day,
-                                                  mealEntity: state.products[index],
-                                                  addMealType: _mealType,
-                                                  usesImperialUnits:
-                                                      state.usesImperialUnits,
-                                                );
-                                              }),
-                                        ),
-                                        if (state.products.length > visibleCount)
-                                          TextButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                _resultsLimit += 10;
-                                              });
-                                            },
-                                            child: const Text('Load more'),
-                                          )
-                                      ],
+                      Expanded(
+                        child: BlocBuilder<ProductsBloc, ProductsState>(
+                          bloc: _productsBloc,
+                          builder: (context, state) {
+                            if (state is ProductsInitial) {
+                              return const DefaultsResultsWidget();
+                            } else if (state is ProductsLoadingState) {
+                              return Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const CircularProgressIndicator(),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      S.of(context)
+                                          .productSearchMayTakeLongerMessage,
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium,
                                     ),
-                                  )
-                                : const NoResultsWidget();
-                          } else if (state is ProductsFailedState) {
-                            return ErrorDialog(
-                              errorText: S.of(context).errorFetchingProductData,
-                              onRefreshPressed: _onProductsRefreshButtonPressed,
-                            );
-                          } else {
-                            return const SizedBox();
-                          }
-                        },
+                                  ],
+                                ),
+                              );
+                            } else if (state is ProductsLoadedState) {
+                              if (state.visibleCount == 0) {
+                                return state.isLoadingMore
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : const NoResultsWidget();
+                              }
+                              final itemCount = state.visibleCount +
+                                  (state.isLoadingMore ? 1 : 0);
+                              return ListView.builder(
+                                controller: _productsScrollController,
+                                padding:
+                                    const EdgeInsets.only(bottom: 16, top: 8),
+                                itemCount: itemCount,
+                                itemBuilder: (context, index) {
+                                  if (index >= state.visibleCount) {
+                                    return const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 16),
+                                      child: Center(
+                                        child: SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return MealItemCard(
+                                    day: _day,
+                                    mealEntity: state.products[index],
+                                    addMealType: _mealType,
+                                    usesImperialUnits:
+                                        state.usesImperialUnits,
+                                  );
+                                },
+                              );
+                            } else if (state is ProductsFailedState) {
+                              return ErrorDialog(
+                                errorText: S.of(context).errorFetchingProductData,
+                                onRefreshPressed: _onProductsRefreshButtonPressed,
+                              );
+                            } else {
+                              return const SizedBox();
+                            }
+                          },
+                        ),
                       )
                     ],
                   ),
@@ -256,8 +281,13 @@ class _AddMealScreenState extends State<AddMealScreen>
   void _onSearchSubmit(String inputText) {
     switch (_tabController.index) {
       case 0:
-        _resultsLimit = 10;
-        _productsBloc.add(LoadProductsEvent(searchString: inputText));
+        final trimmedInput = inputText.trim();
+        _scrollProductsToTop();
+        if (trimmedInput.isEmpty) {
+          _productsBloc.add(const ClearProductsEvent());
+          return;
+        }
+        _productsBloc.add(LoadProductsEvent(searchString: trimmedInput));
         break;
       case 1:
         _recipeSearchBloc.add(LoadRecipeSearchEvent(searchString: inputText));
@@ -304,6 +334,29 @@ class _AddMealScreenState extends State<AddMealScreen>
           _mealType.getIntakeType(),
           usesImperialUnits,
         ));
+  }
+
+  void _onProductsScroll() {
+    if (!_productsScrollController.hasClients) {
+      return;
+    }
+    final state = _productsBloc.state;
+    if (state is! ProductsLoadedState) {
+      return;
+    }
+    if (!state.hasMore || state.isLoadingMore) {
+      return;
+    }
+    const threshold = 200.0;
+    if (_productsScrollController.position.extentAfter < threshold) {
+      _productsBloc.add(const LoadMoreProductsEvent());
+    }
+  }
+
+  void _scrollProductsToTop() {
+    if (_productsScrollController.hasClients) {
+      _productsScrollController.jumpTo(0);
+    }
   }
 }
 

@@ -14,9 +14,11 @@ class OFFDataSource {
   static const _timeoutDuration = Duration(seconds: 20); // TODO lower timeout
   final log = Logger('OFFDataSource');
 
-  Future<OFFWordResponseDTO> fetchSearchWordResults(String searchString) async {
+  Future<OFFWordResponseDTO> fetchSearchWordResults(String searchString,
+      {int page = 1, int pageSize = 20}) async {
     try {
-      final searchUrlString = OFFConst.getOffWordSearchUrl(searchString);
+      final searchUrlString =
+          OFFConst.getOffWordSearchUrl(searchString, page: page, pageSize: pageSize);
       final userAgentString = await AppConst.getUserAgentString();
       final httpClient = ONTHttpClient(userAgentString, http.Client());
 

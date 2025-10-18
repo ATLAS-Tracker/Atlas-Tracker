@@ -17,12 +17,36 @@ class ProductsLoadingState extends ProductsState {
 class ProductsLoadedState extends ProductsState {
   final List<MealEntity> products;
   final bool usesImperialUnits;
+  final int visibleCount;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   const ProductsLoadedState(
-      {required this.products, this.usesImperialUnits = false});
+      {required this.products,
+      required this.visibleCount,
+      this.usesImperialUnits = false,
+      this.hasMore = false,
+      this.isLoadingMore = false});
+
+  ProductsLoadedState copyWith({
+    List<MealEntity>? products,
+    bool? usesImperialUnits,
+    int? visibleCount,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return ProductsLoadedState(
+      products: products ?? this.products,
+      visibleCount: visibleCount ?? this.visibleCount,
+      usesImperialUnits: usesImperialUnits ?? this.usesImperialUnits,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
 
   @override
-  List<Object?> get props => [products];
+  List<Object?> get props =>
+      [products, usesImperialUnits, visibleCount, hasMore, isLoadingMore];
 }
 
 class ProductsFailedState extends ProductsState {

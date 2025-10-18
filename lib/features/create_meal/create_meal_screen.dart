@@ -19,6 +19,7 @@ import 'package:opennutritracker/features/create_meal/pick_image_screen.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 
 class MealCreationScreen extends StatefulWidget {
   const MealCreationScreen({super.key});
@@ -305,6 +306,12 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
             DateTime.now(),
           ),
           tooltip: S.of(context).addLabel,
+          shape: const CircleBorder(),
+          elevation: 0,
+          focusElevation: 0,
+          hoverElevation: 0,
+          highlightElevation: 0,
+          disabledElevation: 0,
           child: const Icon(Icons.add),
         ),
       ),
@@ -324,7 +331,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     IntakeEntity intakeEntity,
     bool usesImperialUnits,
   ) async {
-    final changeIntakeAmount = await showDialog<double>(
+    final dialogResult = await showDialog<EditDialogResult>(
       context: context,
       builder: (context) => EditDialog(
         intakeEntity: intakeEntity,
@@ -332,11 +339,38 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
       ),
     );
 
-    if (changeIntakeAmount != null) {
-      locator<CreateMealBloc>().updateIntakeAmount(
-        intakeEntity.id,
-        changeIntakeAmount,
-      );
+    if (dialogResult == null) {
+      return;
+    }
+
+    switch (dialogResult.action) {
+      case EditDialogAction.updateAmount:
+        final updatedAmount = dialogResult.amount;
+        if (updatedAmount == null) {
+          return;
+        }
+        locator<CreateMealBloc>().updateIntakeAmount(
+          intakeEntity.id,
+          updatedAmount,
+        );
+        break;
+      case EditDialogAction.deleteItem:
+        locator<CreateMealBloc>().removeIntake(intakeEntity.id);
+        break;
+      case EditDialogAction.viewProduct:
+        if (!context.mounted) {
+          return;
+        }
+        Navigator.of(context).pushNamed(
+          NavigationOptions.mealDetailRoute,
+          arguments: MealDetailScreenArguments(
+            intakeEntity.meal,
+            intakeEntity.type,
+            intakeEntity.dateTime,
+            usesImperialUnits,
+          ),
+        );
+        break;
     }
   }
 

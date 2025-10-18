@@ -12,11 +12,14 @@ class FDCDataSource {
   static const _timeoutDuration = Duration(seconds: 10);
   final log = Logger('FDCDataSource');
 
-  Future<FDCWordResponseDTO> fetchSearchWordResults(String searchString) async {
+  Future<FDCWordResponseDTO> fetchSearchWordResults(String searchString,
+      {int pageNumber = 1, int pageSize = FDCConst.defaultPageSize}) async {
     try {
       final searchUrlString = FDCConst.getFDCWordSearchUrl(
         searchString,
         Env.fdcApiKey,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
       );
 
       final response = await http

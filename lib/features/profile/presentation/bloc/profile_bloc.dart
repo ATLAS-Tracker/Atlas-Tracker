@@ -35,21 +35,26 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<LoadProfileEvent>((event, emit) async {
       emit(ProfileLoadingState());
 
-      final user = await _getUserUsecase.getUserData();
-      final userBMIValue = BMICalc.getBMI(user);
-      final userBMIEntity = UserBMIEntity(
-        bmiValue: userBMIValue,
-        nutritionalStatus: BMICalc.getNutritionalStatus(userBMIValue),
-      );
-      final userConfig = await _getConfigUsecase.getConfig();
+      try {
+        final user = await _getUserUsecase.getUserData();
+        final userBMIValue = BMICalc.getBMI(user);
+        final userBMIEntity = UserBMIEntity(
+          bmiValue: userBMIValue,
+          nutritionalStatus: BMICalc.getNutritionalStatus(userBMIValue),
+        );
+        final userConfig = await _getConfigUsecase.getConfig();
 
-      emit(
-        ProfileLoadedState(
-          userBMI: userBMIEntity,
-          userEntity: user,
-          usesImperialUnits: userConfig.usesImperialUnits,
-        ),
-      );
+        emit(
+          ProfileLoadedState(
+            userBMI: userBMIEntity,
+            userEntity: user,
+            usesImperialUnits: userConfig.usesImperialUnits,
+          ),
+        );
+      } catch (error, stackTrace) {
+        addError(error, stackTrace);
+        emit(const ProfileErrorState('Unable to load profile data.'));
+      }
     });
   }
 

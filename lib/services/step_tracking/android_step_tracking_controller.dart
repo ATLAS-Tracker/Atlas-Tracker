@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 
 import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 import 'package:opennutritracker/services/daily_steps_recorder.dart';
-import 'package:opennutritracker/services/daily_steps_sync_service.dart';
+import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
 import 'package:opennutritracker/services/step_count/step_count_event.dart';
 import 'package:opennutritracker/services/step_count_service.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
@@ -13,17 +13,16 @@ class AndroidStepTrackingController implements StepTrackingController {
   AndroidStepTrackingController({
     required StepCountService stepCountService,
     required StepsDateDbo stepsBox,
-    required DailyStepsSyncService dailyStepsSyncService,
+    required DailyStepsQueueSyncService stepsSyncService,
   })  : _stepCountService = stepCountService,
         _stepsBox = stepsBox,
-        _stepsRecorder = DailyStepsRecorder(
-          stepsBox,
-          onThresholdReached: dailyStepsSyncService.syncPendingSteps,
-        );
+        _stepsSyncService = stepsSyncService,
+        _stepsRecorder = DailyStepsRecorder(stepsBox);
 
   final StepCountService _stepCountService;
   final StepsDateDbo _stepsBox;
   final DailyStepsRecorder _stepsRecorder;
+  final DailyStepsQueueSyncService _stepsSyncService;
 
   final _log = Logger('AndroidStepTrackingController');
   final _stepsController = StreamController<int>.broadcast();
@@ -39,6 +38,7 @@ class AndroidStepTrackingController implements StepTrackingController {
     await _resetStepsIfDayChanged();
     _currentSteps = _stepsBox.nowSteps - _stepsBox.lastSteps;
     _stepsController.add(_currentSteps);
+    unawaited(_stepsSyncService.queueTodaySteps(_currentSteps));
 
     final stream = await _stepCountService.getStepCountStream();
     if (stream == null) {
@@ -61,6 +61,7 @@ class AndroidStepTrackingController implements StepTrackingController {
     await _resetStepsIfDayChanged();
     _currentSteps = _stepsBox.nowSteps - _stepsBox.lastSteps;
     _stepsController.add(_currentSteps);
+    unawaited(_stepsSyncService.queueTodaySteps(_currentSteps));
   }
 
   void _handleStepCount(StepCountEvent event) {
@@ -71,6 +72,7 @@ class AndroidStepTrackingController implements StepTrackingController {
     final correctedSteps = _stepsRecorder.maybeSaveSteps(event.steps);
     _currentSteps = correctedSteps;
     _stepsController.add(_currentSteps);
+    unawaited(_stepsSyncService.queueTodaySteps(_currentSteps));
   }
 
   void _handleError(Object error) {
@@ -84,6 +86,10 @@ class AndroidStepTrackingController implements StepTrackingController {
     final lastDate = _stepsBox.lastDate;
 
     if (lastDate.isBefore(today)) {
+      final previousDaySteps = _stepsBox.nowSteps - _stepsBox.lastSteps;
+      unawaited(
+        _stepsSyncService.queueStepsForDate(lastDate, previousDaySteps),
+      );
       _stepsBox
         ..lastDate = today
         ..lastSteps = _stepsBox.nowSteps
@@ -94,6 +100,13 @@ class AndroidStepTrackingController implements StepTrackingController {
       await _stepsBox.save();
       _currentSteps = 0;
     }
+
+    unawaited(
+      _stepsSyncService.queueStepsForDate(
+        today,
+        _stepsBox.nowSteps - _stepsBox.lastSteps,
+      ),
+    );
   }
 
   DateTime _dateOnly(DateTime dateTime) =>

@@ -130,7 +130,7 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),
                           ),
-                          shadows: kElevationToShadow[2],
+                          shadows: const [],
                         ),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -251,7 +251,7 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16.0),
                           ),
-                          shadows: kElevationToShadow[2],
+                          shadows: const [],
                         ),
                         child: SfCartesianChart(
                           primaryXAxis: DateTimeAxis(

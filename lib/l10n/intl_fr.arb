@@ -25,6 +25,7 @@
   "searchFoodPage": "Aliments",
   "searchResultsLabel": "Résultats de recherche",
   "searchDefaultLabel": "Veuillez entrer un mot de recherche",
+  "productSearchMayTakeLongerMessage": "Une requête peut prendre jusqu'à 20 secondes. Passé ce délai, seuls les résultats Atlas Tracker sont affichés.",
   "allItemsLabel": "Tous",
   "recentlyAddedLabel": "Récemment",
   "noMealsRecentlyAddedLabel": "Aucun repas ajouté récemment",
@@ -128,6 +129,10 @@
   "copyOrDeleteTimeDialogContent": "Avec \"Copier vers aujourd'hui\", vous pouvez copier le repas vers aujourd'hui. Avec \"Supprimer\", vous pouvez supprimer le repas.",
   "dialogCopyLabel": "Copier vers aujourd'hui",
   "dialogDeleteLabel": "SUPPRIMER",
+  "viewProductSheetButtonLabel": "Voir la fiche produit",
+  "@viewProductSheetButtonLabel": {
+    "description": "Libellé du bouton dans la boîte de dialogue d'édition permettant d'accéder à la fiche produit."
+  },
   "deleteAllLabel": "Tout supprimer",
   "suppliedLabel": "Ingérées",
   "burnedLabel": "Brûlées",

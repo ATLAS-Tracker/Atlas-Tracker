@@ -101,6 +101,10 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
                   children: [
                     if (_previousStartDate != null)
                       Card(
+                        elevation: 0,
+                        color: Theme.of(context).colorScheme.surface,
+                        surfaceTintColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(

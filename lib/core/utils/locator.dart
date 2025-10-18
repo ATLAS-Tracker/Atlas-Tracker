@@ -78,7 +78,7 @@ import 'package:opennutritracker/features/settings/domain/usecase/import_data_su
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:opennutritracker/services/daily_steps_sync_service.dart';
+import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
 import 'package:opennutritracker/services/step_count/android_step_count_provider.dart';
 import 'package:opennutritracker/services/step_count/step_count_provider.dart';
 import 'package:opennutritracker/services/step_count_service.dart';
@@ -98,13 +98,13 @@ Future<void> initLocator() async {
     anonKey: Env.supabaseProjectAnonKey,
   );
 
-  locator.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
+  final supabaseClient = Supabase.instance.client;
+  locator.registerLazySingleton<SupabaseClient>(() => supabaseClient);
 
   // Init secure storage and Hive database;
   final hiveDBProvider = HiveDBProvider();
-  await hiveDBProvider.initForUser(
-    Supabase.instance.client.auth.currentUser?.id,
-  );
+  final initialUserId = supabaseClient.auth.currentUser?.id;
+  await hiveDBProvider.initForUser(initialUserId);
 
   locator.registerSingleton<HiveDBProvider>(hiveDBProvider);
 
@@ -113,10 +113,22 @@ Future<void> initLocator() async {
     () => OntImageCacheManager.instance,
   );
 
-  await registerUserScope(hiveDBProvider);
+  await registerUserScope(hiveDBProvider, userId: initialUserId);
+
+  supabaseClient.auth.onAuthStateChange.listen((data) async {
+    final newUserId = data.session?.user.id;
+    if (hiveDBProvider.activeUserId == newUserId) {
+      return;
+    }
+    await hiveDBProvider.initForUser(newUserId);
+    await registerUserScope(hiveDBProvider, userId: newUserId);
+  });
 }
 
-Future<void> registerUserScope(HiveDBProvider hive) async {
+Future<void> registerUserScope(
+  HiveDBProvider hive, {
+  String? userId,
+}) async {
 // --- si un user-scope est déjà présent, on le détruit ---
   if (locator.currentScopeName == _userScope) {
     await locator.popScope(); // ferme les anciens singletons + dispose()
@@ -127,12 +139,17 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     scopeName: _userScope, // nom pour le retrouver la prochaine fois
   );
 
+  final supabaseClient = Supabase.instance.client;
+  final resolvedUserId = userId ?? supabaseClient.auth.currentUser?.id;
+  final userKey = resolvedUserId ?? 'default_user';
+
   // DataSources
   final configDS = ConfigDataSource(hive);
   locator.registerLazySingleton(() => configDS);
   hive.startUpdateWatchers(configDS);
-  locator.registerLazySingleton<UserDataSource>(() => UserDataSource(
-      hive, Supabase.instance.client.auth.currentUser?.id ?? 'default_user'));
+  locator.registerLazySingleton<UserDataSource>(
+    () => UserDataSource(hive, userKey),
+  );
   locator.registerLazySingleton(() => IntakeDataSource(hive));
   locator.registerLazySingleton(() => RecipesDataSource(hive));
   locator.registerLazySingleton(() => UserActivityDataSource(hive));
@@ -362,9 +379,9 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     ),
   );
 
-  final stepsSyncService = DailyStepsSyncService();
+  final stepsSyncService = DailyStepsQueueSyncService();
   await stepsSyncService.init();
-  locator.registerSingleton<DailyStepsSyncService>(
+  locator.registerSingleton<DailyStepsQueueSyncService>(
     stepsSyncService,
     dispose: (s) => s.dispose(),
   );
@@ -393,7 +410,7 @@ StepTrackingController? _createAndroidStepTrackingController(GetIt locator) {
   return AndroidStepTrackingController(
     stepCountService: locator<StepCountService>(),
     stepsBox: stepsBox,
-    dailyStepsSyncService: locator<DailyStepsSyncService>(),
+    stepsSyncService: locator<DailyStepsQueueSyncService>(),
   );
 }
 
@@ -406,7 +423,7 @@ StepTrackingController? _createAppleStepTrackingController(GetIt locator) {
   }
   return AppleStepTrackingController(
     stepsBox: stepsBox,
-    dailyStepsSyncService: locator<DailyStepsSyncService>(),
+    stepsSyncService: locator<DailyStepsQueueSyncService>(),
   );
 }
 

@@ -46,6 +46,8 @@ class _ProfilePageState extends State<ProfilePage> {
           return _getLoadingContent();
         } else if (state is ProfileLoadingState) {
           return _getLoadingContent();
+        } else if (state is ProfileErrorState) {
+          return _getErrorContent(context, state.message);
         } else if (state is ProfileLoadedState) {
           return _getLoadedContent(context, state.userBMI, state.userEntity,
               state.usesImperialUnits);
@@ -59,6 +61,28 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _getLoadingContent() {
     return const Center(
       child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget _getErrorContent(BuildContext context, String message) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => _profileBloc.add(LoadProfileEvent()),
+            child: Text(S.of(context).retryLabel),
+          ),
+        ],
+      ),
     );
   }
 

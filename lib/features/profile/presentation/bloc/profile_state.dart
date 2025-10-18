@@ -14,6 +14,15 @@ class ProfileLoadingState extends ProfileState {
   List<Object?> get props => [];
 }
 
+class ProfileErrorState extends ProfileState {
+  final String message;
+
+  const ProfileErrorState(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class ProfileLoadedState extends ProfileState {
   final UserBMIEntity userBMI;
   final UserEntity userEntity;

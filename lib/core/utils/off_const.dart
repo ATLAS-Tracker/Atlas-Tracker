@@ -53,11 +53,17 @@ class OFFConst {
 
   static String _getReturnFields() => _returnFields.join(",");
 
-  static Uri getOffWordSearchUrl(String searchString) {
+  static const _offPageSizeTag = "page_size";
+  static const _offPageTag = "page";
+
+  static Uri getOffWordSearchUrl(String searchString,
+      {int page = 1, int pageSize = 20}) {
     final queryParameters = {
       _offProductSearchTermsTag: searchString,
       _offFieldsTag: _getReturnFields(),
       _offJsonTag: _offJsonValue,
+      _offPageTag: page.toString(),
+      _offPageSizeTag: pageSize.toString(),
     };
 
     return Uri.https(_offBaseUrl, _offSearchTag, queryParameters);

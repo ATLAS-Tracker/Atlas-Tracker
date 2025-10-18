@@ -25,6 +25,8 @@ class PlaceholderCard extends StatelessWidget {
             width: 120,
             height: 120,
             child: Card(
+              elevation: 0,
+              shadowColor: Colors.transparent,
               clipBehavior: Clip.antiAliasWithSaveLayer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),

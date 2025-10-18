@@ -21,6 +21,7 @@
   "searchFoodPage": "Lebensmittel",
   "searchResultsLabel": "Suchergebnisse",
   "searchDefaultLabel": "Bitte geben Sie ein Suchwort ein",
+  "productSearchMayTakeLongerMessage": "Anfragen können bis zu 20 Sekunden dauern. Danach werden nur noch Atlas Tracker Ergebnisse angezeigt.",
   "allItemsLabel": "Alle",
   "recentlyAddedLabel": "Kürzlich",
   "noMealsRecentlyAddedLabel": "Keine kürzlich hinzugefügten Mahlzeiten",
@@ -121,6 +122,10 @@
   "copyOrDeleteTimeDialogContent": "Auf \"Nach heute kopieren\" klicken, um die Mahlzeit nach heute zu kopieren. Mit \"Löschen\" kann die Mahlzeit entfernt werden",
   "dialogCopyLabel": "Nach heute kopieren",
   "dialogDeleteLabel": "LÖSCHEN",
+  "viewProductSheetButtonLabel": "Produktseite anzeigen",
+  "@viewProductSheetButtonLabel": {
+    "description": "Schaltflächenbeschriftung im Bearbeitungsdialog zum Öffnen der Produktseite."
+  },
   "deleteAllLabel": "Alle löschen",
 
   "suppliedLabel": "zugeführt",
