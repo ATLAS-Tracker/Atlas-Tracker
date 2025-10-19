@@ -150,6 +150,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "editMealLabel":
             MessageLookupByLibrary.simpleMessage("Modifier le repas"),
         "energyLabel": MessageLookupByLibrary.simpleMessage("énergie"),
+        "enterManuallyLabel":
+            MessageLookupByLibrary.simpleMessage("Entrer manuellement"),
         "errorFetchingProductData": MessageLookupByLibrary.simpleMessage(
             "Erreur lors de la récupération des données du produit"),
         "errorLoadingActivities": MessageLookupByLibrary.simpleMessage(
@@ -292,6 +294,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealUnitLabel": MessageLookupByLibrary.simpleMessage("Unité de repas"),
         "milliliterUnit": MessageLookupByLibrary.simpleMessage("ml"),
         "minutesAbbrevLabel": MessageLookupByLibrary.simpleMessage("min"),
+        "missingNutrientsDialogContent": MessageLookupByLibrary.simpleMessage(
+            "Oups ! Cette fiche produit semble incomplète. Souhaitez-vous saisir manuellement les informations nutritionnelles manquantes pour pouvoir l\'enregistrer ?"),
+        "missingNutrientsDialogTitle":
+            MessageLookupByLibrary.simpleMessage("Données manquantes"),
         "missingProductInfo": MessageLookupByLibrary.simpleMessage(
             "Le produit ne contient pas les informations requises sur les kcal ou les macronutriments"),
         "myStudentsTitle": MessageLookupByLibrary.simpleMessage("Mes élèves"),
@@ -781,6 +787,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Vous ne pouvez vous déconnecter que lorsque la connexion internet est rétablie pour ne pas perdre vos données."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
             "Échec de la synchronisation des données. Veuillez vous reconnecter plus tard."),
+        "skipLabel": MessageLookupByLibrary.simpleMessage("Plus tard"),
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ex : pomme, glace, chocolat..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Collation"),

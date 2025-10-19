@@ -48,9 +48,9 @@ class MealEntity extends Equatable {
   bool get isSolid => solidUnits.contains(mealUnit);
 
   bool get hasNutriments =>
-      nutriments.energyKcalPerQuantity != null &&
-      nutriments.carbohydratesPerQuantity != null &&
-      nutriments.fatPerQuantity != null &&
+      nutriments.energyKcalPerQuantity != null ||
+      nutriments.carbohydratesPerQuantity != null ||
+      nutriments.fatPerQuantity != null ||
       nutriments.proteinsPerQuantity != null;
 
   const MealEntity(

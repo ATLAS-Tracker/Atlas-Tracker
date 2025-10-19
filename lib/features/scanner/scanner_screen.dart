@@ -7,8 +7,10 @@ import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
-import 'package:opennutritracker/features/scanner/presentation/scanner_bloc.dart';
+import 'package:opennutritracker/features/scanner/presentation/bloc/scanner_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+
+import 'package:opennutritracker/features/scanner/presentation/widget/missing_nutrients_dialog.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -55,11 +57,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
         } else if (state is ScannerLoadedState) {
           // Push new route after build
           Future.microtask(() {
-            if (context.mounted) {
-              return Navigator.of(context).pushReplacementNamed(
-                  NavigationOptions.mealDetailRoute,
-                  arguments: MealDetailScreenArguments(state.product,
-                      _intakeTypeEntity, _day, state.usesImperialUnits));
+            if (!context.mounted) return;
+
+            final arguments = MealDetailScreenArguments(
+              state.product,
+              _intakeTypeEntity,
+              _day,
+              state.usesImperialUnits,
+            );
+
+            final navigator = Navigator.of(context);
+            final navigationFuture = navigator.pushReplacementNamed(
+              NavigationOptions.mealDetailRoute,
+              arguments: arguments,
+            );
+
+            if (!state.product.hasNutriments) {
+              navigationFuture.then((_) {
+                if (mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return MissingNutrientsDialog(
+                          day: _day,
+                          mealEntity: state.product,
+                          intakeTypeEntity: _intakeTypeEntity,
+                          usesImperialUnits: state.usesImperialUnits);
+                    },
+                  );
+                }
+              });
             }
           });
         } else if (state is ScannerFailedState) {
