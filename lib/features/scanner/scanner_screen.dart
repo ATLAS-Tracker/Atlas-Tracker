@@ -74,7 +74,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
             if (!state.product.hasNutriments) {
               navigationFuture.then((_) {
-                if (mounted) {
+                if (context.mounted) {
                   showDialog(
                     context: context,
                     builder: (BuildContext context) {
