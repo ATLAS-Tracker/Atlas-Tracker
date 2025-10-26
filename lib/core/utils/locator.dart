@@ -318,6 +318,7 @@ Future<void> registerUserScope(
       locator(),
       locator(),
       locator(),
+      locator(),
     ),
   );
   locator.registerLazySingleton<ProfileBloc>(
