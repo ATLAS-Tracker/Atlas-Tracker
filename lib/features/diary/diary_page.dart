@@ -141,6 +141,13 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
       TrackedDayEntity? trackedDayEntity) async {
     await _calendarDayBloc
         .deleteUserWeightItem(trackedDayEntity?.day ?? DateTime.now());
+    _diaryBloc.add(const LoadDiaryYearEvent());
+    _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
+    _diaryBloc.updateHomePage();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)));
+    }
   }
 
   void _onDeleteActivityItem(UserActivityEntity userActivityEntity,

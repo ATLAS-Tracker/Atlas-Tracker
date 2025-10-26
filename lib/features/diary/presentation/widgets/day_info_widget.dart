@@ -282,7 +282,7 @@ class DayInfoWidget extends StatelessWidget {
       builder: (context) => const DeleteDialog(),
     );
 
-    if (deleteWeight != null) {
+    if (deleteWeight != null && userWeightEntity != null) {
       onDeleteWeight(userWeightEntity!, trackedDayEntity);
     }
   }
