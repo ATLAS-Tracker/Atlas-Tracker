@@ -136,8 +136,23 @@ class MealEntity extends Equatable {
   factory MealEntity.fromSpFDCFood(SpFdcFoodDTO foodItem) {
     final fdcId = foodItem.fdcId?.toInt().toString();
 
-    final unit = FDCConst.measureUnits[foodItem.portion?.measureUnitId] ??
-        FDCConst.fdcDefaultUnit;
+    final String unit; // Define the base unit
+    switch (foodItem.portion?.measureUnitId) {
+      case 1003:
+        unit = "l";
+        break;
+      case 1001:
+      case 1002:
+      case 1004:
+        unit = "ml";
+        break;
+      default:
+        unit = "g";
+    }
+
+    final servingUnit =
+        FDCConst.measureUnits[foodItem.portion?.measureUnitId] ??
+            FDCConst.fdcDefaultUnit;
 
     return MealEntity(
         code: fdcId,
@@ -150,7 +165,7 @@ class MealEntity extends Equatable {
         mealQuantity: null,
         mealUnit: unit,
         servingQuantity: foodItem.servingSize,
-        servingUnit: unit,
+        servingUnit: servingUnit,
         servingSize:
             "${(foodItem.servingAmount ?? 1).toInt()} ${foodItem.servingSizeUnit}",
         nutriments: MealNutrimentsEntity.fromFDCNutriments(foodItem.nutrients),

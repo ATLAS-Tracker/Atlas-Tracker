@@ -304,7 +304,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                       meal: meal,
                       displayUnit:
                           selectedUnit == UnitDropdownItem.serving.toString()
-                              ? meal.servingUnit
+                              ? meal.mealUnit
                               : selectedUnit,
                       usesImperialUnits: _usesImperialUnits,
                       textStyle: Theme.of(context).textTheme.bodyMedium,
