@@ -137,7 +137,7 @@ class MealEntity extends Equatable {
     final fdcId = foodItem.fdcId?.toInt().toString();
 
     final String unit; // Define the base unit
-    switch (foodItem.portion?.measureUnitId) {
+    switch (foodItem.portions[0].measureUnitId) {
       case 1003:
         unit = "l";
         break;
@@ -151,7 +151,7 @@ class MealEntity extends Equatable {
     }
 
     final servingUnit =
-        FDCConst.measureUnits[foodItem.portion?.measureUnitId] ??
+        FDCConst.measureUnits[foodItem.portions[0].measureUnitId] ??
             FDCConst.fdcDefaultUnit;
 
     return MealEntity(

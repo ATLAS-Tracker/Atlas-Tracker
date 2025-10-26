@@ -22,7 +22,7 @@ class SpFdcFoodDTO {
   final List<FDCFoodNutrimentDTO> nutrients;
 
   @JsonKey(name: SPConst.fdcPortionsName)
-  final SpFdcPortionDTO? portion;
+  final List<SpFdcPortionDTO> portions;
 
   @JsonKey(name: SPConst.fdcFoodPictureUrl)
   final String? pictureUrl;
@@ -39,16 +39,16 @@ class SpFdcFoodDTO {
   }
 
   double? get servingSize {
-    return portion?.gramWeight;
+    return portions[0].gramWeight;
   }
 
   String? get servingSizeUnit {
-    final id = portion?.measureUnitId ?? FDCConst.fdcPortionUnknownId;
+    final id = portions[0].measureUnitId ?? FDCConst.fdcPortionUnknownId;
     return FDCConst.measureUnits[id];
   }
 
   double? get servingAmount {
-    return portion?.amount;
+    return portions[0].amount;
   }
 
   SpFdcFoodDTO({
@@ -58,7 +58,7 @@ class SpFdcFoodDTO {
     required this.descriptionFr,
     required this.pictureUrl,
     required this.nutrients,
-    required this.portion,
+    required this.portions,
   });
 
   factory SpFdcFoodDTO.fromJson(Map<String, dynamic> json) =>
