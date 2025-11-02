@@ -38,8 +38,18 @@ class MealSearchBar extends StatelessWidget {
                   },
                 ),
                 filled: true,
+                fillColor: Theme.of(context).colorScheme.secondary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
                 ),
               )),
         ),

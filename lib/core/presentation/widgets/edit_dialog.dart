@@ -3,6 +3,15 @@ import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
+enum EditDialogAction { updateAmount, deleteItem, viewProduct }
+
+class EditDialogResult {
+  final EditDialogAction action;
+  final double? amount;
+
+  const EditDialogResult({required this.action, this.amount});
+}
+
 class EditDialog extends StatefulWidget {
   final IntakeEntity intakeEntity;
   final bool usesImperialUnits;
@@ -50,7 +59,42 @@ class _EditDialogState extends State<EditDialog> {
               suffixText: widget.intakeEntity.unit.toLowerCase() == 'serving'
                   ? S.of(context).servingLabel
                   : _convertUnit(widget.intakeEntity.meal.mealUnit ?? '')),
-        )
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.surfaceTint,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              side: BorderSide.none,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(
+                const EditDialogResult(action: EditDialogAction.viewProduct),
+              );
+            },
+            icon: const Icon(Icons.open_in_new),
+            label: Text(S.of(context).viewProductSheetButtonLabel),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(
+                const EditDialogResult(action: EditDialogAction.deleteItem),
+              );
+            },
+            icon: const Icon(Icons.delete_outline),
+            label: Text(S.of(context).dialogDeleteLabel),
+          ),
+        ),
       ]),
       actions: [
         TextButton(
@@ -59,10 +103,14 @@ class _EditDialogState extends State<EditDialog> {
                   double.parse(amountEditingController.text.replaceAll(',', '.'));
               if (widget.intakeEntity.unit.toLowerCase() == 'serving') {
                 // Persist servings as-is
-                Navigator.of(context).pop(newAmount);
+                Navigator.of(context).pop(EditDialogResult(
+                    action: EditDialogAction.updateAmount,
+                    amount: newAmount));
               } else {
-                Navigator.of(context).pop(_convertBackToMetricValue(
-                    newAmount, widget.intakeEntity.meal.mealUnit));
+                Navigator.of(context).pop(EditDialogResult(
+                    action: EditDialogAction.updateAmount,
+                    amount: _convertBackToMetricValue(
+                        newAmount, widget.intakeEntity.meal.mealUnit)));
               }
             },
             child: Text(S.of(context).dialogOKLabel)),

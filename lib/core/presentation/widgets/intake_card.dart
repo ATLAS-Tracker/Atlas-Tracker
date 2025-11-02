@@ -38,7 +38,8 @@ class IntakeCard extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16.0),
             ),
-            elevation: 1,
+            elevation: 0,
+            shadowColor: Colors.transparent,
             child: InkWell(
               onLongPress: onItemLongPressed != null
                   ? () => onLongPressedItem(context)
@@ -48,54 +49,7 @@ class IntakeCard extends StatelessWidget {
                   : null,
               child: Stack(
                 children: [
-                  intake.meal.mainImageUrl != null
-                      ? intake.meal.mealOrRecipe == MealOrRecipeEntity.recipe
-                          ? FutureBuilder<String>(
-                              future: PathHelper.localImagePath(
-                                  intake.meal.mainImageUrl!),
-                              builder: (context, snapshot) {
-                                final path = snapshot.data;
-                                if (path == null) {
-                                  return const SizedBox.shrink();
-                                }
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: FileImage(File(path)),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              },
-                            )
-                          : CachedNetworkImage(
-                              cacheManager: locator<CacheManager>(),
-                              imageUrl: intake.meal.mainImageUrl!,
-                              imageBuilder: (context, imageProvider) =>
-                                  Container(
-                                decoration: BoxDecoration(
-                                  image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            )
-                      : Center(
-                          child: Icon(
-                            Icons.restaurant_outlined,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                  Container(
-                    // Add color shade
-                    decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondaryContainer
-                          .withValues(alpha: 0.5),
-                    ),
-                  ),
+                  Positioned.fill(child: _buildMealImage(context)),
                   Container(
                     margin: const EdgeInsets.all(8.0),
                     padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
@@ -166,4 +120,70 @@ class IntakeCard extends StatelessWidget {
   void onTappedItem(BuildContext context, bool usesImperialUnits) {
     onItemTapped?.call(context, intake, usesImperialUnits);
   }
+
+  Widget _buildMealImage(BuildContext context) {
+    final imageUrl = intake.meal.mainImageUrl;
+    if (imageUrl == null || _hasInvalidImageUrl(imageUrl)) {
+      return _buildFallbackBackground(context);
+    }
+
+    if (intake.meal.mealOrRecipe == MealOrRecipeEntity.recipe) {
+      return FutureBuilder<String>(
+        future: PathHelper.localImagePath(imageUrl),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildLoadingBackground(context);
+          }
+          if (snapshot.hasError) {
+            return _buildFallbackBackground(context);
+          }
+          final path = snapshot.data;
+          if (path == null || path.isEmpty) {
+            return _buildFallbackBackground(context);
+          }
+          return Image.file(
+            File(path),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _buildFallbackBackground(context),
+          );
+        },
+      );
+    }
+
+    return CachedNetworkImage(
+      cacheManager: locator<CacheManager>(),
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => _buildLoadingBackground(context),
+      errorWidget: (context, url, error) => _buildFallbackBackground(context),
+    );
+  }
+
+  bool _hasInvalidImageUrl(String url) =>
+      url.trim().isEmpty || url.contains('/invalid/');
+
+  Widget _buildFallbackBackground(BuildContext context) => Container(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.restaurant_outlined,
+          color: Theme.of(context).colorScheme.secondary,
+        ),
+      );
+
+  Widget _buildLoadingBackground(BuildContext context) => Container(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.secondary,
+            ),
+          ),
+        ),
+      );
 }

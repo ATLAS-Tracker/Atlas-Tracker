@@ -46,6 +46,7 @@ class HiveDBProvider extends ChangeNotifier {
   static const stepsDateEntryKey = 'steps_date';
 
   String? _userId;
+  String? get activeUserId => _userId;
   String _boxName(String base) => _userId == null ? base : '${_userId}_$base';
 
   late Box<ConfigDBO> configBox;

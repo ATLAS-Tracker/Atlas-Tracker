@@ -681,6 +681,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "previousGoalAppliedOn": m4,
         "privacyPolicyLabel":
             MessageLookupByLibrary.simpleMessage("Datenschutzrichtlinie"),
+        "productSearchMayTakeLongerMessage": MessageLookupByLibrary.simpleMessage(
+            "Anfragen können bis zu 20 Sekunden dauern. Danach werden nur noch Atlas Tracker Ergebnisse angezeigt."),
         "profileLabel": MessageLookupByLibrary.simpleMessage("Profil"),
         "proteinLabel": MessageLookupByLibrary.simpleMessage("Protein"),
         "proteinsLabel": MessageLookupByLibrary.simpleMessage("Proteine"),
@@ -784,6 +786,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "unitLabel": MessageLookupByLibrary.simpleMessage("Einheit"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Benutzer nicht verbunden."),
+        "viewProductSheetButtonLabel":
+            MessageLookupByLibrary.simpleMessage("Produktseite anzeigen"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("Website"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Gewicht"),
         "yearsLabel": m6

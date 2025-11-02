@@ -25,6 +25,7 @@
   "searchFoodPage": "Food",
   "searchResultsLabel": "Search results",
   "searchDefaultLabel": "Please enter a search word",
+  "productSearchMayTakeLongerMessage": "Requests can take up to 20 seconds. After that only Atlas Tracker results are shown.",
   "allItemsLabel": "All",
   "recentlyAddedLabel": "Recently",
   "noMealsRecentlyAddedLabel": "No meals recently added",
@@ -128,7 +129,10 @@
   "copyOrDeleteTimeDialogContent": "With \"Copy to today\" you can copy the meal to today. With \"Delete\" you can delete the meal.",
   "dialogCopyLabel": "Copy to today",
   "dialogDeleteLabel": "DELETE",
-
+  "viewProductSheetButtonLabel": "View product page",
+  "@viewProductSheetButtonLabel": {
+    "description": "Button label in the intake edit dialog that opens the meal detail screen."
+  },
   "deleteAllLabel": "Delete all",
 
   "suppliedLabel": "supplied",

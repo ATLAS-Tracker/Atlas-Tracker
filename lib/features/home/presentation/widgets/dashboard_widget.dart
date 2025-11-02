@@ -52,7 +52,10 @@ class _DashboardWidgetState extends State<DashboardWidget> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Card(
-        elevation: 1,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        color: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

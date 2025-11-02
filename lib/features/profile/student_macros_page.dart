@@ -49,6 +49,11 @@ class _StudentMacrosView extends StatelessWidget {
         onPressed: () => _openSetMacrosPage(context),
         icon: const Icon(Icons.edit_outlined),
         label: Text(S.of(context).setMacrosLabel),
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        disabledElevation: 0,
       ),
       body: BlocBuilder<StudentMacrosBloc, StudentMacrosState>(
         builder: (context, state) {
@@ -94,7 +99,10 @@ class _StudentMacrosView extends StatelessWidget {
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Card(
-                elevation: 1,
+                elevation: 0,
+                color: Theme.of(context).colorScheme.surface,
+                surfaceTintColor: Colors.transparent,
+                shadowColor: Colors.transparent,
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(

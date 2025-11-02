@@ -3,18 +3,18 @@ import 'dart:async';
 import 'package:daily_pedometer2/daily_pedometer2.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
-import 'package:opennutritracker/services/daily_steps_sync_service.dart';
+import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
 
 class AppleStepTrackingController implements StepTrackingController {
   AppleStepTrackingController({
     required StepsDateDbo stepsBox,
-    required DailyStepsSyncService dailyStepsSyncService,
+    required DailyStepsQueueSyncService stepsSyncService,
   })  : _stepsBox = stepsBox,
-        _dailyStepsSyncService = dailyStepsSyncService;
+        _stepsSyncService = stepsSyncService;
 
   final StepsDateDbo _stepsBox;
-  final DailyStepsSyncService _dailyStepsSyncService;
+  final DailyStepsQueueSyncService _stepsSyncService;
 
   final _log = Logger('AppleStepTrackingController');
   final _stepsController = StreamController<int>.broadcast();
@@ -52,7 +52,7 @@ class AppleStepTrackingController implements StepTrackingController {
     unawaited(_stepsBox.save());
 
     _stepsController.add(_currentSteps);
-    unawaited(_dailyStepsSyncService.syncPendingSteps());
+    unawaited(_stepsSyncService.queueTodaySteps(_currentSteps));
   }
 
   void _handleError(Object error, [StackTrace? stackTrace]) {
@@ -63,6 +63,7 @@ class AppleStepTrackingController implements StepTrackingController {
   Future<void> handleAppResumed() async {
     await _ensureCurrentDay();
     _stepsController.add(_currentSteps);
+    unawaited(_stepsSyncService.queueTodaySteps(_currentSteps));
   }
 
   Future<void> _ensureCurrentDay() async {
@@ -70,6 +71,9 @@ class AppleStepTrackingController implements StepTrackingController {
     final lastDate = _stepsBox.lastDate;
 
     if (lastDate.isBefore(today)) {
+      unawaited(
+        _stepsSyncService.queueStepsForDate(lastDate, _stepsBox.nowSteps),
+      );
       _stepsBox
         ..lastDate = today
         ..nowSteps = 0
@@ -79,10 +83,11 @@ class AppleStepTrackingController implements StepTrackingController {
         ..initialStep = 0;
       await _stepsBox.save();
       _currentSteps = 0;
-      unawaited(_dailyStepsSyncService.syncPendingSteps());
     } else {
       _currentSteps = _stepsBox.nowSteps;
     }
+
+    unawaited(_stepsSyncService.queueStepsForDate(today, _currentSteps));
   }
 
   DateTime _dateOnly(DateTime value) => DateTime(value.year, value.month, value.day);

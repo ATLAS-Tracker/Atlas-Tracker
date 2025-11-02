@@ -29,57 +29,22 @@ class MealItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Theme.of(context).colorScheme.outline),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
       child: InkWell(
         child: SizedBox(
           height: 100,
           child: Center(
               child: ListTile(
-            leading: mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe &&
-                    mealEntity.thumbnailImageUrl != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: FutureBuilder<String>(
-                      future: PathHelper.localImagePath(
-                          mealEntity.thumbnailImageUrl!),
-                      builder: (context, snapshot) {
-                        final path = snapshot.data;
-                        if (path == null) {
-                          return const SizedBox(width: 60, height: 60);
-                        }
-                        return Image.file(
-                          File(path),
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
-                  )
-                : mealEntity.thumbnailImageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: CachedNetworkImage(
-                          cacheManager: locator<CacheManager>(),
-                          fit: BoxFit.cover,
-                          width: 60,
-                          height: 60,
-                          imageUrl: mealEntity.thumbnailImageUrl!,
-                        ),
-                      )
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          child: const Icon(Icons.restaurant_outlined),
-                        ),
-                      ),
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: SizedBox(
+                width: 60,
+                height: 60,
+                child: _buildThumbnail(context),
+              ),
+            ),
             title: AutoSizeText.rich(
                 TextSpan(
                     text: mealEntity.name ?? "?",
@@ -125,4 +90,69 @@ class MealItemCard extends StatelessWidget {
         arguments: MealDetailScreenArguments(
             mealEntity, addMealType.getIntakeType(), day, usesImperialUnits));
   }
+
+  Widget _buildThumbnail(BuildContext context) {
+    final thumbnailUrl = mealEntity.thumbnailImageUrl;
+    if (thumbnailUrl == null || _hasInvalidImageUrl(thumbnailUrl)) {
+      return _buildFallbackPlaceholder(context);
+    }
+
+    if (mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe) {
+      return FutureBuilder<String>(
+        future: PathHelper.localImagePath(thumbnailUrl),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildLoadingPlaceholder(context);
+          }
+          if (snapshot.hasError) {
+            return _buildFallbackPlaceholder(context);
+          }
+          final path = snapshot.data;
+          if (path == null || path.isEmpty) {
+            return _buildFallbackPlaceholder(context);
+          }
+          return Image.file(
+            File(path),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _buildFallbackPlaceholder(context),
+          );
+        },
+      );
+    }
+
+    return CachedNetworkImage(
+      cacheManager: locator<CacheManager>(),
+      fit: BoxFit.cover,
+      imageUrl: thumbnailUrl,
+      placeholder: (context, url) => _buildLoadingPlaceholder(context),
+      errorWidget: (context, url, error) => _buildFallbackPlaceholder(context),
+    );
+  }
+
+  Widget _buildFallbackPlaceholder(BuildContext context) => Container(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        child: Icon(
+          Icons.restaurant_outlined,
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
+        ),
+      );
+
+  Widget _buildLoadingPlaceholder(BuildContext context) => Container(
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
+          ),
+        ),
+      );
+
+  bool _hasInvalidImageUrl(String url) =>
+      url.trim().isEmpty || url.contains('/invalid/');
 }

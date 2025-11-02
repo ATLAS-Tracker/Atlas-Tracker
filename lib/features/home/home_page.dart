@@ -11,6 +11,7 @@ import 'package:opennutritracker/core/presentation/widgets/weight_vertical_list.
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/widgets/dashboard_widget.dart';
@@ -19,6 +20,7 @@ import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
+import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -325,23 +327,58 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     IntakeEntity intakeEntity,
     bool usesImperialUnits,
   ) async {
-    final changeIntakeAmount = await showDialog<double>(
+    final dialogResult = await showDialog<EditDialogResult>(
       context: context,
       builder: (context) => EditDialog(
         intakeEntity: intakeEntity,
         usesImperialUnits: usesImperialUnits,
       ),
     );
-    if (changeIntakeAmount != null) {
-      _homeBloc.updateIntakeItem(intakeEntity.id, {
-        'amount': changeIntakeAmount,
-      });
-      _homeBloc.add(const LoadItemsEvent());
-      if (context.mounted) {
+    if (dialogResult == null) {
+      return;
+    }
+
+    switch (dialogResult.action) {
+      case EditDialogAction.updateAmount:
+        final updatedAmount = dialogResult.amount;
+        if (updatedAmount == null) {
+          return;
+        }
+        _homeBloc.updateIntakeItem(intakeEntity.id, {
+          'amount': updatedAmount,
+        });
+        _homeBloc.add(const LoadItemsEvent());
+        if (!context.mounted) {
+          return;
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(S.of(context).itemUpdatedSnackbar)),
         );
-      }
+        break;
+      case EditDialogAction.deleteItem:
+        _homeBloc.deleteIntakeItem(intakeEntity);
+        _homeBloc.add(const LoadItemsEvent());
+        if (!context.mounted) {
+          return;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
+        );
+        break;
+      case EditDialogAction.viewProduct:
+        if (!context.mounted) {
+          return;
+        }
+        Navigator.of(context).pushNamed(
+          NavigationOptions.mealDetailRoute,
+          arguments: MealDetailScreenArguments(
+            intakeEntity.meal,
+            intakeEntity.type,
+            intakeEntity.dateTime,
+            usesImperialUnits,
+          ),
+        );
+        break;
     }
   }
 

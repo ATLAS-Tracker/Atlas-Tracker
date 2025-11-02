@@ -44,6 +44,12 @@ class _RecipeState extends State<RecipePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddMealCreationScreen(context),
         tooltip: S.of(context).addLabel,
+        shape: const CircleBorder(),
+        elevation: 0,
+        focusElevation: 0,
+        hoverElevation: 0,
+        highlightElevation: 0,
+        disabledElevation: 0,
         child: const Icon(Icons.add),
       ),
     );

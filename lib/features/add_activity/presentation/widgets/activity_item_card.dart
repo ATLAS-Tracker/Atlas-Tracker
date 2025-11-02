@@ -26,10 +26,9 @@ class ActivityItemCard extends StatelessWidget {
             child: ListTile(
               leading: CircleAvatar(
                 radius: 40,
-                backgroundColor:
-                    Theme.of(context).colorScheme.secondaryContainer,
+                backgroundColor: Theme.of(context).colorScheme.primary,
                 child: Icon(physicalActivityEntity.displayIcon,
-                    color: Theme.of(context).colorScheme.onSecondaryContainer),
+                    color: Theme.of(context).colorScheme.onPrimary),
               ),
               title: AutoSizeText(
                 physicalActivityEntity.getName(context),

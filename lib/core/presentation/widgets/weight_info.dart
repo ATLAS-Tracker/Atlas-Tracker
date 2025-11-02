@@ -34,7 +34,7 @@ class WeightInfo extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.0),
         ),
-        shadows: kElevationToShadow[2],
+        shadows: const [],
       ),
       child: Stack(
         clipBehavior: Clip.none,

@@ -118,11 +118,25 @@ class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
         useMaterial3: true,
         colorScheme: lightColorScheme,
         textTheme: appTextTheme,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            elevation: const WidgetStatePropertyAll<double>(0.0),
+            shadowColor:
+                const WidgetStatePropertyAll<Color>(Colors.transparent),
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: darkColorScheme,
         textTheme: appTextTheme,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            elevation: const WidgetStatePropertyAll<double>(0.0),
+            shadowColor:
+                const WidgetStatePropertyAll<Color>(Colors.transparent),
+          ),
+        ),
       ),
       themeMode: Provider.of<ThemeModeProvider>(context).themeMode,
       localizationsDelegates: const [

@@ -1,5 +1,5 @@
 class FDCConst {
-  static const _pageSize = "20";
+  static const int defaultPageSize = 20;
 
   // URL
   static const fdcWebsiteUrl = "https://ciqual.anses.fr/#";
@@ -9,6 +9,7 @@ class FDCConst {
 
   static const _fdcQueryTag = "query";
   static const _fdcPageSizeTag = "pageSize";
+  static const _fdcPageNumberTag = "pageNumber";
   static const _fdcDataTypeTag = "dataType";
 
   // static const _fdcDataTypeBrandedValue = "Branded";
@@ -161,13 +162,15 @@ class FDCConst {
 
   static String _getDataTypeParams() => _dataTypeParams.join(",");
 
-  static Uri getFDCWordSearchUrl(String searchString, String apiKey) {
+  static Uri getFDCWordSearchUrl(String searchString, String apiKey,
+      {int pageNumber = 1, int pageSize = defaultPageSize}) {
     final queryParameters = {
       _fdcQueryTag: searchString,
-      _fdcPageSizeTag: _pageSize,
+      _fdcPageSizeTag: pageSize.toString(),
       _fdcDataTypeTag: _getDataTypeParams(),
       _fdcSortOrderTag: _fdcSortOrderAscValue,
-      _fdcApiKeyTag: apiKey
+      _fdcApiKeyTag: apiKey,
+      _fdcPageNumberTag: pageNumber.toString(),
     };
 
     return Uri.https(_fdcBaseUrl, _fdcFoodSearchPath, queryParameters);

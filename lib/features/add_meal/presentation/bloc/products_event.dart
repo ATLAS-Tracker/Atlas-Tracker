@@ -16,6 +16,14 @@ class LoadProductsEvent extends ProductsEvent {
   List<Object?> get props => [searchString];
 }
 
+class ClearProductsEvent extends ProductsEvent {
+  const ClearProductsEvent();
+}
+
+class LoadMoreProductsEvent extends ProductsEvent {
+  const LoadMoreProductsEvent();
+}
+
 class RefreshProductsEvent extends ProductsEvent {
   const RefreshProductsEvent();
 

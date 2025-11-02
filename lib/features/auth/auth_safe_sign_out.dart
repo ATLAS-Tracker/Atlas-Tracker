@@ -116,7 +116,7 @@ Future<void> safeSignOut(BuildContext context) async {
 
     final hive = locator<HiveDBProvider>();
     await hive.initForUser(null);
-    await registerUserScope(hive);
+    await registerUserScope(hive, userId: null);
 
     if (!context.mounted) return;
 
