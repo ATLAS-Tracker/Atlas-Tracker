@@ -9,8 +9,6 @@ import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dar
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
-import 'package:opennutritracker/features/settings/presentation/widgets/export_import_dialog.dart';
-import 'package:opennutritracker/features/settings/presentation/widgets/export_import_supabase_dialog.dart';
 import 'package:opennutritracker/features/settings/presentation/widgets/calculations_dialog.dart';
 import 'package:opennutritracker/features/auth/auth_safe_sign_out.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -71,16 +69,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   leading: const Icon(Icons.brightness_medium_outlined),
                   title: Text(S.of(context).settingsThemeLabel),
                   onTap: () => _showThemeDialog(context, state.appTheme),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.import_export),
-                  title: Text(S.of(context).exportImportLabel),
-                  onTap: () => _showExportImportDialog(context),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cloud_sync_outlined),
-                  title: Text(S.of(context).exportImportSupabaseLabel),
-                  onTap: () => _showExportImportSupabaseDialog(context),
                 ),
                 ListTile(
                   leading: const Icon(Icons.bug_report_outlined),
@@ -178,17 +166,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showCalculationsDialog(BuildContext context) {
     showDialog(context: context, builder: (context) => CalculationsDialog());
-  }
-
-  void _showExportImportDialog(BuildContext context) {
-    showDialog(context: context, builder: (context) => ExportImportDialog());
-  }
-
-  void _showExportImportSupabaseDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => ExportImportSupabaseDialog(),
-    );
   }
 
   void _showThemeDialog(BuildContext context, AppThemeEntity currentAppTheme) {

@@ -30,6 +30,9 @@ class DayInfoWidget extends StatelessWidget {
       onDeleteIntake;
   final Function(UserActivityEntity userActivityEntity,
       TrackedDayEntity? trackedDayEntity) onDeleteActivity;
+  final Function(
+          UserWeightEntity userWeightEntity, TrackedDayEntity? trackedDayEntity)
+      onDeleteWeight;
   final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity,
       AddMealType? type) onCopyIntake;
   final Function(UserActivityEntity userActivityEntity,
@@ -48,6 +51,7 @@ class DayInfoWidget extends StatelessWidget {
     required this.usesImperialUnits,
     required this.onDeleteIntake,
     required this.onDeleteActivity,
+    required this.onDeleteWeight,
     required this.onCopyIntake,
     required this.onCopyActivity,
   });
@@ -190,9 +194,7 @@ class DayInfoWidget extends StatelessWidget {
               day: selectedDay,
               title: S.of(context).weightLabel,
               weightEntity: userWeightEntity,
-              onItemLongPressedCallback: (BuildContext context) {
-                // no actions
-              },
+              onItemLongPressedCallback: onWeightItemLongPressed,
             ),
             const SizedBox(height: 16.0)
           ],
@@ -271,6 +273,17 @@ class DayInfoWidget extends StatelessWidget {
 
     if (shouldDeleteActivity != null) {
       onDeleteActivity(activityEntity, trackedDayEntity);
+    }
+  }
+
+  void onWeightItemLongPressed(BuildContext context) async {
+    final deleteWeight = await showDialog<bool>(
+      context: context,
+      builder: (context) => const DeleteDialog(),
+    );
+
+    if (deleteWeight != null && userWeightEntity != null) {
+      onDeleteWeight(userWeightEntity!, trackedDayEntity);
     }
   }
 }

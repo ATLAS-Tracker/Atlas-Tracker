@@ -8,4 +8,8 @@ class DeleteUserWeightUsecase {
   Future<void> deleteTodayUserWeight() async {
     await _userWeightRepository.deleteUserWeightByDate(DateTime.now());
   }
+
+  Future<void> deleteUserWeightByDate(DateTime date) async {
+    await _userWeightRepository.deleteUserWeightByDate(date);
+  }
 }

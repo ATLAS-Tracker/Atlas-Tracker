@@ -5,6 +5,7 @@ import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
+import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
@@ -110,6 +111,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                 snackIntake: state.snackIntakeList,
                 onDeleteIntake: _onDeleteIntakeItem,
                 onDeleteActivity: _onDeleteActivityItem,
+                onDeleteWeight: _onDeleteWeight,
                 onCopyIntake: _onCopyIntakeItem,
                 onCopyActivity: _onCopyActivityItem,
                 usesImperialUnits: usesImperialUnits,
@@ -126,6 +128,19 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
       IntakeEntity intakeEntity, TrackedDayEntity? trackedDayEntity) async {
     await _calendarDayBloc.deleteIntakeItem(
         context, intakeEntity, trackedDayEntity?.day ?? DateTime.now());
+    _diaryBloc.add(const LoadDiaryYearEvent());
+    _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
+    _diaryBloc.updateHomePage();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)));
+    }
+  }
+
+  void _onDeleteWeight(UserWeightEntity userWeightEntity,
+      TrackedDayEntity? trackedDayEntity) async {
+    await _calendarDayBloc
+        .deleteUserWeightItem(trackedDayEntity?.day ?? DateTime.now());
     _diaryBloc.add(const LoadDiaryYearEvent());
     _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
     _diaryBloc.updateHomePage();

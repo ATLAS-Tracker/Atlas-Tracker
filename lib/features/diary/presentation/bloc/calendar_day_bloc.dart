@@ -8,6 +8,7 @@ import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/delete_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/delete_user_activity_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/delete_user_weight_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_activity_usecase.dart';
@@ -28,6 +29,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
   final GetTrackedDayUsecase _getTrackedDayUsecase;
   final AddTrackedDayUsecase _addTrackedDayUsecase;
   final GetWeightUsecase _getUserWeightUsecase;
+  final DeleteUserWeightUsecase _deleteUserWeightUsecase;
 
   DateTime? _currentDay;
 
@@ -36,6 +38,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
       this._getIntakeUsecase,
       this._deleteIntakeUsecase,
       this._deleteUserActivityUsecase,
+      this._deleteUserWeightUsecase,
       this._getTrackedDayUsecase,
       this._addTrackedDayUsecase,
       this._getUserWeightUsecase)
@@ -90,6 +93,11 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
         carbsTracked: intakeEntity.totalCarbsGram,
         fatTracked: intakeEntity.totalFatsGram,
         proteinTracked: intakeEntity.totalProteinsGram);
+  }
+
+  Future<void> deleteUserWeightItem(DateTime day) async {
+    await _deleteUserWeightUsecase.deleteUserWeightByDate(day);
+    _updateDiaryPage(day);
   }
 
   Future<void> deleteUserActivityItem(BuildContext context,

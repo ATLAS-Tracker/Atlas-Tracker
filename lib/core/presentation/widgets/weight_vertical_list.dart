@@ -4,7 +4,6 @@ import 'package:opennutritracker/features/add_weight/presentation/add_weight_scr
 import 'package:opennutritracker/core/presentation/widgets/placeholder_card.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/weight_card.dart';
-import 'package:table_calendar/table_calendar.dart';
 
 class WeightVerticalList extends StatelessWidget {
   final DateTime day;
@@ -68,7 +67,6 @@ class WeightVerticalList extends StatelessWidget {
 
   void _onPlaceholderCardTapped(BuildContext context) {
     Navigator.of(context).pushNamed(NavigationOptions.addWeightRoute,
-        arguments: AddWeightScreenArguments(
-            day: day, isReadOnly: !isSameDay(DateTime.now(), day)));
+        arguments: AddWeightScreenArguments(day: day, isReadOnly: false));
   }
 }
