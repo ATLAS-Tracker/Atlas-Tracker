@@ -253,7 +253,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // ── 1. Prépare Hive pour le user (nécessaire à l’import)
         final hive = locator<HiveDBProvider>();
         await hive.initForUser(res.user?.id);
-        await registerUserScope(hive, userId: res.user?.id);
+        await registerUserScope(hive);
 
         // Check subscription status
         // If the user is not subscribed anymore push is data to save them for later
@@ -287,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Nettoie la base locale (facultatif mais recommandé)
           await hive.initForUser(null);
-          await registerUserScope(hive, userId: null);
+          await registerUserScope(hive);
 
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
