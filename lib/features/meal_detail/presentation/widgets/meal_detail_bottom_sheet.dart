@@ -217,7 +217,6 @@ class MealDetailBottomSheet extends StatelessWidget {
       context,
     ).showSnackBar(SnackBar(content: Text(S.of(context).infoAddedIntakeLabel)));
     Navigator.of(context).pop();
-    Navigator.of(context).pop();
   }
 
   DropdownMenuItem<String> _getServingDropdownItem(BuildContext context) {

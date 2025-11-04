@@ -98,13 +98,13 @@ Future<void> initLocator() async {
     anonKey: Env.supabaseProjectAnonKey,
   );
 
-  final supabaseClient = Supabase.instance.client;
-  locator.registerLazySingleton<SupabaseClient>(() => supabaseClient);
+  locator.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   // Init secure storage and Hive database;
   final hiveDBProvider = HiveDBProvider();
-  final initialUserId = supabaseClient.auth.currentUser?.id;
-  await hiveDBProvider.initForUser(initialUserId);
+  await hiveDBProvider.initForUser(
+    Supabase.instance.client.auth.currentUser?.id,
+  );
 
   locator.registerSingleton<HiveDBProvider>(hiveDBProvider);
 
@@ -113,22 +113,10 @@ Future<void> initLocator() async {
     () => OntImageCacheManager.instance,
   );
 
-  await registerUserScope(hiveDBProvider, userId: initialUserId);
-
-  supabaseClient.auth.onAuthStateChange.listen((data) async {
-    final newUserId = data.session?.user.id;
-    if (hiveDBProvider.activeUserId == newUserId) {
-      return;
-    }
-    await hiveDBProvider.initForUser(newUserId);
-    await registerUserScope(hiveDBProvider, userId: newUserId);
-  });
+  await registerUserScope(hiveDBProvider);
 }
 
-Future<void> registerUserScope(
-  HiveDBProvider hive, {
-  String? userId,
-}) async {
+Future<void> registerUserScope(HiveDBProvider hive) async {
 // --- si un user-scope est déjà présent, on le détruit ---
   if (locator.currentScopeName == _userScope) {
     await locator.popScope(); // ferme les anciens singletons + dispose()
@@ -139,17 +127,13 @@ Future<void> registerUserScope(
     scopeName: _userScope, // nom pour le retrouver la prochaine fois
   );
 
-  final supabaseClient = Supabase.instance.client;
-  final resolvedUserId = userId ?? supabaseClient.auth.currentUser?.id;
-  final userKey = resolvedUserId ?? 'default_user';
-
   // DataSources
   final configDS = ConfigDataSource(hive);
   locator.registerLazySingleton(() => configDS);
   hive.startUpdateWatchers(configDS);
-  locator.registerLazySingleton<UserDataSource>(
-    () => UserDataSource(hive, userKey),
-  );
+  locator.registerLazySingleton<UserDataSource>(() => UserDataSource(
+      hive, Supabase.instance.client.auth.currentUser?.id ?? 'default_user'));
+
   locator.registerLazySingleton(() => IntakeDataSource(hive));
   locator.registerLazySingleton(() => RecipesDataSource(hive));
   locator.registerLazySingleton(() => UserActivityDataSource(hive));

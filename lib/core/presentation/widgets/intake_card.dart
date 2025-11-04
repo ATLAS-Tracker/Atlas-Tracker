@@ -43,22 +43,34 @@ class IntakeCard extends StatelessWidget {
             child: InkWell(
               onLongPress: onItemLongPressed != null
                   ? () => onLongPressedItem(context)
-                  : null,
-              onTap: onItemTapped != null
-                  ? () => onTappedItem(context, usesImperialUnits)
-                  : null,
-              child: Stack(
-                children: [
-                  Positioned.fill(child: _buildMealImage(context)),
-                  Container(
+                    : null,
+                  onTap: onItemTapped != null
+                    ? () => onTappedItem(context, usesImperialUnits)
+                    : null,
+                  child: Stack(
+                  children: [
+                    Positioned.fill(child: _buildMealImage(context)),
+                    Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.4),
+                      ),
+                      ),
+                    ),
+                    ),
+                    Container(
                     margin: const EdgeInsets.all(8.0),
                     padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
                     decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .tertiaryContainer
-                            .withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(20)),
+                      color: Theme.of(context)
+                        .colorScheme
+                        .tertiaryContainer
+                        .withValues(alpha: 0.8),
+                      borderRadius: BorderRadius.circular(20)),
                     child: Text(
                       '${intake.totalKcal.toInt()} kcal',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
