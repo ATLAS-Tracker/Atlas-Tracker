@@ -10,12 +10,16 @@ class TrackedDayDataSource {
 
   TrackedDayDataSource(this._hive);
 
+  Future<void> _ensureReady() => _hive.ensureReady();
+
   Future<void> saveTrackedDay(TrackedDayDBO trackedDayDBO) async {
+    await _ensureReady();
     log.fine('Updating tracked day in db');
     _hive.trackedDayBox.put(trackedDayDBO.day.toParsedDay(), trackedDayDBO);
   }
 
   Future<void> saveAllTrackedDays(List<TrackedDayDBO> trackedDayDBOList) async {
+    await _ensureReady();
     log.fine('Updating tracked days in db');
     _hive.trackedDayBox.putAll({
       for (var trackedDayDBO in trackedDayDBOList)
@@ -24,15 +28,18 @@ class TrackedDayDataSource {
   }
 
   Future<List<TrackedDayDBO>> getAllTrackedDays() async {
+    await _ensureReady();
     return _hive.trackedDayBox.values.toList();
   }
 
   Future<TrackedDayDBO?> getTrackedDay(DateTime day) async {
+    await _ensureReady();
     return _hive.trackedDayBox.get(day.toParsedDay());
   }
 
   Future<List<TrackedDayDBO>> getTrackedDaysInRange(
       DateTime start, DateTime end) async {
+    await _ensureReady();
     List<TrackedDayDBO> trackedDays = _hive.trackedDayBox.values
         .where((trackedDay) =>
             (trackedDay.day.isAfter(start) && trackedDay.day.isBefore(end)))
@@ -40,10 +47,13 @@ class TrackedDayDataSource {
     return trackedDays;
   }
 
-  Future<bool> hasTrackedDay(DateTime day) async =>
-      _hive.trackedDayBox.get(day.toParsedDay()) != null;
+  Future<bool> hasTrackedDay(DateTime day) async {
+    await _ensureReady();
+    return _hive.trackedDayBox.get(day.toParsedDay()) != null;
+  }
 
   Future<void> updateDayCalorieGoal(DateTime day, double calorieGoal) async {
+    await _ensureReady();
     log.fine('Updating tracked day total calories');
     final updateDay = await getTrackedDay(day);
 
@@ -54,6 +64,7 @@ class TrackedDayDataSource {
   }
 
   Future<void> increaseDayCalorieGoal(DateTime day, double amount) async {
+    await _ensureReady();
     log.fine('Increasing tracked day total calories');
     final updateDay = await getTrackedDay(day);
 
@@ -64,6 +75,7 @@ class TrackedDayDataSource {
   }
 
   Future<void> reduceDayCalorieGoal(DateTime day, double amount) async {
+    await _ensureReady();
     log.fine('Reducing tracked day total calories');
     final updateDay = await getTrackedDay(day);
 
@@ -74,6 +86,7 @@ class TrackedDayDataSource {
   }
 
   Future<void> addDayCaloriesTracked(DateTime day, double addCalories) async {
+    await _ensureReady();
     log.fine('Adding new tracked day calories');
     final updateDay = await getTrackedDay(day);
 
@@ -85,6 +98,7 @@ class TrackedDayDataSource {
 
   Future<void> decreaseDayCaloriesTracked(
       DateTime day, double subtractCalories) async {
+    await _ensureReady();
     log.fine('Decreasing tracked day calories');
     final updateDay = await getTrackedDay(day);
 
@@ -96,6 +110,7 @@ class TrackedDayDataSource {
   }
 
   Future<void> addDayCaloriesBurned(DateTime day, double addCalories) async {
+    await _ensureReady();
     log.fine('Adding new burned calories');
     final updateDay = await getTrackedDay(day);
 
@@ -107,6 +122,7 @@ class TrackedDayDataSource {
 
   Future<void> decreaseDayCaloriesBurned(
       DateTime day, double subtractCalories) async {
+    await _ensureReady();
     log.fine('Decreasing burned calories');
     final updateDay = await getTrackedDay(day);
 
@@ -119,6 +135,7 @@ class TrackedDayDataSource {
 
   Future<void> updateDayMacroGoals(DateTime day,
       {double? carbsGoal, double? fatGoal, double? proteinGoal}) async {
+    await _ensureReady();
     log.fine('Updating tracked day macro goals');
 
     final updateDay = await getTrackedDay(day);
@@ -139,6 +156,7 @@ class TrackedDayDataSource {
 
   Future<void> increaseDayMacroGoal(DateTime day,
       {double? carbsAmount, double? fatAmount, double? proteinAmount}) async {
+    await _ensureReady();
     log.fine('Increasing tracked day macro goals');
     final updateDay = await getTrackedDay(day);
 
@@ -162,6 +180,7 @@ class TrackedDayDataSource {
     double? fatAmount,
     double? proteinAmount,
   }) async {
+    await _ensureReady();
     log.fine('Reducing tracked day macro goals');
     final updateDay = await getTrackedDay(day);
 
@@ -185,6 +204,7 @@ class TrackedDayDataSource {
 
   Future<void> addDayMacroTracked(DateTime day,
       {double? carbsAmount, double? fatAmount, double? proteinAmount}) async {
+    await _ensureReady();
     log.fine('Adding new tracked day macro');
     final updateDay = await getTrackedDay(day);
 
@@ -205,6 +225,7 @@ class TrackedDayDataSource {
 
   Future<void> removeDayMacroTracked(DateTime day,
       {double? carbsAmount, double? fatAmount, double? proteinAmount}) async {
+    await _ensureReady();
     log.fine('Removing tracked day macro');
     final updateDay = await getTrackedDay(day);
 
@@ -226,6 +247,7 @@ class TrackedDayDataSource {
   }
 
   Future<void> deleteTrackedDay(DateTime day) async {
+    await _ensureReady();
     log.fine('Deleting tracked day from db');
     await _hive.trackedDayBox.delete(day.toParsedDay());
   }

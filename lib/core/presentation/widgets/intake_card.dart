@@ -50,6 +50,18 @@ class IntakeCard extends StatelessWidget {
               child: Stack(
                 children: [
                   Positioned.fill(child: _buildMealImage(context)),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
                   Container(
                     margin: const EdgeInsets.all(8.0),
                     padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0),
@@ -83,7 +95,7 @@ class IntakeCard extends StatelessWidget {
                                     fontWeight: FontWeight.w500,
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSecondaryContainer),
+                                        .onPrimary),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -99,7 +111,7 @@ class IntakeCard extends StatelessWidget {
                                 ?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
-                                        .onSecondaryContainer
+                                        .onPrimary
                                         .withValues(alpha: 0.7)),
                           ),
                         ],

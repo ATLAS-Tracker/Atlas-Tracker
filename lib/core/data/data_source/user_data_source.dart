@@ -9,14 +9,21 @@ class UserDataSource {
 
   UserDataSource(this._hive, this._userKey);
 
+  Future<void> _ensureReady() => _hive.ensureReady();
+
   Future<void> saveUserData(UserDBO userDBO) async {
+    await _ensureReady();
     log.fine('Updating user in db');
     await _hive.userBox.put(_userKey, userDBO);
   }
 
-  Future<bool> hasUserData() async => _hive.userBox.containsKey(_userKey);
+  Future<bool> hasUserData() async {
+    await _ensureReady();
+    return _hive.userBox.containsKey(_userKey);
+  }
 
   Future<UserDBO> getUserData() async {
+    await _ensureReady();
     return _hive.userBox.get(_userKey)!;
   }
 }

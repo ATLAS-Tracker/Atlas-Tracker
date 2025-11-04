@@ -89,8 +89,8 @@ class MealDetailBottomSheet extends StatelessWidget {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value:
-                                (product.mealOrRecipe ==
+                            // ignore: deprecated_member_use
+                            value: (product.mealOrRecipe ==
                                     MealOrRecipeEntity.recipe)
                                 ? UnitDropdownItem.serving.toString()
                                 : selectedUnit,

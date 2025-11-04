@@ -111,34 +111,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text(S.of(context).settingsUnitsLabel),
-          content: Wrap(
-            children: [
-              Column(
+          content: StatefulBuilder(
+            builder: (context, setDialogState) {
+              return Wrap(
                 children: [
-                  DropdownButtonFormField(
-                    value: selectedUnit,
-                    decoration: InputDecoration(
-                      enabled: true,
-                      filled: false,
-                      labelText: S.of(context).settingsSystemLabel,
-                    ),
-                    onChanged: (value) {
-                      selectedUnit = value ?? SystemDropDownType.metric;
-                    },
-                    items: [
-                      DropdownMenuItem(
-                        value: SystemDropDownType.metric,
-                        child: Text(S.of(context).settingsMetricLabel),
-                      ),
-                      DropdownMenuItem(
-                        value: SystemDropDownType.imperial,
-                        child: Text(S.of(context).settingsImperialLabel),
+                  Column(
+                    children: [
+                      DropdownButtonFormField<SystemDropDownType>(
+                        // ignore: deprecated_member_use
+                        value: selectedUnit,
+                        decoration: InputDecoration(
+                          enabled: true,
+                          filled: false,
+                          labelText: S.of(context).settingsSystemLabel,
+                        ),
+                        onChanged: (value) {
+                          setDialogState(() {
+                            selectedUnit = value ?? SystemDropDownType.metric;
+                          });
+                        },
+                        items: [
+                          DropdownMenuItem<SystemDropDownType>(
+                            value: SystemDropDownType.metric,
+                            child: Text(S.of(context).settingsMetricLabel),
+                          ),
+                          DropdownMenuItem<SystemDropDownType>(
+                            value: SystemDropDownType.imperial,
+                            child: Text(S.of(context).settingsImperialLabel),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
-              ),
-            ],
+              );
+            },
           ),
           actions: <Widget>[
             TextButton(
@@ -184,35 +191,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  RadioListTile(
+                  RadioListTile<AppThemeEntity>(
                     title: Text(
                       S.of(context).settingsThemeSystemDefaultLabel,
                     ),
                     value: AppThemeEntity.system,
+                    // ignore: deprecated_member_use
                     groupValue: selectedTheme,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
+                      if (value == null) return;
                       setState(() {
-                        selectedTheme = value as AppThemeEntity;
+                        selectedTheme = value;
                       });
                     },
                   ),
-                  RadioListTile(
+                  RadioListTile<AppThemeEntity>(
                     title: Text(S.of(context).settingsThemeLightLabel),
                     value: AppThemeEntity.light,
+                    // ignore: deprecated_member_use
                     groupValue: selectedTheme,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
+                      if (value == null) return;
                       setState(() {
-                        selectedTheme = value as AppThemeEntity;
+                        selectedTheme = value;
                       });
                     },
                   ),
-                  RadioListTile(
+                  RadioListTile<AppThemeEntity>(
                     title: Text(S.of(context).settingsThemeDarkLabel),
                     value: AppThemeEntity.dark,
+                    // ignore: deprecated_member_use
                     groupValue: selectedTheme,
+                    // ignore: deprecated_member_use
                     onChanged: (value) {
+                      if (value == null) return;
                       setState(() {
-                        selectedTheme = value as AppThemeEntity;
+                        selectedTheme = value;
                       });
                     },
                   ),

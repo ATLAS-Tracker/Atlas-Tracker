@@ -129,9 +129,9 @@ Future<void> registerUserScope(
   HiveDBProvider hive, {
   String? userId,
 }) async {
-// --- si un user-scope est déjà présent, on le détruit ---
-  if (locator.currentScopeName == _userScope) {
-    await locator.popScope(); // ferme les anciens singletons + dispose()
+// --- remove any existing user scope (even nested ones) ---
+  if (locator.hasScope(_userScope)) {
+    await locator.popScopesTill(_userScope);
   }
 
 // --- nouveau scope isolé pour l’utilisateur courant ---
