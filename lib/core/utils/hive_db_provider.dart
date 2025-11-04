@@ -108,6 +108,9 @@ class HiveDBProvider extends ChangeNotifier {
     return queued;
   }
 
+  /// Ensures all Hive boxes are ready before external callers access them.
+  Future<void> ensureReady() => _initChain;
+
   Future<void> _initHiveDBInternal(Uint8List encryptionKey,
       {String? userId}) async {
     try {

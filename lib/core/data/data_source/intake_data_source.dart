@@ -13,17 +13,22 @@ class IntakeDataSource {
 
   IntakeDataSource(this._hive);
 
+  Future<void> _ensureReady() => _hive.ensureReady();
+
   Future<void> addIntake(IntakeDBO intakeDBO) async {
+    await _ensureReady();
     log.fine('Adding new intake item to db');
     _hive.intakeBox.add(intakeDBO);
   }
 
   Future<void> addAllIntakes(List<IntakeDBO> intakeDBOList) async {
+    await _ensureReady();
     log.fine('Adding new intake items to db');
     _hive.intakeBox.addAll(intakeDBOList);
   }
 
   Future<void> deleteIntakeFromId(String intakeId) async {
+    await _ensureReady();
     log.fine('Deleting intake item from db');
     _hive.intakeBox.values
         .where((dbo) => dbo.id == intakeId)
@@ -35,6 +40,7 @@ class IntakeDataSource {
 
   Future<IntakeDBO?> updateIntake(
       String intakeId, Map<String, dynamic> fields) async {
+    await _ensureReady();
     log.fine(
         'Updating intake $intakeId with fields ${fields.toString()} in db');
     var intakeObject = _hive.intakeBox.values.indexed
@@ -53,22 +59,26 @@ class IntakeDataSource {
   }
 
   Future<IntakeDBO?> getIntakeById(String intakeId) async {
+    await _ensureReady();
     return _hive.intakeBox.values
         .firstWhereOrNull((intake) => intake.id == intakeId);
   }
 
   Future<List<IntakeDBO>> getIntakeRecipe() async {
+    await _ensureReady();
     return _hive.intakeBox.values
         .where((intake) => intake.meal.nutriments.mealOrRecipe == MealOrRecipeDBO.recipe)
         .toList();
   }
 
   Future<List<IntakeDBO>> getAllIntakes() async {
+    await _ensureReady();
     return _hive.intakeBox.values.toList();
   }
 
   Future<List<IntakeDBO>> getAllIntakesByDate(
       IntakeTypeDBO intakeType, DateTime dateTime) async {
+    await _ensureReady();
     return _hive.intakeBox.values
         .where((intake) =>
             DateUtils.isSameDay(dateTime, intake.dateTime) &&
@@ -77,6 +87,7 @@ class IntakeDataSource {
   }
 
   Future<List<IntakeDBO>> getRecentlyAddedIntake({int number = 100}) async {
+    await _ensureReady();
     final intakeList = _hive.intakeBox.values.toList();
 
     //  sort list by date (newest first) and filter unique intake

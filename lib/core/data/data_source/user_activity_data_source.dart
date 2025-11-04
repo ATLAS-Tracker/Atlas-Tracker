@@ -9,18 +9,23 @@ class UserActivityDataSource {
 
   UserActivityDataSource(this._hive);
 
+  Future<void> _ensureReady() => _hive.ensureReady();
+
   Future<void> addUserActivity(UserActivityDBO userActivityDBO) async {
+    await _ensureReady();
     log.fine('Adding new user activity to db');
     _hive.userActivityBox.add(userActivityDBO);
   }
 
   Future<void> addAllUserActivities(
       List<UserActivityDBO> userActivityDBOList) async {
+    await _ensureReady();
     log.fine('Adding new user activities to db');
     _hive.userActivityBox.addAll(userActivityDBOList);
   }
 
   Future<void> deleteIntakeFromId(String activityId) async {
+    await _ensureReady();
     log.fine('Deleting activity item from db');
     _hive.userActivityBox.values
         .where((dbo) => dbo.id == activityId)
@@ -31,11 +36,13 @@ class UserActivityDataSource {
   }
 
   Future<List<UserActivityDBO>> getAllUserActivities() async {
+    await _ensureReady();
     return _hive.userActivityBox.values.toList();
   }
 
   Future<List<UserActivityDBO>> getAllUserActivitiesByDate(
       DateTime dateTime) async {
+    await _ensureReady();
     return _hive.userActivityBox.values
         .where((activity) => DateUtils.isSameDay(dateTime, activity.date))
         .toList();
@@ -43,6 +50,7 @@ class UserActivityDataSource {
 
   Future<List<UserActivityDBO>> getRecentlyAddedUserActivity(
       {int number = 20}) async {
+    await _ensureReady();
     final userActivities =
         _hive.userActivityBox.values.toList().reversed.toList();
 
