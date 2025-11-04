@@ -66,6 +66,7 @@ class HiveDBProvider extends ChangeNotifier {
   List<StreamSubscription<BoxEvent>>? _updateSubs;
 
   static bool _adaptersRegistered = false;
+  Future<void> _initChain = Future.value();
 
   // Registers Hive type adapters
   static void _registerAdapters() {
@@ -97,7 +98,18 @@ class HiveDBProvider extends ChangeNotifier {
     _adaptersRegistered = true;
   }
 
-  Future<void> initHiveDB(Uint8List encryptionKey, {String? userId}) async {
+  Future<void> initHiveDB(Uint8List encryptionKey, {String? userId}) {
+    final queued = _initChain.then(
+      (_) => _initHiveDBInternal(encryptionKey, userId: userId),
+    );
+
+    _initChain = queued.catchError((_, __) {});
+
+    return queued;
+  }
+
+  Future<void> _initHiveDBInternal(Uint8List encryptionKey,
+      {String? userId}) async {
     try {
       _log.info(
           '↪️  initHiveDB called — currentUserId=$_userId → newUserId=$userId');

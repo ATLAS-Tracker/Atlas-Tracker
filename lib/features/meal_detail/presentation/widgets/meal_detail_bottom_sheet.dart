@@ -89,7 +89,7 @@ class MealDetailBottomSheet extends StatelessWidget {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value:
+                            initialValue:
                                 (product.mealOrRecipe ==
                                     MealOrRecipeEntity.recipe)
                                 ? UnitDropdownItem.serving.toString()

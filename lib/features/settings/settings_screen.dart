@@ -115,8 +115,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Column(
                 children: [
-                  DropdownButtonFormField(
-                    value: selectedUnit,
+                  DropdownButtonFormField<SystemDropDownType>(
+                    initialValue: selectedUnit,
                     decoration: InputDecoration(
                       enabled: true,
                       filled: false,
@@ -126,11 +126,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       selectedUnit = value ?? SystemDropDownType.metric;
                     },
                     items: [
-                      DropdownMenuItem(
+                      DropdownMenuItem<SystemDropDownType>(
                         value: SystemDropDownType.metric,
                         child: Text(S.of(context).settingsMetricLabel),
                       ),
-                      DropdownMenuItem(
+                      DropdownMenuItem<SystemDropDownType>(
                         value: SystemDropDownType.imperial,
                         child: Text(S.of(context).settingsImperialLabel),
                       ),
@@ -181,42 +181,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               BuildContext context,
               void Function(void Function()) setState,
             ) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  RadioListTile(
-                    title: Text(
-                      S.of(context).settingsThemeSystemDefaultLabel,
+              return RadioGroup<AppThemeEntity>(
+                groupValue: selectedTheme,
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    selectedTheme = value;
+                  });
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<AppThemeEntity>(
+                      title: Text(
+                        S.of(context).settingsThemeSystemDefaultLabel,
+                      ),
+                      value: AppThemeEntity.system,
                     ),
-                    value: AppThemeEntity.system,
-                    groupValue: selectedTheme,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedTheme = value as AppThemeEntity;
-                      });
-                    },
-                  ),
-                  RadioListTile(
-                    title: Text(S.of(context).settingsThemeLightLabel),
-                    value: AppThemeEntity.light,
-                    groupValue: selectedTheme,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedTheme = value as AppThemeEntity;
-                      });
-                    },
-                  ),
-                  RadioListTile(
-                    title: Text(S.of(context).settingsThemeDarkLabel),
-                    value: AppThemeEntity.dark,
-                    groupValue: selectedTheme,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedTheme = value as AppThemeEntity;
-                      });
-                    },
-                  ),
-                ],
+                    RadioListTile<AppThemeEntity>(
+                      title: Text(S.of(context).settingsThemeLightLabel),
+                      value: AppThemeEntity.light,
+                    ),
+                    RadioListTile<AppThemeEntity>(
+                      title: Text(S.of(context).settingsThemeDarkLabel),
+                      value: AppThemeEntity.dark,
+                    ),
+                  ],
+                ),
               );
             },
           ),
