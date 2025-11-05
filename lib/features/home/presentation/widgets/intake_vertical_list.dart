@@ -32,6 +32,7 @@ class IntakeVerticalList extends StatefulWidget {
   final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity,
       AddMealType? type)? onCopyIntakeCallback;
   final TrackedDayEntity? trackedDayEntity;
+  final bool isDropZone;
 
   const IntakeVerticalList({
     super.key,
@@ -47,6 +48,7 @@ class IntakeVerticalList extends StatefulWidget {
     this.onItemTappedCallback,
     this.onCopyIntakeCallback,
     this.trackedDayEntity,
+    this.isDropZone = true,
   });
 
   @override
@@ -220,12 +222,14 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
 
   void _onPlaceholderCardTapped(BuildContext context) {
     Navigator.pushNamed(context, NavigationOptions.addMealRoute,
-        arguments:
-            AddMealScreenArguments(
-                widget.addMealType, widget.day, MealOrRecipeEntity.meal));
+        arguments: AddMealScreenArguments(
+            widget.addMealType, widget.day, MealOrRecipeEntity.meal));
   }
 
   void _onItemDropped(IntakeEntity entity) {
+    if (!widget.isDropZone) {
+      return;
+    }
     _mealDetailBloc.addIntake(context, entity.unit, entity.amount.toString(),
         widget.addMealType.getIntakeType(), entity.meal, entity.dateTime);
     _homeBloc.deleteIntakeItem(entity);
