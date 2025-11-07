@@ -29,6 +29,7 @@ class MealCreationScreen extends StatefulWidget {
 }
 
 class _MealCreationScreenState extends State<MealCreationScreen> {
+  static const double _deleteZoneHeight = 70;
   final log = Logger('MealCreationScreen');
   late final CreateMealBloc _createMealBloc;
   final _nameTextController = TextEditingController();
@@ -114,138 +115,153 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
+              final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+              final scrollBottomPadding =
+                  16 + bottomInset + (_isDragging ? _deleteZoneHeight : 0);
               return Stack(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: _nameTextController,
-                                decoration: InputDecoration(
-                                  labelText: S.of(context).mealNameLabel,
-                                  border: const OutlineInputBorder(),
-                                  suffixIcon: Padding(
-                                    padding: const EdgeInsets.all(
-                                      6.0,
-                                    ),
-                                    child: PhotoPickerButton(
-                                      initialImagePath: _imagePath,
-                                      onImagePicked: (imagePath) {
-                                        setState(() {
-                                          _imagePath = imagePath;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                keyboardType: TextInputType.text,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        BlocBuilder<CreateMealBloc, CreateMealState>(
-                          bloc: _createMealBloc,
-                          builder: (context, state) {
-                            final intakeList = state.intakeList;
-
-                            if (intakeList.isEmpty) {
-                              return Text(S.of(context).noFoodAddedLabel);
-                            }
-
-                            final now = DateTime.now();
-                            final convertedIntakeList =
-                                state.intakeList.map((ingredient) {
-                              return IntakeEntity(
-                                id: ingredient.code ?? ingredient.name ?? "",
-                                unit: ingredient.unit ?? "g",
-                                amount: ingredient.amount ?? 0,
-                                type: IntakeTypeEntity.breakfast,
-                                meal: ingredient.meal!,
-                                dateTime: now,
-                                updatedAt: DateTime.now().toUtc(),
-                              );
-                            }).toList();
-
-                            return Column(
-                              children: [
-                                IntakeVerticalList(
-                                  day: DateTime.now(),
-                                  title: "",
-                                  addMealType: AddMealType
-                                      .snackType, // TODO Pierre refactor
-                                  listIcon: Icons.functions,
-                                  intakeList: convertedIntakeList,
-                                  onDeleteIntakeCallback: _onDeleteIntakeItem,
-                                  onItemDragCallback: onIntakeItemDrag,
-                                  onItemTappedCallback: onIntakeItemTapped,
-                                  usesImperialUnits: false,
-                                  isDropZone: false,
-                                ),
-                                const SizedBox(height: 32),
-                                if (state.totalCarbs +
-                                        state.totalFats +
-                                        state.totalProteins >
-                                    0)
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 8.0,
-                                    ),
-                                    child: Center(
-                                      child: PieChart(
-                                        dataMap: {
-                                          'Protéine': state.totalProteins,
-                                          'Glucide': state.totalCarbs,
-                                          'Lipide': state.totalFats,
+                  Positioned.fill(
+                    child: SingleChildScrollView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        16,
+                        16,
+                        scrollBottomPadding,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _nameTextController,
+                                  decoration: InputDecoration(
+                                    labelText: S.of(context).mealNameLabel,
+                                    border: const OutlineInputBorder(),
+                                    suffixIcon: Padding(
+                                      padding: const EdgeInsets.all(
+                                        6.0,
+                                      ),
+                                      child: PhotoPickerButton(
+                                        initialImagePath: _imagePath,
+                                        onImagePicked: (imagePath) {
+                                          setState(() {
+                                            _imagePath = imagePath;
+                                          });
                                         },
-                                        animationDuration: const Duration(
-                                          milliseconds: 800,
-                                        ),
-                                        chartLegendSpacing: 32,
-                                        chartRadius: MediaQuery.of(
-                                              context,
-                                            ).size.width /
-                                            2.5,
-                                        colorList: [
-                                          proteinColor.withValues(alpha: 0.75),
-                                          carbColor.withValues(alpha: 0.75),
-                                          fatColor.withValues(alpha: 0.75),
-                                        ],
-                                        initialAngleInDegree: 0,
-                                        chartType: ChartType.ring,
-                                        ringStrokeWidth: 32,
-                                        centerText: "",
-                                        legendOptions: const LegendOptions(
-                                          showLegendsInRow: false,
-                                          legendPosition: LegendPosition.bottom,
-                                          showLegends: true,
-                                          legendShape: BoxShape.circle,
-                                          legendTextStyle: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        chartValuesOptions:
-                                            const ChartValuesOptions(
-                                          showChartValueBackground: true,
-                                          showChartValues: true,
-                                          showChartValuesInPercentage: false,
-                                          showChartValuesOutside: true,
-                                          decimalPlaces: 1,
-                                        ),
                                       ),
                                     ),
                                   ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
+                                  keyboardType: TextInputType.text,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          BlocBuilder<CreateMealBloc, CreateMealState>(
+                            bloc: _createMealBloc,
+                            builder: (context, state) {
+                              final intakeList = state.intakeList;
+
+                              if (intakeList.isEmpty) {
+                                return Text(S.of(context).noFoodAddedLabel);
+                              }
+
+                              final now = DateTime.now();
+                              final convertedIntakeList =
+                                  state.intakeList.map((ingredient) {
+                                return IntakeEntity(
+                                  id: ingredient.code ?? ingredient.name ?? "",
+                                  unit: ingredient.unit ?? "g",
+                                  amount: ingredient.amount ?? 0,
+                                  type: IntakeTypeEntity.breakfast,
+                                  meal: ingredient.meal!,
+                                  dateTime: now,
+                                  updatedAt: DateTime.now().toUtc(),
+                                );
+                              }).toList();
+
+                              return Column(
+                                children: [
+                                  IntakeVerticalList(
+                                    day: DateTime.now(),
+                                    title: "",
+                                    addMealType: AddMealType
+                                        .snackType, // TODO Pierre refactor
+                                    listIcon: Icons.functions,
+                                    intakeList: convertedIntakeList,
+                                    onDeleteIntakeCallback: _onDeleteIntakeItem,
+                                    onItemDragCallback: onIntakeItemDrag,
+                                    onItemTappedCallback: onIntakeItemTapped,
+                                    usesImperialUnits: false,
+                                    isDropZone: false,
+                                  ),
+                                  const SizedBox(height: 32),
+                                  if (state.totalCarbs +
+                                          state.totalFats +
+                                          state.totalProteins >
+                                      0)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0,
+                                      ),
+                                      child: Center(
+                                        child: PieChart(
+                                          dataMap: {
+                                            'Protéine': state.totalProteins,
+                                            'Glucide': state.totalCarbs,
+                                            'Lipide': state.totalFats,
+                                          },
+                                          animationDuration: const Duration(
+                                            milliseconds: 800,
+                                          ),
+                                          chartLegendSpacing: 32,
+                                          chartRadius: MediaQuery.of(
+                                                context,
+                                              ).size.width /
+                                              2.5,
+                                          colorList: [
+                                            proteinColor.withValues(
+                                              alpha: 0.75,
+                                            ),
+                                            carbColor.withValues(alpha: 0.75),
+                                            fatColor.withValues(alpha: 0.75),
+                                          ],
+                                          initialAngleInDegree: 0,
+                                          chartType: ChartType.ring,
+                                          ringStrokeWidth: 32,
+                                          centerText: "",
+                                          legendOptions: const LegendOptions(
+                                            showLegendsInRow: false,
+                                            legendPosition:
+                                                LegendPosition.bottom,
+                                            showLegends: true,
+                                            legendShape: BoxShape.circle,
+                                            legendTextStyle: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          chartValuesOptions:
+                                              const ChartValuesOptions(
+                                            showChartValueBackground: true,
+                                            showChartValues: true,
+                                            showChartValuesInPercentage: false,
+                                            showChartValuesOutside: true,
+                                            decimalPlaces: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Align(
@@ -253,7 +269,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                     child: Visibility(
                       visible: _isDragging,
                       child: Container(
-                        height: 70,
+                        height: _deleteZoneHeight,
                         color: Theme.of(
                           context,
                         ).colorScheme.error,
