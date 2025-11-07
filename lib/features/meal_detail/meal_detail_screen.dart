@@ -68,6 +68,14 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     intakeTypeEntity = args.intakeTypeEntity;
     _usesImperialUnits = args.usesImperialUnits;
 
+    if (args.postNavigationAction != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          args.postNavigationAction!(context);
+        }
+      });
+    }
+
     // Set initial unit
     if (_initialUnit == "") {
       if (meal.hasServingValues) {
@@ -370,7 +378,9 @@ class MealDetailScreenArguments {
   final IntakeTypeEntity intakeTypeEntity;
   final DateTime day;
   final bool usesImperialUnits;
+  final void Function(BuildContext)? postNavigationAction;
 
   MealDetailScreenArguments(
-      this.mealEntity, this.intakeTypeEntity, this.day, this.usesImperialUnits);
+      this.mealEntity, this.intakeTypeEntity, this.day, this.usesImperialUnits,
+      {this.postNavigationAction});
 }

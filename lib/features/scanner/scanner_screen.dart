@@ -59,35 +59,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
           Future.microtask(() {
             if (!context.mounted) return;
 
+            final void Function(BuildContext)? postNavigationAction =
+                !state.product.hasNutriments
+                    ? (BuildContext newContext) {
+                        showDialog(
+                          barrierDismissible: false,
+                          context: newContext,
+                          builder: (BuildContext dialogContext) {
+                            return MissingNutrientsDialog(
+                                day: _day,
+                                mealEntity: state.product,
+                                intakeTypeEntity: _intakeTypeEntity,
+                                usesImperialUnits: state.usesImperialUnits);
+                          },
+                        );
+                      }
+                    : null;
+
             final arguments = MealDetailScreenArguments(
               state.product,
               _intakeTypeEntity,
               _day,
               state.usesImperialUnits,
+              postNavigationAction: postNavigationAction,
             );
 
-            final navigator = Navigator.of(context);
-            final navigationFuture = navigator.pushReplacementNamed(
+            // Navigate
+            Navigator.of(context).pushReplacementNamed(
               NavigationOptions.mealDetailRoute,
               arguments: arguments,
             );
-
-            if (!state.product.hasNutriments) {
-              navigationFuture.then((_) {
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return MissingNutrientsDialog(
-                          day: _day,
-                          mealEntity: state.product,
-                          intakeTypeEntity: _intakeTypeEntity,
-                          usesImperialUnits: state.usesImperialUnits);
-                    },
-                  );
-                }
-              });
-            }
           });
         } else if (state is ScannerFailedState) {
           return Scaffold(
