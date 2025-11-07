@@ -54,7 +54,7 @@ class MissingNutrientsDialog extends StatelessWidget {
         TextButton(
           onPressed: () {
             Navigator.of(context)
-                .pushReplacementNamed(NavigationOptions.mainRoute);
+                .popUntil(ModalRoute.withName(NavigationOptions.mainRoute));
           },
           child: Text(
             S.of(context).skipLabel,
