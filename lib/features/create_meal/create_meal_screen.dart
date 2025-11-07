@@ -99,12 +99,11 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                 builder: (context, state) {
                   final isButtonEnabled =
                       _nameTextController.text.trim().isNotEmpty &&
-                      state.intakeList.isNotEmpty;
+                          state.intakeList.isNotEmpty;
 
                   return FilledButton(
-                    onPressed: isButtonEnabled
-                        ? () => _onSavePressed(true)
-                        : null,
+                    onPressed:
+                        isButtonEnabled ? () => _onSavePressed(true) : null,
                     child: Text(S.of(context).buttonSaveLabel),
                   );
                 },
@@ -164,38 +163,37 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                                 }
 
                                 final now = DateTime.now();
-                                final convertedIntakeList = state.intakeList
-                                    .map((ingredient) {
-                                      return IntakeEntity(
-                                        id:
-                                            ingredient.code ??
-                                            ingredient.name ??
-                                            "",
-                                        unit: ingredient.unit ?? "g",
-                                        amount: ingredient.amount ?? 0,
-                                        type: IntakeTypeEntity.breakfast,
-                                        meal: ingredient.meal!,
-                                        dateTime: now,
-                                        updatedAt: DateTime.now().toUtc(),
-                                      );
-                                    })
-                                    .toList();
+                                final convertedIntakeList =
+                                    state.intakeList.map((ingredient) {
+                                  return IntakeEntity(
+                                    id: ingredient.code ??
+                                        ingredient.name ??
+                                        "",
+                                    unit: ingredient.unit ?? "g",
+                                    amount: ingredient.amount ?? 0,
+                                    type: IntakeTypeEntity.breakfast,
+                                    meal: ingredient.meal!,
+                                    dateTime: now,
+                                    updatedAt: DateTime.now().toUtc(),
+                                  );
+                                }).toList();
 
                                 return Column(
                                   children: [
                                     IntakeVerticalList(
-                                      day: DateTime.now(),
-                                      title: "",
-                                      addMealType: AddMealType
-                                          .snackType, // TODO Pierre refactor
-                                      listIcon: Icons.functions,
-                                      intakeList: convertedIntakeList,
-                                      onDeleteIntakeCallback:
-                                          _onDeleteIntakeItem,
-                                      onItemDragCallback: onIntakeItemDrag,
-                                      onItemTappedCallback: onIntakeItemTapped,
-                                      usesImperialUnits: false,
-                                    ),
+                                        day: DateTime.now(),
+                                        title: "Recipe",
+                                        addMealType: AddMealType
+                                            .snackType, // TODO Pierre refactor
+                                        listIcon: Icons.functions,
+                                        intakeList: convertedIntakeList,
+                                        onDeleteIntakeCallback:
+                                            _onDeleteIntakeItem,
+                                        onItemDragCallback: onIntakeItemDrag,
+                                        onItemTappedCallback:
+                                            onIntakeItemTapped,
+                                        usesImperialUnits: false,
+                                        isDropZone: false),
                                     const SizedBox(height: 32),
                                     if (state.totalCarbs +
                                             state.totalFats +
@@ -216,8 +214,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                                               milliseconds: 800,
                                             ),
                                             chartLegendSpacing: 32,
-                                            chartRadius:
-                                                MediaQuery.of(
+                                            chartRadius: MediaQuery.of(
                                                   context,
                                                 ).size.width /
                                                 2.5,
@@ -243,14 +240,13 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                                             ),
                                             chartValuesOptions:
                                                 const ChartValuesOptions(
-                                                  showChartValueBackground:
-                                                      true,
-                                                  showChartValues: true,
-                                                  showChartValuesInPercentage:
-                                                      false,
-                                                  showChartValuesOutside: true,
-                                                  decimalPlaces: 1,
-                                                ),
+                                              showChartValueBackground: true,
+                                              showChartValues: true,
+                                              showChartValuesInPercentage:
+                                                  false,
+                                              showChartValuesOutside: true,
+                                              decimalPlaces: 1,
+                                            ),
                                           ),
                                         ),
                                       ),
