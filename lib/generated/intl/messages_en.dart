@@ -146,6 +146,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Edit item"),
         "editMealLabel": MessageLookupByLibrary.simpleMessage("Edit meal"),
         "energyLabel": MessageLookupByLibrary.simpleMessage("energy"),
+        "enterManuallyLabel":
+            MessageLookupByLibrary.simpleMessage("Enter manually"),
         "errorFetchingProductData": MessageLookupByLibrary.simpleMessage(
             "Error while fetching product data"),
         "errorLoadingActivities": MessageLookupByLibrary.simpleMessage(
@@ -284,6 +286,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealUnitLabel": MessageLookupByLibrary.simpleMessage("Meal unit"),
         "milliliterUnit": MessageLookupByLibrary.simpleMessage("ml"),
         "minutesAbbrevLabel": MessageLookupByLibrary.simpleMessage("min"),
+        "missingNutrientsDialogContent": MessageLookupByLibrary.simpleMessage(
+            "Oops! This product sheet seems incomplete. Would you like to manually enter the missing nutritional information so you can save it?"),
+        "missingNutrientsDialogTitle":
+            MessageLookupByLibrary.simpleMessage("Missing data"),
         "missingProductInfo": MessageLookupByLibrary.simpleMessage(
             "Product missing required kcal or macronutrients information"),
         "myStudentsTitle": MessageLookupByLibrary.simpleMessage("My students"),
@@ -765,6 +771,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "You can only sign out when internet connection is available to avoid losing data."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
             "Failed to sync your data. Please sign in again later."),
+        "skipLabel": MessageLookupByLibrary.simpleMessage("Latter"),
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "e.g. apple, ice cream, chocolate ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Snack"),

@@ -7,8 +7,10 @@ import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
-import 'package:opennutritracker/features/scanner/presentation/scanner_bloc.dart';
+import 'package:opennutritracker/features/scanner/presentation/bloc/scanner_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+
+import 'package:opennutritracker/features/scanner/presentation/widget/missing_nutrients_dialog.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -55,12 +57,38 @@ class _ScannerScreenState extends State<ScannerScreen> {
         } else if (state is ScannerLoadedState) {
           // Push new route after build
           Future.microtask(() {
-            if (context.mounted) {
-              return Navigator.of(context).pushReplacementNamed(
-                  NavigationOptions.mealDetailRoute,
-                  arguments: MealDetailScreenArguments(state.product,
-                      _intakeTypeEntity, _day, state.usesImperialUnits));
-            }
+            if (!context.mounted) return;
+
+            final void Function(BuildContext)? postNavigationAction =
+                !state.product.hasNutriments
+                    ? (BuildContext newContext) {
+                        showDialog(
+                          barrierDismissible: false,
+                          context: newContext,
+                          builder: (BuildContext dialogContext) {
+                            return MissingNutrientsDialog(
+                                day: _day,
+                                mealEntity: state.product,
+                                intakeTypeEntity: _intakeTypeEntity,
+                                usesImperialUnits: state.usesImperialUnits);
+                          },
+                        );
+                      }
+                    : null;
+
+            final arguments = MealDetailScreenArguments(
+              state.product,
+              _intakeTypeEntity,
+              _day,
+              state.usesImperialUnits,
+              postNavigationAction: postNavigationAction,
+            );
+
+            // Navigate
+            Navigator.of(context).pushReplacementNamed(
+              NavigationOptions.mealDetailRoute,
+              arguments: arguments,
+            );
           });
         } else if (state is ScannerFailedState) {
           return Scaffold(

@@ -1843,6 +1843,46 @@ class S {
     );
   }
 
+  /// `Enter manually`
+  String get enterManuallyLabel {
+    return Intl.message(
+      'Enter manually',
+      name: 'enterManuallyLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Latter`
+  String get skipLabel {
+    return Intl.message(
+      'Latter',
+      name: 'skipLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Missing data`
+  String get missingNutrientsDialogTitle {
+    return Intl.message(
+      'Missing data',
+      name: 'missingNutrientsDialogTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Oops! This product sheet seems incomplete. Would you like to manually enter the missing nutritional information so you can save it?`
+  String get missingNutrientsDialogContent {
+    return Intl.message(
+      'Oops! This product sheet seems incomplete. Would you like to manually enter the missing nutritional information so you can save it?',
+      name: 'missingNutrientsDialogContent',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Meal name`
   String get mealNameLabel {
     return Intl.message(

@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:opennutritracker/core/utils/supported_language.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
@@ -39,36 +38,28 @@ class SpFdcFoodDTO {
     }
   }
 
-  double? get servingSize => portions
-      .firstWhereOrNull((portion) =>
-          portion.measureUnitId == FDCConst.fdcPortionServingId ||
-          portion.measureUnitId == FDCConst.fdcPortionUnknownId)
-      ?.gramWeight;
+  double? get servingSize {
+    return portions[0].gramWeight;
+  }
 
   String? get servingSizeUnit {
-    final id = portions
-            .firstWhereOrNull((portion) =>
-                portion.measureUnitId == FDCConst.fdcPortionServingId ||
-                portion.measureUnitId == FDCConst.fdcPortionUnknownId)
-            ?.measureUnitId ??
-        FDCConst.fdcPortionUnknownId;
+    final id = portions[0].measureUnitId ?? FDCConst.fdcPortionUnknownId;
     return FDCConst.measureUnits[id];
   }
 
-  double? get servingAmount => portions
-      .firstWhereOrNull((portion) =>
-          portion.measureUnitId == FDCConst.fdcPortionServingId ||
-          portion.measureUnitId == FDCConst.fdcPortionUnknownId)
-      ?.amount;
+  double? get servingAmount {
+    return portions[0].amount;
+  }
 
-  SpFdcFoodDTO(
-      {required this.fdcId,
-      required this.descriptionEn,
-      required this.descriptionDe,
-      required this.descriptionFr,
-      required this.pictureUrl,
-      required this.nutrients,
-      required this.portions});
+  SpFdcFoodDTO({
+    required this.fdcId,
+    required this.descriptionEn,
+    required this.descriptionDe,
+    required this.descriptionFr,
+    required this.pictureUrl,
+    required this.nutrients,
+    required this.portions,
+  });
 
   factory SpFdcFoodDTO.fromJson(Map<String, dynamic> json) =>
       _$SpFdcFoodDTOFromJson(json);

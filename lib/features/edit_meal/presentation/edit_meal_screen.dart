@@ -42,15 +42,14 @@ class _EditMealScreenState extends State<EditMealScreen> {
   final _fatTextController = TextEditingController();
   final _proteinTextController = TextEditingController();
 
-  final _units = ['g', 'ml', 'g/ml'];
+  final _units = ['g', 'ml'];
   late String? selectedUnit;
 
   // late List<DropdownMenuItem> _mealUnitDropdownItems;
   late List<ButtonSegment<String>> _mealUnitButtonSegment;
 
-  // TODO: Add base quantity and unit
-  String baseQuantity = "100";
-  String baseQuantityUnit = " g/ml";
+  String baseQuantity = " 100 ";
+  String baseQuantityUnit = "g";
 
   @override
   void initState() {
@@ -76,17 +75,18 @@ class _EditMealScreenState extends State<EditMealScreen> {
     _nameTextController.text = _mealEntity.name ?? "";
     _brandsTextController.text = _mealEntity.brands ?? "";
     _mealQuantityTextController.text = _mealEntity.mealQuantity ?? "";
-    _servingQuantityTextController.text = _mealEntity.servingQuantity
-        .toStringOrEmpty();
-    _kcalTextController.text = _mealEntity.nutriments.energyKcalPerQuantity
-        .toStringOrEmpty();
-    _carbsTextController.text = _mealEntity.nutriments.carbohydratesPerQuantity
-        .toStringOrEmpty();
-    _fatTextController.text = _mealEntity.nutriments.fatPerQuantity
-        .toStringOrEmpty();
-    _proteinTextController.text = _mealEntity.nutriments.proteinsPerQuantity
-        .toStringOrEmpty();
+    _servingQuantityTextController.text =
+        _mealEntity.servingQuantity.toStringOrEmpty();
+    _kcalTextController.text =
+        _mealEntity.nutriments.energyKcalPerQuantity.toStringOrEmpty();
+    _carbsTextController.text =
+        _mealEntity.nutriments.carbohydratesPerQuantity.toStringOrEmpty();
+    _fatTextController.text =
+        _mealEntity.nutriments.fatPerQuantity.toStringOrEmpty();
+    _proteinTextController.text =
+        _mealEntity.nutriments.proteinsPerQuantity.toStringOrEmpty();
     selectedUnit = _switchButtonUnit(_mealEntity.mealUnit);
+    baseQuantityUnit = selectedUnit ?? _units[0];
 
     // Convert meal size to imperial units if necessary
     if (_usesImperialUnits) {
@@ -114,11 +114,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
               ? S.of(context).flOzUnit
               : S.of(context).milliliterUnit,
         ),
-      ),
-      ButtonSegment(
-        value: _units[2],
-        label: Text(S.of(context).gramMilliliterUnit),
-      ),
+      )
     ];
 
     super.didChangeDependencies();
@@ -200,8 +196,8 @@ class _EditMealScreenState extends State<EditMealScreen> {
           controller: _mealQuantityTextController,
           decoration: InputDecoration(
             labelText: _usesImperialUnits
-                ? S.of(context).mealSizeLabelImperial
-                : S.of(context).mealSizeLabel,
+                ? '${S.of(context).mealSizeLabelImperial} ($baseQuantityUnit)'
+                : '${S.of(context).mealSizeLabel} ($baseQuantityUnit)',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -212,8 +208,8 @@ class _EditMealScreenState extends State<EditMealScreen> {
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
             labelText: _usesImperialUnits
-                ? S.of(context).servingSizeLabelImperial
-                : S.of(context).servingSizeLabelMetric,
+                ? '${S.of(context).servingSizeLabelImperial} ($baseQuantityUnit)'
+                : '${S.of(context).servingSizeLabelMetric} ($baseQuantityUnit)',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -221,10 +217,11 @@ class _EditMealScreenState extends State<EditMealScreen> {
         const SizedBox(height: 16),
         SegmentedButton<String>(
           segments: _mealUnitButtonSegment,
-          selected: {selectedUnit ?? _units[2]},
+          selected: {selectedUnit ?? _units[0]},
           onSelectionChanged: (Set<String> newSelection) {
             setState(() {
               selectedUnit = newSelection.first;
+              baseQuantityUnit = newSelection.first;
             });
           },
         ),
@@ -233,7 +230,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
           controller: _baseQuantityTextController,
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
-            labelText: S.of(context).baseQuantityLabel,
+            labelText: '${S.of(context).baseQuantityLabel} ($baseQuantityUnit)',
             border: const OutlineInputBorder(),
           ),
           keyboardType: TextInputType.number,
@@ -244,7 +241,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
             labelText:
-                S.of(context).mealKcalLabel + baseQuantity + baseQuantityUnit,
+                '${S.of(context).mealKcalLabel}$baseQuantity$baseQuantityUnit',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -255,7 +252,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
             labelText:
-                S.of(context).mealCarbsLabel + baseQuantity + baseQuantityUnit,
+                '${S.of(context).mealCarbsLabel}$baseQuantity$baseQuantityUnit',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -266,7 +263,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
             labelText:
-                S.of(context).mealFatLabel + baseQuantity + baseQuantityUnit,
+                '${S.of(context).mealFatLabel}$baseQuantity$baseQuantityUnit',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -277,9 +274,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
           inputFormatters: CustomTextInputFormatter.doubleOnly(),
           decoration: InputDecoration(
             labelText:
-                S.of(context).mealProteinLabel +
-                baseQuantity +
-                baseQuantityUnit,
+                '${S.of(context).mealProteinLabel}$baseQuantity$baseQuantityUnit',
             border: const OutlineInputBorder(),
           ),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -335,7 +330,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
   String? _switchButtonUnit(String? unit) {
     String? selectedUnit;
     if (!_units.contains(unit)) {
-      selectedUnit = _units[2]; // Default to g/ml
+      selectedUnit = _units[0]; // Default to g
     } else {
       selectedUnit = unit;
     }

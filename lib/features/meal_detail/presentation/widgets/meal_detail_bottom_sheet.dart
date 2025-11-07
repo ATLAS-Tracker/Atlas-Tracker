@@ -89,17 +89,19 @@ class MealDetailBottomSheet extends StatelessWidget {
                         Expanded(
                           child: DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value:
-                                (product.mealOrRecipe ==
+                            value: (product.mealOrRecipe ==
                                     MealOrRecipeEntity.recipe)
                                 ? UnitDropdownItem.serving.toString()
-                                : selectedUnit,
+                                : (product.isLiquid &&
+                                        selectedUnit ==
+                                            UnitDropdownItem.g.toString())
+                                    ? UnitDropdownItem.ml.toString()
+                                    : selectedUnit,
                             decoration: InputDecoration(
                               border: const OutlineInputBorder(),
                               labelText: S.of(context).unitLabel,
                             ),
-                            items:
-                                (product.mealOrRecipe ==
+                            items: (product.mealOrRecipe ==
                                     MealOrRecipeEntity.recipe)
                                 ? [_getServingDropdownItem(context)]
                                 : <DropdownMenuItem<String>>[
@@ -110,8 +112,7 @@ class MealDetailBottomSheet extends StatelessWidget {
                                       ..._getSolidUnitDropdownItems(context),
                                     if (product.isLiquid ||
                                         (!product.isLiquid && !product.isSolid))
-                                      ..._getLiquidUnitDropdownItems(context),
-                                    ..._getOtherDropdownItems(context),
+                                      ..._getLiquidUnitDropdownItems(context)
                                   ],
                             onChanged: (value) {
                               onQuantityOrUnitChanged(
@@ -146,7 +147,9 @@ class MealDetailBottomSheet extends StatelessWidget {
                     productMissingRequiredInfo
                         ? Text(
                             S.of(context).missingProductInfo,
-                            style: Theme.of(context).textTheme.bodyMedium
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
                                 ?.copyWith(
                                   color: Theme.of(context).colorScheme.error,
                                 ),
@@ -187,11 +190,12 @@ class MealDetailBottomSheet extends StatelessWidget {
       );
     } else {
       // Persist serving as count when selected, otherwise use converted quantity
-      final isServing =
-          mealDetailBloc.state.selectedUnit == UnitDropdownItem.serving.toString();
+      final isServing = mealDetailBloc.state.selectedUnit ==
+          UnitDropdownItem.serving.toString();
       final amountToPersist = isServing
           ? quantityTextController.text // e.g., "1" portion
-          : mealDetailBloc.state.totalQuantityConverted; // converted g/ml or imperial
+          : mealDetailBloc
+              .state.totalQuantityConverted; // converted g/ml or imperial
 
       mealDetailBloc.addIntake(
         context,
@@ -286,19 +290,6 @@ class MealDetailBottomSheet extends StatelessWidget {
     ];
   }
 
-  List<DropdownMenuItem<String>> _getOtherDropdownItems(BuildContext context) {
-    return [
-      DropdownMenuItem(
-        value: UnitDropdownItem.gml.toString(),
-        child: Text(
-          "${S.of(context).notAvailableLabel} (${S.of(context).gramMilliliterUnit})",
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-      ),
-    ];
-  }
-
   String _localizedUnit(BuildContext context, String? unit) {
     switch (unit) {
       case 'serving':
@@ -312,11 +303,8 @@ class MealDetailBottomSheet extends StatelessWidget {
       case 'fl oz':
       case 'fl.oz':
         return S.of(context).flOzUnit;
-      case 'g/ml':
-      case 'gml':
-        return S.of(context).gramMilliliterUnit;
       default:
-        return unit ?? S.of(context).gramMilliliterUnit;
+        return unit ?? S.of(context).gramUnit;
     }
   }
 }

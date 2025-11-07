@@ -23,6 +23,7 @@ class ProductsRepository {
 
     final products = offWordResponse.products
         .map((offProduct) => MealEntity.fromOFFProduct(offProduct))
+        .where((mealEntity) => mealEntity.hasNutriments)
         .toList();
 
     return products;

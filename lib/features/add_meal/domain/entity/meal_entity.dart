@@ -47,6 +47,12 @@ class MealEntity extends Equatable {
 
   bool get isSolid => solidUnits.contains(mealUnit);
 
+  bool get hasNutriments =>
+      nutriments.energyKcalPerQuantity != null ||
+      nutriments.carbohydratesPerQuantity != null ||
+      nutriments.fatPerQuantity != null ||
+      nutriments.proteinsPerQuantity != null;
+
   const MealEntity(
       {required this.code,
       required this.name,
@@ -130,6 +136,24 @@ class MealEntity extends Equatable {
   factory MealEntity.fromSpFDCFood(SpFdcFoodDTO foodItem) {
     final fdcId = foodItem.fdcId?.toInt().toString();
 
+    final String unit; // Define the base unit
+    switch (foodItem.portions[0].measureUnitId) {
+      case 1003:
+        unit = "l";
+        break;
+      case 1001:
+      case 1002:
+      case 1004:
+        unit = "ml";
+        break;
+      default:
+        unit = "g";
+    }
+
+    final servingUnit =
+        FDCConst.measureUnits[foodItem.portions[0].measureUnitId] ??
+            FDCConst.fdcDefaultUnit;
+
     return MealEntity(
         code: fdcId,
         name: foodItem.getLocaleDescription(
@@ -139,9 +163,9 @@ class MealEntity extends Equatable {
         mainImageUrl: foodItem.pictureUrl,
         url: FDCConst.getFoodDetailUrlString(fdcId),
         mealQuantity: null,
-        mealUnit: FDCConst.fdcDefaultUnit,
+        mealUnit: unit,
         servingQuantity: foodItem.servingSize,
-        servingUnit: FDCConst.fdcDefaultUnit,
+        servingUnit: servingUnit,
         servingSize:
             "${(foodItem.servingAmount ?? 1).toInt()} ${foodItem.servingSizeUnit}",
         nutriments: MealNutrimentsEntity.fromFDCNutriments(foodItem.nutrients),

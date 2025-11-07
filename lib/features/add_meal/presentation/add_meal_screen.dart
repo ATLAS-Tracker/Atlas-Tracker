@@ -79,8 +79,9 @@ class _AddMealScreenState extends State<AddMealScreen>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text(
-              _mealOrRecipe == MealOrRecipeEntity.recipe ? "" : _mealType.getTypeName(context)),
+          title: Text(_mealOrRecipe == MealOrRecipeEntity.recipe
+              ? ""
+              : _mealType.getTypeName(context)),
           actions: [
             BlocBuilder<AddMealBloc, AddMealState>(
               bloc: locator<AddMealBloc>()..add(InitializeAddMealEvent()),
@@ -140,7 +141,8 @@ class _AddMealScreenState extends State<AddMealScreen>
                                     const CircularProgressIndicator(),
                                     const SizedBox(height: 12),
                                     Text(
-                                      S.of(context)
+                                      S
+                                          .of(context)
                                           .productSearchMayTakeLongerMessage,
                                       textAlign: TextAlign.center,
                                       style: Theme.of(context)
@@ -185,15 +187,16 @@ class _AddMealScreenState extends State<AddMealScreen>
                                     day: _day,
                                     mealEntity: state.products[index],
                                     addMealType: _mealType,
-                                    usesImperialUnits:
-                                        state.usesImperialUnits,
+                                    usesImperialUnits: state.usesImperialUnits,
                                   );
                                 },
                               );
                             } else if (state is ProductsFailedState) {
                               return ErrorDialog(
-                                errorText: S.of(context).errorFetchingProductData,
-                                onRefreshPressed: _onProductsRefreshButtonPressed,
+                                errorText:
+                                    S.of(context).errorFetchingProductData,
+                                onRefreshPressed:
+                                    _onProductsRefreshButtonPressed,
                               );
                             } else {
                               return const SizedBox();
@@ -231,7 +234,8 @@ class _AddMealScreenState extends State<AddMealScreen>
                               final filteredMeals = isOnCreateMealScreen
                                   ? state.recentMeals
                                       .where((meal) =>
-                                          meal.mealOrRecipe != MealOrRecipeEntity.recipe)
+                                          meal.mealOrRecipe !=
+                                          MealOrRecipeEntity.recipe)
                                       .toList()
                                   : state.recentMeals;
 
@@ -279,6 +283,9 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 
   void _onSearchSubmit(String inputText) {
+    // The search is case-sensitive, so it is necessary to replace "oe"
+    // with "œ" to find the corresponding foods.
+    inputText = inputText.replaceAll("oe", "œ");
     switch (_tabController.index) {
       case 0:
         final trimmedInput = inputText.trim();

@@ -30,11 +30,11 @@ class MealDetailBloc extends Bloc<MealDetailEvent, MealDetailState> {
     this._getKcalGoalUsecase,
     this._getMacroGoalUsecase,
   ) : super(
-        MealDetailInitial(
-          totalQuantityConverted: '100',
-          selectedUnit: UnitDropdownItem.gml.toString(),
-        ),
-      ) {
+          MealDetailInitial(
+            totalQuantityConverted: '100',
+            selectedUnit: UnitDropdownItem.g.toString(),
+          ),
+        ) {
     on<UpdateKcalEvent>((event, emit) async {
       try {
         final selectedTotalQuantity =
@@ -142,7 +142,6 @@ class MealDetailBloc extends Bloc<MealDetailEvent, MealDetailState> {
 enum UnitDropdownItem {
   g,
   ml,
-  gml,
   oz,
   flOz,
   serving;
@@ -153,8 +152,6 @@ enum UnitDropdownItem {
         return UnitDropdownItem.g;
       case 'ml':
         return UnitDropdownItem.ml;
-      case 'g/ml':
-        return UnitDropdownItem.gml;
       case 'oz':
         return UnitDropdownItem.oz;
       case 'fl oz' || 'fl.oz':
@@ -162,7 +159,7 @@ enum UnitDropdownItem {
       case 'serving':
         return UnitDropdownItem.serving;
       default:
-        return UnitDropdownItem.gml;
+        return UnitDropdownItem.g;
     }
   }
 
@@ -173,8 +170,6 @@ enum UnitDropdownItem {
         return 'g';
       case UnitDropdownItem.ml:
         return 'ml';
-      case UnitDropdownItem.gml:
-        return 'g/ml';
       case UnitDropdownItem.oz:
         return 'oz';
       case UnitDropdownItem.flOz:

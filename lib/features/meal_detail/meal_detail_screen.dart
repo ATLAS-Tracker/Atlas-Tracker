@@ -68,13 +68,20 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     intakeTypeEntity = args.intakeTypeEntity;
     _usesImperialUnits = args.usesImperialUnits;
 
+    if (args.postNavigationAction != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          args.postNavigationAction!(context);
+        }
+      });
+    }
+
     // Set initial unit
     if (_initialUnit == "") {
-      if (meal.mealUnit != null) {
-        _initialUnit =
-            UnitDropdownItem.g.fromString(meal.mealUnit!).toString();
-      } else if (meal.hasServingValues) {
+      if (meal.hasServingValues) {
         _initialUnit = UnitDropdownItem.serving.toString();
+      } else if (meal.mealUnit != null) {
+        _initialUnit = UnitDropdownItem.g.fromString(meal.mealUnit!).toString();
       } else if (meal.isLiquid) {
         _initialUnit = _usesImperialUnits
             ? UnitDropdownItem.flOz.toString()
@@ -84,7 +91,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             ? UnitDropdownItem.oz.toString()
             : UnitDropdownItem.g.toString();
       } else {
-        _initialUnit = UnitDropdownItem.gml.toString();
+        _initialUnit = UnitDropdownItem.g.toString();
       }
       _mealDetailBloc
           .add(UpdateKcalEvent(meal: meal, selectedUnit: _initialUnit));
@@ -92,12 +99,12 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
     // Set initial quantity
     if (_initialQuantity == "") {
-      if (meal.mealQuantity != null) {
-        _initialQuantity = meal.mealQuantity!;
-        quantityTextController.text = meal.mealQuantity!;
-      } else if (meal.hasServingValues) {
+      if (meal.hasServingValues) {
         _initialQuantity = "1";
         quantityTextController.text = "1";
+      } else if (meal.mealQuantity != null) {
+        _initialQuantity = meal.mealQuantity!;
+        quantityTextController.text = meal.mealQuantity!;
       } else if (_usesImperialUnits) {
         _initialQuantity = _initialQuantityImperial;
         quantityTextController.text = _initialQuantityImperial;
@@ -305,7 +312,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                       meal: meal,
                       displayUnit:
                           selectedUnit == UnitDropdownItem.serving.toString()
-                              ? meal.servingUnit
+                              ? meal.mealUnit
                               : selectedUnit,
                       usesImperialUnits: _usesImperialUnits,
                       textStyle: Theme.of(context).textTheme.bodyMedium,
@@ -371,7 +378,9 @@ class MealDetailScreenArguments {
   final IntakeTypeEntity intakeTypeEntity;
   final DateTime day;
   final bool usesImperialUnits;
+  final void Function(BuildContext)? postNavigationAction;
 
   MealDetailScreenArguments(
-      this.mealEntity, this.intakeTypeEntity, this.day, this.usesImperialUnits);
+      this.mealEntity, this.intakeTypeEntity, this.day, this.usesImperialUnits,
+      {this.postNavigationAction});
 }
