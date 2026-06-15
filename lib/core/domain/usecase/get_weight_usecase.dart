@@ -42,7 +42,9 @@ class GetWeightUsecase {
       {bool includeToday = false}) async {
     final List<UserWeightEntity> weights = [];
 
-    for (int i = includeToday ? 0 : 1; i < days; i++) {
+    final int lastOffset = includeToday ? days - 1 : days;
+
+    for (int i = includeToday ? 0 : 1; i <= lastOffset; i++) {
       DateTime date = currentDay.subtract(Duration(days: i));
       UserWeightEntity? weight = await getUserWeightByDate(date);
 

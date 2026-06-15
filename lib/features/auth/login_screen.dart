@@ -15,6 +15,8 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
+import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
 import 'package:opennutritracker/services/firebase_messaging_service.dart';
 import 'package:opennutritracker/services/local_notifications_service.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
@@ -298,6 +300,9 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         // ── 4. Rafraîchit le profil depuis Supabase pour annuler un import obsolète
+        await locator<JournalRemoteSyncService>().syncAtStartup();
+        await locator<StartupRemoteSyncService>().syncAtStartup();
+
         final getUser = locator<GetUserUsecase>();
         final hasProfile = await getUser.hasUserData();
         final userId = res.user?.id;

@@ -50,10 +50,10 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `AtlasTracker`
+  /// `ATLAS TRACKER`
   String get appTitle {
     return Intl.message(
-      'AtlasTracker',
+      'ATLAS TRACKER',
       name: 'appTitle',
       desc: '',
       args: [],
@@ -4848,6 +4848,196 @@ class S {
     return Intl.message(
       'website',
       name: 'websiteLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coach objective`
+  String get coachObjectiveLabel {
+    return Intl.message(
+      'Coach objective',
+      name: 'coachObjectiveLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update my weight`
+  String get recordWeightLabel {
+    return Intl.message(
+      'Update my weight',
+      name: 'recordWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `current weight`
+  String get currentWeightLabel {
+    return Intl.message(
+      'current weight',
+      name: 'currentWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today’s meals`
+  String get mealsOfDayLabel {
+    return Intl.message(
+      'Today’s meals',
+      name: 'mealsOfDayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `kcal • macros`
+  String get kcalMacrosLabel {
+    return Intl.message(
+      'kcal • macros',
+      name: 'kcalMacrosLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hello`
+  String get helloLabel {
+    return Intl.message(
+      'Hello',
+      name: 'helloLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coach`
+  String get coachFallbackName {
+    return Intl.message(
+      'Coach',
+      name: 'coachFallbackName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `week`
+  String get weekLabel {
+    return Intl.message(
+      'week',
+      name: 'weekLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `wk.`
+  String get weekShortLabel {
+    return Intl.message(
+      'wk.',
+      name: 'weekShortLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `vs 7d avg`
+  String get weeklyAverageDeltaLabel {
+    return Intl.message(
+      'vs 7d avg',
+      name: 'weeklyAverageDeltaLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Target weight`
+  String get targetWeightLabel {
+    return Intl.message(
+      'Target weight',
+      name: 'targetWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current goal`
+  String get currentGoalLabel {
+    return Intl.message(
+      'Current goal',
+      name: 'currentGoalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Target`
+  String get targetShortLabel {
+    return Intl.message(
+      'Target',
+      name: 'targetShortLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `remaining`
+  String get remainingWeightLabel {
+    return Intl.message(
+      'remaining',
+      name: 'remainingWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `consumed`
+  String get consumedLabel {
+    return Intl.message(
+      'consumed',
+      name: 'consumedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select my weight`
+  String get selectMyWeightLabel {
+    return Intl.message(
+      'Select my weight',
+      name: 'selectMyWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight loss`
+  String get goalLoseWeightDashboard {
+    return Intl.message(
+      'Weight loss',
+      name: 'goalLoseWeightDashboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight maintenance`
+  String get goalMaintainWeightDashboard {
+    return Intl.message(
+      'Weight maintenance',
+      name: 'goalMaintainWeightDashboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Muscle gain`
+  String get goalGainWeightDashboard {
+    return Intl.message(
+      'Muscle gain',
+      name: 'goalGainWeightDashboard',
       desc: '',
       args: [],
     );

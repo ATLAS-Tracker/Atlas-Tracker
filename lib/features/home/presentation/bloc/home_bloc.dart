@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
+import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/delete_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/delete_user_activity_usecase.dart';
@@ -12,6 +13,7 @@ import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_kcal_goal_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_activity_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
@@ -20,6 +22,7 @@ import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'home_event.dart';
 
@@ -37,6 +40,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final GetMacroGoalUsecase _getMacroGoalUsecase;
   final GetWeightUsecase _getWeightUsecase;
   final DeleteUserWeightUsecase _deleteUserWeightUsecase;
+  final GetUserUsecase _getUserUsecase = locator<GetUserUsecase>();
+  final SupabaseClient _supabaseClient = locator<SupabaseClient>();
 
   DateTime currentDay = DateTime.now();
 
@@ -116,8 +121,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           CalorieGoalCalc.getDailyKcalLeft(totalKcalGoal, totalKcalIntake);
 
       final userWeight = await _getWeightUsecase.getTodayUserWeight();
+      final weeklyWeightDelta = await _getWeeklyWeightDelta(userWeight);
+      final userData = await _getUserUsecase.getUserData();
+      final coachName = await _getCoachName();
 
       emit(HomeLoadedState(
+          userName: userData.name,
+          coachName: coachName,
           totalKcalDaily: totalKcalGoal,
           totalKcalLeft: totalKcalLeft,
           totalKcalSupplied: totalKcalIntake,
@@ -134,8 +144,70 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           snackIntakeList: snackIntakeList,
           userActivityList: userActivities,
           usesImperialUnits: usesImperialUnits,
+          weeklyWeightDelta: weeklyWeightDelta,
+          targetWeight: userData.weightKG,
+          userWeightGoal: userData.goal,
           userWeightEntity: userWeight));
     });
+  }
+
+  Future<String?> _getCoachName() async {
+    final userId = _supabaseClient.auth.currentUser?.id;
+    if (userId == null) {
+      return null;
+    }
+
+    try {
+      final userRows = await _supabaseClient
+          .from('users')
+          .select('coach_id')
+          .eq('id', userId)
+          .limit(1);
+
+      if (userRows.isEmpty) {
+        return null;
+      }
+
+      final coachId = userRows.first['coach_id']?.toString();
+      if (coachId == null || coachId.isEmpty) {
+        return null;
+      }
+
+      final coachRows = await _supabaseClient
+          .from('users')
+          .select('display_name')
+          .eq('id', coachId)
+          .limit(1);
+
+      if (coachRows.isEmpty) {
+        return null;
+      }
+
+      return (coachRows.first['display_name'] as String?)?.trim();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<double?> _getWeeklyWeightDelta(UserWeightEntity? currentWeight) async {
+    if (currentWeight == null) {
+      return null;
+    }
+
+    final pastWeights = await _getWeightUsecase.getWeightsFromPastDays(
+      DateTime.now(),
+      7,
+    );
+
+    if (pastWeights.isEmpty) {
+      return null;
+    }
+
+    final averageWeight =
+        pastWeights.map((weight) => weight.weight).toList().sum /
+            pastWeights.length;
+
+    return currentWeight.weight - averageWeight;
   }
 
   double getTotalKcal(List<IntakeEntity> intakeList) =>

@@ -61,7 +61,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy."),
         "appLicenseLabel":
             MessageLookupByLibrary.simpleMessage("GPL-3.0 license"),
-        "appTitle": MessageLookupByLibrary.simpleMessage("AtlasTracker"),
+        "appTitle": MessageLookupByLibrary.simpleMessage("ATLAS TRACKER"),
         "appVersionName": m0,
         "averageWeightBody": MessageLookupByLibrary.simpleMessage(
             "Average user weight over the last seven days. The current day is not counted."),
@@ -102,8 +102,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "cloudSyncProblem": MessageLookupByLibrary.simpleMessage(
             "Cloud synchronization problem."),
         "cmLabel": MessageLookupByLibrary.simpleMessage("cm"),
+        "coachFallbackName": MessageLookupByLibrary.simpleMessage("Coach"),
+        "coachObjectiveLabel":
+            MessageLookupByLibrary.simpleMessage("Coach objective"),
         "coachStudentsLabel":
             MessageLookupByLibrary.simpleMessage("My students"),
+        "consumedLabel": MessageLookupByLibrary.simpleMessage("consumed"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Which meal type do you want to copy to?"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -116,6 +120,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Create custom meal item?"),
         "createRecipeLabel":
             MessageLookupByLibrary.simpleMessage("Create a meal"),
+        "currentGoalLabel":
+            MessageLookupByLibrary.simpleMessage("Current goal"),
+        "currentWeightLabel":
+            MessageLookupByLibrary.simpleMessage("current weight"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Daily Kcal adjustment:"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
@@ -208,13 +216,20 @@ class MessageLookup extends MessageLookupByLibrary {
         "genericErrorOccurred":
             MessageLookupByLibrary.simpleMessage("An error occurred."),
         "goalGainWeight": MessageLookupByLibrary.simpleMessage("Gain Weight"),
+        "goalGainWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Muscle gain"),
         "goalLabel": MessageLookupByLibrary.simpleMessage("Goal"),
         "goalLoseWeight": MessageLookupByLibrary.simpleMessage("Lose Weight"),
+        "goalLoseWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Weight loss"),
         "goalMaintainWeight":
             MessageLookupByLibrary.simpleMessage("Maintain Weight"),
+        "goalMaintainWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Weight maintenance"),
         "gramMilliliterUnit": MessageLookupByLibrary.simpleMessage("g/ml"),
         "gramUnit": MessageLookupByLibrary.simpleMessage("g"),
         "heightLabel": MessageLookupByLibrary.simpleMessage("Height"),
+        "helloLabel": MessageLookupByLibrary.simpleMessage("Hello"),
         "homeLabel": MessageLookupByLibrary.simpleMessage("Home"),
         "importAction": MessageLookupByLibrary.simpleMessage("Import"),
         "importSupabaseDescription": MessageLookupByLibrary.simpleMessage(
@@ -231,6 +246,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Item updated"),
         "kcalLabel": MessageLookupByLibrary.simpleMessage("kcal"),
         "kcalLeftLabel": MessageLookupByLibrary.simpleMessage("kcal left"),
+        "kcalMacrosLabel":
+            MessageLookupByLibrary.simpleMessage("kcal • macros"),
         "kgLabel": MessageLookupByLibrary.simpleMessage("kg"),
         "lbsLabel": MessageLookupByLibrary.simpleMessage("lbs"),
         "learnMoreLabel": MessageLookupByLibrary.simpleMessage(
@@ -284,6 +301,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealSizeLabelImperial":
             MessageLookupByLibrary.simpleMessage("Meal size (oz/fl oz)"),
         "mealUnitLabel": MessageLookupByLibrary.simpleMessage("Meal unit"),
+        "mealsOfDayLabel":
+            MessageLookupByLibrary.simpleMessage("Today’s meals"),
         "milliliterUnit": MessageLookupByLibrary.simpleMessage("ml"),
         "minutesAbbrevLabel": MessageLookupByLibrary.simpleMessage("min"),
         "missingNutrientsDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -684,6 +703,10 @@ class MessageLookup extends MessageLookupByLibrary {
             "I have read and accept the privacy policy."),
         "recentlyAddedLabel": MessageLookupByLibrary.simpleMessage("Recently"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Recipe"),
+        "recordWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Update my weight"),
+        "remainingWeightLabel":
+            MessageLookupByLibrary.simpleMessage("remaining"),
         "reportErrorDialogText": MessageLookupByLibrary.simpleMessage(
             "Do you want to report an error to the developer?"),
         "resetPasswordButton":
@@ -723,6 +746,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Select Gender"),
         "selectHeightDialogLabel":
             MessageLookupByLibrary.simpleMessage("Select Height"),
+        "selectMyWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Select my weight"),
         "selectPalCategoryLabel":
             MessageLookupByLibrary.simpleMessage("Select Activity Level"),
         "selectRoleDialogLabel":
@@ -781,12 +806,19 @@ class MessageLookup extends MessageLookupByLibrary {
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sugar"),
         "supabaseError": m5,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("supplied"),
+        "targetShortLabel": MessageLookupByLibrary.simpleMessage("Target"),
+        "targetWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Target weight"),
         "unitLabel": MessageLookupByLibrary.simpleMessage("Unit"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("User not connected."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("View product page"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("website"),
+        "weekLabel": MessageLookupByLibrary.simpleMessage("week"),
+        "weekShortLabel": MessageLookupByLibrary.simpleMessage("wk."),
+        "weeklyAverageDeltaLabel":
+            MessageLookupByLibrary.simpleMessage("vs 7d avg"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Weight"),
         "yearsLabel": m6
       };

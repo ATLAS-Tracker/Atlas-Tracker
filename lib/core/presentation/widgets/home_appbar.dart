@@ -8,7 +8,7 @@ class HomeAppbar extends StatefulWidget implements PreferredSizeWidget {
   const HomeAppbar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
   State<HomeAppbar> createState() => _HomeAppbarState();
@@ -57,24 +57,17 @@ class _HomeAppbarState extends State<HomeAppbar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Row(
-        children: [
-          const SizedBox(width: 40, child: DynamicOntLogo()),
-          const SizedBox(width: 12),
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                text: S.of(context).appTitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+      toolbarHeight: 72,
+      title: Align(
+        alignment: Alignment.centerLeft,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(width: 46, height: 46, child: DynamicOntLogo()),
+            const SizedBox(width: 8),
+            _BrandName(title: S.of(context).appTitle),
+          ],
+        ),
       ),
       actions: [
         IconButton(
@@ -98,6 +91,46 @@ class _HomeAppbarState extends State<HomeAppbar> {
             Navigator.of(context).pushNamed(NavigationOptions.settingsRoute);
           },
         )
+      ],
+    );
+  }
+}
+
+class _BrandName extends StatelessWidget {
+  final String title;
+
+  const _BrandName({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    final parts = title.trim().split(RegExp(r'\s+'));
+    final firstLine = parts.isNotEmpty ? parts.first : 'ATLAS';
+    final secondLine =
+        parts.length > 1 ? parts.sublist(1).join(' ') : 'TRACKER';
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          firstLine,
+          style: textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontWeight: FontWeight.w800,
+            height: 0.96,
+            letterSpacing: 1.2,
+          ),
+        ),
+        Text(
+          secondLine,
+          style: textTheme.titleMedium?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w800,
+            height: 0.96,
+            letterSpacing: 0.9,
+          ),
+        ),
       ],
     );
   }

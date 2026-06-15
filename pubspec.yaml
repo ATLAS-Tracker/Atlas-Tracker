@@ -91,6 +91,8 @@ flutter:
     - assets/icon/ont_logo_square.png
     - assets/icon/ont_logo_square.svg
     - assets/icon/ont_logo_square_light.png
+    - assets/icon/atlas_tracker_logo.png
+    - assets/icon/macro_carbs_corn.png
     - assets/icon/ont_banner_top.png
     - assets/icon/ont_banner_top_light.png
   fonts:

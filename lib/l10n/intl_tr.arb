@@ -1,5 +1,5 @@
 {
-  "appTitle": "AtlasTracker",
+  "appTitle": "ATLAS TRACKER",
   "appVersionName": "Versiyon {versionNumber}",
   "appDescription": "AtlasTracker, gizliliğinize saygı duyan ücretsiz ve açık kaynaklı bir kalori ve besin takipçisidir.",
   "alphaVersionName": "[Alpha]",
@@ -150,11 +150,17 @@
   "accountDeletedSuccess": "Hesap başarıyla silindi.",
   "failedToDeleteWithReason": "Silme başarısız: {reason}",
   "@failedToDeleteWithReason": {
-    "placeholders": {"reason": {}}
+    "placeholders": {
+      "reason": {}
+    }
   },
   "genericErrorOccurred": "Bir hata oluştu.",
   "supabaseError": "Supabase hatası: {message}",
-  "@supabaseError": {"placeholders": {"message": {}}},
+  "@supabaseError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
   "subscriptionInactiveMessage": "Aboneliğiniz artık aktif değil. Lütfen antrenörünüzle iletişime geçin.",
   "cloudSyncProblem": "Bulut senkronizasyonu sorunu.",
   "minutesAbbrevLabel": "dk",
@@ -484,5 +490,24 @@
   "manageAccountConfirmAction": "Silmeyi Onayla",
   "logOutLabel": "Çıkış yap",
   "forgotPasswordHelp": "Şifre sıfırlama çalışmazsa:\n- uygulamadan çıkıp işlemi tekrar deneyin veya\n- isteği web sitesi üzerinden yapın: ",
-  "websiteLabel": "web sitesi"
+  "websiteLabel": "web sitesi",
+  "coachObjectiveLabel": "Koç hedefi",
+  "recordWeightLabel": "Kilomu güncelle",
+  "currentWeightLabel": "mevcut kilo",
+  "mealsOfDayLabel": "Günün öğünleri",
+  "kcalMacrosLabel": "kcal • makrolar",
+  "helloLabel": "Merhaba",
+  "coachFallbackName": "Koç",
+  "weekLabel": "hafta",
+  "weekShortLabel": "hf.",
+  "weeklyAverageDeltaLabel": "7g ort.",
+  "targetWeightLabel": "Hedef kilo",
+  "currentGoalLabel": "Mevcut hedef",
+  "targetShortLabel": "Hedef",
+  "remainingWeightLabel": "kalan",
+  "consumedLabel": "tüketildi",
+  "selectMyWeightLabel": "Kilomu seç",
+  "goalLoseWeightDashboard": "Kilo verme",
+  "goalMaintainWeightDashboard": "Kiloyu koruma",
+  "goalGainWeightDashboard": "Kas kazanımı"
 }

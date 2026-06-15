@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/presentation/widgets/add_item_bottom_sheet.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/diary_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/home_appbar.dart';
@@ -100,19 +99,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     return Scaffold(
       appBar: _appbarPages[_selectedPageIndex],
       body: _bodyPages[_selectedPageIndex],
-      floatingActionButton: _selectedPageIndex == 0
-          ? FloatingActionButton(
-              onPressed: () => _onFabPressed(context),
-              tooltip: S.of(context).addLabel,
-              shape: const CircleBorder(),
-              elevation: 0,
-              focusElevation: 0,
-              hoverElevation: 0,
-              highlightElevation: 0,
-              disabledElevation: 0,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedPageIndex,
         onDestinationSelected: _setPage,
@@ -141,18 +128,5 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     setState(() {
       _selectedPageIndex = selectedIndex;
     });
-  }
-
-  void _onFabPressed(BuildContext context) async {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.0),
-                topRight: Radius.circular(16.0))),
-        builder: (BuildContext context) {
-          return AddItemBottomSheet(day: DateTime.now());
-        });
   }
 }
