@@ -15,6 +15,8 @@ class HomeLoadingState extends HomeState {
 }
 
 class HomeLoadedState extends HomeState {
+  final String userName;
+  final String? coachName;
   final double totalKcalDaily;
   final double totalKcalLeft;
   final double totalKcalSupplied;
@@ -27,6 +29,9 @@ class HomeLoadedState extends HomeState {
   final double totalProteinsGoal;
   final List<UserActivityEntity> userActivityList;
   final UserWeightEntity? userWeightEntity;
+  final double? weeklyWeightDelta;
+  final double targetWeight;
+  final UserWeightGoalEntity userWeightGoal;
   final List<IntakeEntity> breakfastIntakeList;
   final List<IntakeEntity> lunchIntakeList;
   final List<IntakeEntity> dinnerIntakeList;
@@ -34,6 +39,8 @@ class HomeLoadedState extends HomeState {
   final bool usesImperialUnits;
 
   const HomeLoadedState({
+    required this.userName,
+    required this.coachName,
     required this.totalKcalDaily,
     required this.totalKcalLeft,
     required this.totalKcalSupplied,
@@ -46,6 +53,9 @@ class HomeLoadedState extends HomeState {
     required this.totalProteinsGoal,
     required this.userActivityList,
     required this.userWeightEntity,
+    required this.weeklyWeightDelta,
+    required this.targetWeight,
+    required this.userWeightGoal,
     required this.breakfastIntakeList,
     required this.lunchIntakeList,
     required this.dinnerIntakeList,
@@ -59,6 +69,11 @@ class HomeLoadedState extends HomeState {
         lunchIntakeList,
         dinnerIntakeList,
         snackIntakeList,
-        usesImperialUnits
+        usesImperialUnits,
+        weeklyWeightDelta,
+        targetWeight,
+        userWeightGoal,
+        userName,
+        coachName
       ];
 }

@@ -1,6 +1,6 @@
 {
   "coachStudentsLabel": "Meine Schüler",
-  "appTitle": "AtlasTracker",
+  "appTitle": "ATLAS TRACKER",
   "appVersionName": "Version {versionNumber}",
   "appDescription": "AtlasTracker ist ein kostenloser und  quelloffener Kalorien- und Nährstofftracker, der Ihre Privatsphäre respektiert.",
   "alphaVersionName": "[Alpha]",
@@ -127,7 +127,6 @@
     "description": "Schaltflächenbeschriftung im Bearbeitungsdialog zum Öffnen der Produktseite."
   },
   "deleteAllLabel": "Alle löschen",
-
   "suppliedLabel": "zugeführt",
   "burnedLabel": "verbrannt",
   "stepsLabel": "Schritte",
@@ -150,11 +149,17 @@
   "accountDeletedSuccess": "Konto erfolgreich gelöscht.",
   "failedToDeleteWithReason": "Löschen fehlgeschlagen: {reason}",
   "@failedToDeleteWithReason": {
-    "placeholders": {"reason": {}}
+    "placeholders": {
+      "reason": {}
+    }
   },
   "genericErrorOccurred": "Ein Fehler ist aufgetreten.",
   "supabaseError": "Supabase-Fehler: {message}",
-  "@supabaseError": {"placeholders": {"message": {}}},
+  "@supabaseError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
   "subscriptionInactiveMessage": "Ihr Abonnement ist nicht mehr aktiv. Bitte kontaktieren Sie Ihren Coach.",
   "cloudSyncProblem": "Problem bei der Cloud-Synchronisierung.",
   "minutesAbbrevLabel": "min",
@@ -466,18 +471,37 @@
   "noStudents": "Keine Schüler",
   "errorPrefix": "Fehler:",
   "noDataToday": "Keine Daten für heute",
-  "signOutOfflineMessage": "Sie k\u00f6nnen sich nur abmelden, wenn eine Internetverbindung besteht, um Datenverlust zu vermeiden.",
-  "signOutSyncFailedMessage": "Daten konnten nicht synchronisiert werden. Bitte sp\u00e4ter erneut anmelden.",
+  "signOutOfflineMessage": "Sie können sich nur abmelden, wenn eine Internetverbindung besteht, um Datenverlust zu vermeiden.",
+  "signOutSyncFailedMessage": "Daten konnten nicht synchronisiert werden. Bitte später erneut anmelden.",
   "noInternetConnectionMessage": "Keine Internetverbindung. Funktion nicht verfügbar.",
   "setMacrosLabel": "Makroziele festlegen",
   "manageAccountTitle": "Konto verwalten",
-  "manageAccountDescription": "Wir sammeln nur Daten, die f\u00fcr das ordnungsgem\u00e4\u00dfe Funktionieren der App erforderlich sind:\n\nE-Mail-Adresse: Wird f\u00fcr die Anmeldung und Identifikation des Kontos verwendet.\n\nErn\u00e4hrungsdaten: Dein t\u00e4gliches Gewicht sowie Kalorien-, Protein-, Fett- und Kohlenhydrataufnahme.\n\nZiele: Deine pers\u00f6nlichen Vorgaben f\u00fcr Kalorien, Protein, Fett und Kohlenhydrate.\n\nAlle Daten werden sicher auf Supabase gespeichert. Wir teilen deine Daten nicht mit Dritten.",
+  "manageAccountDescription": "Wir sammeln nur Daten, die für das ordnungsgemäße Funktionieren der App erforderlich sind:\n\nE-Mail-Adresse: Wird für die Anmeldung und Identifikation des Kontos verwendet.\n\nErnährungsdaten: Dein tägliches Gewicht sowie Kalorien-, Protein-, Fett- und Kohlenhydrataufnahme.\n\nZiele: Deine persönlichen Vorgaben für Kalorien, Protein, Fett und Kohlenhydrate.\n\nAlle Daten werden sicher auf Supabase gespeichert. Wir teilen deine Daten nicht mit Dritten.",
   "manageAccountEnableSync": "Supabase-Synchronisierung aktivieren",
-  "manageAccountDelete": "Mein Konto l\u00f6schen",
+  "manageAccountDelete": "Mein Konto löschen",
   "manageAccountConfirmTitle": "Bist du sicher?",
-  "manageAccountConfirmMessage": "Dieser Vorgang kann nicht r\u00fcckg\u00e4ngig gemacht werden.",
-  "manageAccountConfirmAction": "L\u00f6schung best\u00e4tigen",
+  "manageAccountConfirmMessage": "Dieser Vorgang kann nicht rückgängig gemacht werden.",
+  "manageAccountConfirmAction": "Löschung bestätigen",
   "logOutLabel": "Abmelden",
-  "forgotPasswordHelp": "Wenn das Zur\u00fccksetzen des Passworts nicht funktioniert:\n- Beenden Sie die App und versuchen Sie es erneut, oder\n- stellen Sie die Anfrage \u00fcber die Website: ",
-  "websiteLabel": "Website"
+  "forgotPasswordHelp": "Wenn das Zurücksetzen des Passworts nicht funktioniert:\n- Beenden Sie die App und versuchen Sie es erneut, oder\n- stellen Sie die Anfrage über die Website: ",
+  "websiteLabel": "Website",
+  "coachObjectiveLabel": "Coach-Ziel",
+  "recordWeightLabel": "Gewicht aktualisieren",
+  "currentWeightLabel": "aktuelles Gewicht",
+  "mealsOfDayLabel": "Heutige Mahlzeiten",
+  "kcalMacrosLabel": "kcal • Makros",
+  "helloLabel": "Hallo",
+  "coachFallbackName": "Coach",
+  "weekLabel": "Woche",
+  "weekShortLabel": "Wo.",
+  "weeklyAverageDeltaLabel": "vs 7-Tage-Ø",
+  "targetWeightLabel": "Zielgewicht",
+  "currentGoalLabel": "Aktuelles Ziel",
+  "targetShortLabel": "Ziel",
+  "remainingWeightLabel": "übrig",
+  "consumedLabel": "verbraucht",
+  "selectMyWeightLabel": "Mein Gewicht auswählen",
+  "goalLoseWeightDashboard": "Gewichtsverlust",
+  "goalMaintainWeightDashboard": "Gewicht halten",
+  "goalGainWeightDashboard": "Muskelaufbau"
 }

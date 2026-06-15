@@ -61,7 +61,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "AtlasTracker, gizliliğinize saygı duyan ücretsiz ve açık kaynaklı bir kalori ve besin takipçisidir."),
         "appLicenseLabel":
             MessageLookupByLibrary.simpleMessage("GPL-3.0 lisansı"),
-        "appTitle": MessageLookupByLibrary.simpleMessage("AtlasTracker"),
+        "appTitle": MessageLookupByLibrary.simpleMessage("ATLAS TRACKER"),
         "appVersionName": m0,
         "baseQuantityLabel":
             MessageLookupByLibrary.simpleMessage("Temel miktar (g/ml)"),
@@ -98,8 +98,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "cloudSyncProblem": MessageLookupByLibrary.simpleMessage(
             "Bulut senkronizasyonu sorunu."),
         "cmLabel": MessageLookupByLibrary.simpleMessage("cm"),
+        "coachFallbackName": MessageLookupByLibrary.simpleMessage("Koç"),
+        "coachObjectiveLabel":
+            MessageLookupByLibrary.simpleMessage("Koç hedefi"),
         "coachStudentsLabel":
             MessageLookupByLibrary.simpleMessage("Öğrencilerim"),
+        "consumedLabel": MessageLookupByLibrary.simpleMessage("tüketildi"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Hangi yemek türüne kopyalamak istiyorsunuz?"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -112,6 +116,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Özel yemek öğesi oluştur?"),
         "createRecipeLabel":
             MessageLookupByLibrary.simpleMessage("Öğün oluştur"),
+        "currentGoalLabel":
+            MessageLookupByLibrary.simpleMessage("Mevcut hedef"),
+        "currentWeightLabel":
+            MessageLookupByLibrary.simpleMessage("mevcut kilo"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Günlük Kcal ayarı:"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
@@ -200,12 +208,19 @@ class MessageLookup extends MessageLookupByLibrary {
         "genericErrorOccurred":
             MessageLookupByLibrary.simpleMessage("Bir hata oluştu."),
         "goalGainWeight": MessageLookupByLibrary.simpleMessage("Kilo Al"),
+        "goalGainWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Kas kazanımı"),
         "goalLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "goalLoseWeight": MessageLookupByLibrary.simpleMessage("Kilo Ver"),
+        "goalLoseWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Kilo verme"),
         "goalMaintainWeight": MessageLookupByLibrary.simpleMessage("Kilo Koru"),
+        "goalMaintainWeightDashboard":
+            MessageLookupByLibrary.simpleMessage("Kiloyu koruma"),
         "gramMilliliterUnit": MessageLookupByLibrary.simpleMessage("g/ml"),
         "gramUnit": MessageLookupByLibrary.simpleMessage("g"),
         "heightLabel": MessageLookupByLibrary.simpleMessage("Boy"),
+        "helloLabel": MessageLookupByLibrary.simpleMessage("Merhaba"),
         "homeLabel": MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
         "importAction": MessageLookupByLibrary.simpleMessage("İçe Aktar"),
         "importSupabaseDescription": MessageLookupByLibrary.simpleMessage(
@@ -222,6 +237,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Öğe güncellendi"),
         "kcalLabel": MessageLookupByLibrary.simpleMessage("kcal"),
         "kcalLeftLabel": MessageLookupByLibrary.simpleMessage("kalan kcal"),
+        "kcalMacrosLabel":
+            MessageLookupByLibrary.simpleMessage("kcal • makrolar"),
         "kgLabel": MessageLookupByLibrary.simpleMessage("kg"),
         "lbsLabel": MessageLookupByLibrary.simpleMessage("lbs"),
         "learnMoreLabel": MessageLookupByLibrary.simpleMessage(
@@ -276,6 +293,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealSizeLabelImperial":
             MessageLookupByLibrary.simpleMessage("Yemek boyutu (oz/fl oz)"),
         "mealUnitLabel": MessageLookupByLibrary.simpleMessage("Yemek birimi"),
+        "mealsOfDayLabel":
+            MessageLookupByLibrary.simpleMessage("Günün öğünleri"),
         "milliliterUnit": MessageLookupByLibrary.simpleMessage("ml"),
         "minutesAbbrevLabel": MessageLookupByLibrary.simpleMessage("dk"),
         "missingProductInfo": MessageLookupByLibrary.simpleMessage(
@@ -668,6 +687,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "recentlyAddedLabel":
             MessageLookupByLibrary.simpleMessage("Son Eklenenler"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Tarif"),
+        "recordWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Kilomu güncelle"),
+        "remainingWeightLabel": MessageLookupByLibrary.simpleMessage("kalan"),
         "reportErrorDialogText": MessageLookupByLibrary.simpleMessage(
             "Geliştiriciye bir hata bildirmek istiyor musunuz?"),
         "resetPasswordButton":
@@ -705,6 +727,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Cinsiyet Seçin"),
         "selectHeightDialogLabel":
             MessageLookupByLibrary.simpleMessage("Boy Seçin"),
+        "selectMyWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Kilomu seç"),
         "selectPalCategoryLabel":
             MessageLookupByLibrary.simpleMessage("Aktivite Seviyesini Seçin"),
         "selectRoleDialogLabel":
@@ -761,12 +785,18 @@ class MessageLookup extends MessageLookupByLibrary {
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
         "supabaseError": m5,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
+        "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
+        "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
         "unitLabel": MessageLookupByLibrary.simpleMessage("Birim"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Kullanıcı bağlı değil."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("Ürün sayfasını aç"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("web sitesi"),
+        "weekLabel": MessageLookupByLibrary.simpleMessage("hafta"),
+        "weekShortLabel": MessageLookupByLibrary.simpleMessage("hf."),
+        "weeklyAverageDeltaLabel":
+            MessageLookupByLibrary.simpleMessage("7g ort."),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Kilo"),
         "yearsLabel": m6
       };

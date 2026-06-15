@@ -1,5 +1,5 @@
 {
-  "appTitle": "AtlasTracker",
+  "appTitle": "ATLAS TRACKER",
   "appVersionName": "Version {versionNumber}",
   "appDescription": "AtlasTracker is a free and open-source calorie and nutrient tracker that respects your privacy.",
   "alphaVersionName": "[Alpha]",
@@ -134,7 +134,6 @@
     "description": "Button label in the intake edit dialog that opens the meal detail screen."
   },
   "deleteAllLabel": "Delete all",
-
   "suppliedLabel": "supplied",
   "burnedLabel": "burned",
   "stepsLabel": "steps",
@@ -157,11 +156,17 @@
   "accountDeletedSuccess": "Account successfully deleted.",
   "failedToDeleteWithReason": "Failed to delete: {reason}",
   "@failedToDeleteWithReason": {
-    "placeholders": {"reason": {}}
+    "placeholders": {
+      "reason": {}
+    }
   },
   "genericErrorOccurred": "An error occurred.",
   "supabaseError": "Supabase error: {message}",
-  "@supabaseError": {"placeholders": {"message": {}}},
+  "@supabaseError": {
+    "placeholders": {
+      "message": {}
+    }
+  },
   "subscriptionInactiveMessage": "Your subscription is no longer active. Please contact your coach.",
   "cloudSyncProblem": "Cloud synchronization problem.",
   "minutesAbbrevLabel": "min",
@@ -196,7 +201,7 @@
   "editMealLabel": "Edit meal",
   "enterManuallyLabel": "Enter manually",
   "skipLabel": "Latter",
-  "missingNutrientsDialogTitle" : "Missing data",
+  "missingNutrientsDialogTitle": "Missing data",
   "missingNutrientsDialogContent": "Oops! This product sheet seems incomplete. Would you like to manually enter the missing nutritional information so you can save it?",
   "mealNameLabel": "Meal name",
   "mealBrandsLabel": "Brands",
@@ -495,5 +500,24 @@
   "manageAccountConfirmAction": "Confirm Deletion",
   "logOutLabel": "Log out",
   "forgotPasswordHelp": "If the password reset doesn't work:\n- exit the app and try again, or\n- make the request from the website: ",
-  "websiteLabel": "website"
+  "websiteLabel": "website",
+  "coachObjectiveLabel": "Coach objective",
+  "recordWeightLabel": "Update my weight",
+  "currentWeightLabel": "current weight",
+  "mealsOfDayLabel": "Today’s meals",
+  "kcalMacrosLabel": "kcal • macros",
+  "helloLabel": "Hello",
+  "coachFallbackName": "Coach",
+  "weekLabel": "week",
+  "weekShortLabel": "wk.",
+  "weeklyAverageDeltaLabel": "vs 7d avg",
+  "targetWeightLabel": "Target weight",
+  "currentGoalLabel": "Current goal",
+  "targetShortLabel": "Target",
+  "remainingWeightLabel": "remaining",
+  "consumedLabel": "consumed",
+  "selectMyWeightLabel": "Select my weight",
+  "goalLoseWeightDashboard": "Weight loss",
+  "goalMaintainWeightDashboard": "Weight maintenance",
+  "goalGainWeightDashboard": "Muscle gain"
 }

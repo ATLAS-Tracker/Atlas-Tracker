@@ -7,7 +7,7 @@ import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
-import 'package:opennutritracker/core/presentation/widgets/weight_vertical_list.dart';
+import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -17,6 +17,7 @@ import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart'
 import 'package:opennutritracker/features/home/presentation/widgets/dashboard_widget.dart';
 import 'package:opennutritracker/features/home/presentation/widgets/intake_vertical_list.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
@@ -32,6 +33,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final log = Logger('HomePage');
   late HomeBloc _homeBloc;
+  HomeLoadedState? _lastLoadedState;
+  final ScrollController _scrollController = ScrollController();
   bool _isDragging = false;
   int _steps = 0;
   StepTrackingController? _stepTrackingController;
@@ -73,6 +76,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     unawaited(_stepSubscription?.cancel());
     unawaited(_stepTrackingController?.dispose());
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -85,27 +89,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
           _homeBloc.add(const LoadItemsEvent());
           return _getLoadingContent();
         } else if (state is HomeLoadingState) {
+          final lastLoadedState = _lastLoadedState;
+          if (lastLoadedState != null) {
+            return _getLoadedContentFromState(context, lastLoadedState);
+          }
           return _getLoadingContent();
         } else if (state is HomeLoadedState) {
-          return _getLoadedContent(
-            context,
-            state.totalKcalDaily,
-            state.totalKcalLeft,
-            state.totalKcalSupplied,
-            state.totalCarbsIntake,
-            state.totalFatsIntake,
-            state.totalProteinsIntake,
-            state.totalCarbsGoal,
-            state.totalFatsGoal,
-            state.totalProteinsGoal,
-            state.breakfastIntakeList,
-            state.lunchIntakeList,
-            state.dinnerIntakeList,
-            state.snackIntakeList,
-            state.userActivityList,
-            state.userWeightEntity,
-            state.usesImperialUnits,
-          );
+          _lastLoadedState = state;
+          return _getLoadedContentFromState(context, state);
         } else {
           return _getLoadingContent();
         }
@@ -130,8 +121,40 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     return const Center(child: CircularProgressIndicator());
   }
 
+  Widget _getLoadedContentFromState(
+    BuildContext context,
+    HomeLoadedState state,
+  ) {
+    return _getLoadedContent(
+      context,
+      state.userName,
+      state.coachName,
+      state.totalKcalDaily,
+      state.totalKcalLeft,
+      state.totalKcalSupplied,
+      state.totalCarbsIntake,
+      state.totalFatsIntake,
+      state.totalProteinsIntake,
+      state.totalCarbsGoal,
+      state.totalFatsGoal,
+      state.totalProteinsGoal,
+      state.breakfastIntakeList,
+      state.lunchIntakeList,
+      state.dinnerIntakeList,
+      state.snackIntakeList,
+      state.userActivityList,
+      state.userWeightEntity,
+      state.weeklyWeightDelta,
+      state.targetWeight,
+      state.userWeightGoal,
+      state.usesImperialUnits,
+    );
+  }
+
   Widget _getLoadedContent(
     BuildContext context,
+    String userName,
+    String? coachName,
     double totalKcalDaily,
     double totalKcalLeft,
     double totalKcalSupplied,
@@ -147,12 +170,18 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     List<IntakeEntity> snackIntakeList,
     List<UserActivityEntity> userActivities,
     UserWeightEntity? userWeight,
+    double? weeklyWeightDelta,
+    double targetWeight,
+    UserWeightGoalEntity userWeightGoal,
     bool usesImperialUnits,
   ) {
     return Stack(
       children: [
         ListView(
+          key: const PageStorageKey<String>('home-page-scroll'),
+          controller: _scrollController,
           children: [
+            _HomeHeader(userName: userName, coachName: coachName),
             DashboardWidget(
               totalKcalDaily: totalKcalDaily,
               totalKcalLeft: totalKcalLeft,
@@ -164,6 +193,33 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               totalCarbsGoal: totalCarbsGoal,
               totalFatsGoal: totalFatsGoal,
               totalProteinsGoal: totalProteinsGoal,
+              userWeight: userWeight,
+              weeklyWeightDelta: weeklyWeightDelta,
+              targetWeight: targetWeight,
+              userWeightGoal: userWeightGoal,
+              usesImperialUnits: usesImperialUnits,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
+              child: Row(
+                children: [
+                  Text(
+                    S.of(context).mealsOfDayLabel,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w800,
+                        ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    S.of(context).kcalMacrosLabel,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ],
+              ),
             ),
             IntakeVerticalList(
               day: DateTime.now(),
@@ -209,7 +265,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               onItemTappedCallback: onIntakeItemTapped,
               usesImperialUnits: usesImperialUnits,
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 48.0),
             // TEMP: activities temporarily hidden by request
             // ActivityVerticalList(
             //   day: DateTime.now(),
@@ -217,13 +273,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             //   userActivityList: userActivities,
             //   onItemLongPressedCallback: onActivityItemLongPressed,
             // ),
-            WeightVerticalList(
-              day: DateTime.now(),
-              title: S.of(context).weightLabel,
-              weightEntity: userWeight,
-              onItemLongPressedCallback: onWeightItemLongPressed,
-            ),
-            const SizedBox(height: 48.0),
           ],
         ),
         Align(
@@ -407,5 +456,120 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       _homeBloc.add(const LoadItemsEvent());
     }
   }
+}
 
+class _HomeHeader extends StatelessWidget {
+  final String userName;
+  final String? coachName;
+
+  const _HomeHeader({required this.userName, required this.coachName});
+
+  String _firstName() {
+    final trimmedName = userName.trim();
+    if (trimmedName.isEmpty) {
+      return '';
+    }
+    return trimmedName.split(RegExp(r'\s+')).first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final s = S.of(context);
+    final localeName = Localizations.localeOf(context).toLanguageTag();
+    final formattedDate =
+        DateFormat.yMMMMEEEEd(localeName).format(DateTime.now());
+    final firstName = _firstName();
+    final greeting = firstName.isEmpty
+        ? '${s.helloLabel} 👋'
+        : '${s.helloLabel} $firstName 👋';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: theme.colorScheme.onSurface,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  formattedDate,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.58),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (coachName?.trim().isNotEmpty == true) ...[
+            const SizedBox(width: 12),
+            _CoachChip(coachName: coachName!.trim()),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CoachChip extends StatelessWidget {
+  final String? coachName;
+
+  const _CoachChip({required this.coachName});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final resolvedCoachName = coachName!.trim();
+
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 154),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 18,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              resolvedCoachName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -5,21 +5,10 @@ class DynamicOntLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return FutureBuilder<String>(
-      future: DefaultAssetBundle.of(context)
-          .loadString('assets/icon/ont_logo_square.svg'),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox();
-        } else {
-          // fallback PNG si besoin
-          return Image.asset(theme.brightness == Brightness.light
-              ? 'assets/icon/ont_logo_square_light.png'
-              : 'assets/icon/ont_logo_square.png');
-        }
-      },
+    return Image.asset(
+      'assets/icon/atlas_tracker_logo.png',
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
     );
   }
 }
