@@ -57,6 +57,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Unbekannte Mahlzeit"),
         "ageLabel": MessageLookupByLibrary.simpleMessage("Alter"),
         "allItemsLabel": MessageLookupByLibrary.simpleMessage("Alle"),
+        "allTimeLabel": MessageLookupByLibrary.simpleMessage("Alles"),
         "alphaVersionName": MessageLookupByLibrary.simpleMessage("[Alpha]"),
         "appDescription": MessageLookupByLibrary.simpleMessage(
             "AtlasTracker ist ein kostenloser und  quelloffener Kalorien- und Nährstofftracker, der Ihre Privatsphäre respektiert."),
@@ -134,6 +135,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Einträge löschen?"),
         "deleteTimeDialogTitle":
             MessageLookupByLibrary.simpleMessage("Eintrag löschen?"),
+        "deleteWeightCardSubtitle": MessageLookupByLibrary.simpleMessage(
+            "Das für diesen Tag gespeicherte Gewicht entfernen."),
+        "deleteWeightCardTitle":
+            MessageLookupByLibrary.simpleMessage("Dieses Gewicht löschen"),
         "deltaWeightBody": MessageLookupByLibrary.simpleMessage(
             "Die Gewichtsdifferenz ist die Differenz zwischen dem Durchschnittsgewicht und dem für diesen Tag eingegebenen aktuellen Gewicht.\nWenn für den aktuellen Tag kein Gewicht erfasst ist, wird das letzte gültige Gewicht verwendet."),
         "deltaWeightLabel":
@@ -167,6 +172,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Produkt nicht gefunden"),
         "errorRecipeLabel":
             MessageLookupByLibrary.simpleMessage("Kein Rezept gefunden"),
+        "evolutionLabel": MessageLookupByLibrary.simpleMessage("Entwicklung"),
         "exampleOfActivityLabel":
             MessageLookupByLibrary.simpleMessage("z. B.: Fahrrad"),
         "exportAction": MessageLookupByLibrary.simpleMessage("Exportieren"),
@@ -227,6 +233,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "gramUnit": MessageLookupByLibrary.simpleMessage("g"),
         "heightLabel": MessageLookupByLibrary.simpleMessage("Größe"),
         "helloLabel": MessageLookupByLibrary.simpleMessage("Hallo"),
+        "historyLabel": MessageLookupByLibrary.simpleMessage("Verlauf"),
         "homeLabel": MessageLookupByLibrary.simpleMessage("Startseite"),
         "importAction": MessageLookupByLibrary.simpleMessage("Importieren"),
         "importSupabaseDescription": MessageLookupByLibrary.simpleMessage(
@@ -246,6 +253,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "kcalMacrosLabel":
             MessageLookupByLibrary.simpleMessage("kcal • Makros"),
         "kgLabel": MessageLookupByLibrary.simpleMessage("kg"),
+        "lastFourteenDaysLabel":
+            MessageLookupByLibrary.simpleMessage("Letzte 14 Tage"),
+        "lastMonthLabel": MessageLookupByLibrary.simpleMessage("1 Monat"),
+        "lastSevenDaysLabel":
+            MessageLookupByLibrary.simpleMessage("Letzte 7 Tage"),
+        "lastSixMonthsLabel": MessageLookupByLibrary.simpleMessage("6 Monate"),
+        "lastThreeMonthsLabel":
+            MessageLookupByLibrary.simpleMessage("3 Monate"),
+        "lastYearLabel": MessageLookupByLibrary.simpleMessage("1 Jahr"),
         "learnMoreLabel": MessageLookupByLibrary.simpleMessage(
             "Mehr erfahren: atlas-tracker.fr"),
         "logOutLabel": MessageLookupByLibrary.simpleMessage("Abmelden"),
@@ -356,6 +372,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Sehr schwerwiegend"),
         "nutritionalStatusUnderweight":
             MessageLookupByLibrary.simpleMessage("Untergewicht"),
+        "overviewLabel": MessageLookupByLibrary.simpleMessage("Überblick"),
         "ozUnit": MessageLookupByLibrary.simpleMessage("oz"),
         "paAmericanFootballGeneral":
             MessageLookupByLibrary.simpleMessage("American Football"),
@@ -712,6 +729,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Rezept"),
         "recordWeightLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht aktualisieren"),
+        "remainingToLoseLabel":
+            MessageLookupByLibrary.simpleMessage("Bis zum Ziel"),
         "remainingWeightLabel": MessageLookupByLibrary.simpleMessage("übrig"),
         "reportErrorDialogText": MessageLookupByLibrary.simpleMessage(
             "Möchten Sie einen Fehler an den Entwickler melden?"),
@@ -737,6 +756,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("gesättigtes Fett"),
         "saveMacroGoalsError": MessageLookupByLibrary.simpleMessage(
             "Problem beim Speichern der Makroziele."),
+        "saveMyWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Mein Gewicht speichern"),
         "savePreferenceFailed": MessageLookupByLibrary.simpleMessage(
             "Einstellung konnte nicht gespeichert werden."),
         "scanProductLabel":
@@ -820,6 +841,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("Wo."),
         "weeklyAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("vs 7-Tage-Ø"),
+        "weightDeletedSnackbar":
+            MessageLookupByLibrary.simpleMessage("Gewicht gelöscht"),
+        "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
+        "weightHistoryLabel":
+            MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Gewicht"),
         "yearsLabel": m6
       };

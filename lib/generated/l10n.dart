@@ -5013,6 +5013,146 @@ class S {
     );
   }
 
+  /// `Overview`
+  String get overviewLabel {
+    return Intl.message(
+      'Overview',
+      name: 'overviewLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `History`
+  String get historyLabel {
+    return Intl.message(
+      'History',
+      name: 'historyLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight history`
+  String get weightHistoryLabel {
+    return Intl.message(
+      'Weight history',
+      name: 'weightHistoryLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Evolution`
+  String get evolutionLabel {
+    return Intl.message(
+      'Evolution',
+      name: 'evolutionLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 7 days`
+  String get lastSevenDaysLabel {
+    return Intl.message(
+      'Last 7 days',
+      name: 'lastSevenDaysLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 14 days`
+  String get lastFourteenDaysLabel {
+    return Intl.message(
+      'Last 14 days',
+      name: 'lastFourteenDaysLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 month`
+  String get lastMonthLabel {
+    return Intl.message(
+      '1 month',
+      name: 'lastMonthLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `3 months`
+  String get lastThreeMonthsLabel {
+    return Intl.message(
+      '3 months',
+      name: 'lastThreeMonthsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `6 months`
+  String get lastSixMonthsLabel {
+    return Intl.message(
+      '6 months',
+      name: 'lastSixMonthsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 year`
+  String get lastYearLabel {
+    return Intl.message(
+      '1 year',
+      name: 'lastYearLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All`
+  String get allTimeLabel {
+    return Intl.message(
+      'All',
+      name: 'allTimeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Goal`
+  String get weightGoalShortLabel {
+    return Intl.message(
+      'Goal',
+      name: 'weightGoalShortLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To goal`
+  String get remainingToLoseLabel {
+    return Intl.message(
+      'To goal',
+      name: 'remainingToLoseLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save my weight`
+  String get saveMyWeightLabel {
+    return Intl.message(
+      'Save my weight',
+      name: 'saveMyWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Weight loss`
   String get goalLoseWeightDashboard {
     return Intl.message(
@@ -5038,6 +5178,36 @@ class S {
     return Intl.message(
       'Muscle gain',
       name: 'goalGainWeightDashboard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete this weight`
+  String get deleteWeightCardTitle {
+    return Intl.message(
+      'Delete this weight',
+      name: 'deleteWeightCardTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Remove the weight saved for this day.`
+  String get deleteWeightCardSubtitle {
+    return Intl.message(
+      'Remove the weight saved for this day.',
+      name: 'deleteWeightCardSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight deleted`
+  String get weightDeletedSnackbar {
+    return Intl.message(
+      'Weight deleted',
+      name: 'weightDeletedSnackbar',
       desc: '',
       args: [],
     );

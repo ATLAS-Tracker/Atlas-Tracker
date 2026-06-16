@@ -56,6 +56,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Bilinmeyen Yemek Öğesi"),
         "ageLabel": MessageLookupByLibrary.simpleMessage("Yaş"),
         "allItemsLabel": MessageLookupByLibrary.simpleMessage("Tümü"),
+        "allTimeLabel": MessageLookupByLibrary.simpleMessage("Tümü"),
         "alphaVersionName": MessageLookupByLibrary.simpleMessage("[Alpha]"),
         "appDescription": MessageLookupByLibrary.simpleMessage(
             "AtlasTracker, gizliliğinize saygı duyan ücretsiz ve açık kaynaklı bir kalori ve besin takipçisidir."),
@@ -132,6 +133,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Girdiler silinsin mi?"),
         "deleteTimeDialogTitle":
             MessageLookupByLibrary.simpleMessage("Öğeyi Sil?"),
+        "deleteWeightCardSubtitle": MessageLookupByLibrary.simpleMessage(
+            "Bu gün için kaydedilen kiloyu kaldır."),
+        "deleteWeightCardTitle":
+            MessageLookupByLibrary.simpleMessage("Bu kiloyu sil"),
         "deltaWeightBody": MessageLookupByLibrary.simpleMessage(
             "Ağırlık farkı, ortalama ağırlık ile bu gün için girilen mevcut ağırlık arasındaki farktır.\nMevcut gün için herhangi bir ağırlık kaydedilmemişse, son geçerli ağırlık kullanılacaktır."),
         "deltaWeightLabel": MessageLookupByLibrary.simpleMessage("Kilo Farkı"),
@@ -163,6 +168,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Ürün bulunamadı"),
         "errorRecipeLabel":
             MessageLookupByLibrary.simpleMessage("Hiç tarif bulunamadı"),
+        "evolutionLabel": MessageLookupByLibrary.simpleMessage("Değişim"),
         "exampleOfActivityLabel":
             MessageLookupByLibrary.simpleMessage("örn: bisiklet"),
         "exportAction": MessageLookupByLibrary.simpleMessage("Dışa Aktar"),
@@ -221,6 +227,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "gramUnit": MessageLookupByLibrary.simpleMessage("g"),
         "heightLabel": MessageLookupByLibrary.simpleMessage("Boy"),
         "helloLabel": MessageLookupByLibrary.simpleMessage("Merhaba"),
+        "historyLabel": MessageLookupByLibrary.simpleMessage("Geçmiş"),
         "homeLabel": MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
         "importAction": MessageLookupByLibrary.simpleMessage("İçe Aktar"),
         "importSupabaseDescription": MessageLookupByLibrary.simpleMessage(
@@ -240,6 +247,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "kcalMacrosLabel":
             MessageLookupByLibrary.simpleMessage("kcal • makrolar"),
         "kgLabel": MessageLookupByLibrary.simpleMessage("kg"),
+        "lastFourteenDaysLabel":
+            MessageLookupByLibrary.simpleMessage("Son 14 gün"),
+        "lastMonthLabel": MessageLookupByLibrary.simpleMessage("1 ay"),
+        "lastSevenDaysLabel": MessageLookupByLibrary.simpleMessage("Son 7 gün"),
+        "lastSixMonthsLabel": MessageLookupByLibrary.simpleMessage("6 ay"),
+        "lastThreeMonthsLabel": MessageLookupByLibrary.simpleMessage("3 ay"),
+        "lastYearLabel": MessageLookupByLibrary.simpleMessage("1 yıl"),
         "lbsLabel": MessageLookupByLibrary.simpleMessage("lbs"),
         "learnMoreLabel": MessageLookupByLibrary.simpleMessage(
             "Daha fazla bilgi: atlas-tracker.fr"),
@@ -348,6 +362,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Çok şiddetli"),
         "nutritionalStatusUnderweight":
             MessageLookupByLibrary.simpleMessage("Düşük Kilolu"),
+        "overviewLabel": MessageLookupByLibrary.simpleMessage("Genel bakış"),
         "ozUnit": MessageLookupByLibrary.simpleMessage("oz"),
         "paAmericanFootballGeneral":
             MessageLookupByLibrary.simpleMessage("futbol"),
@@ -689,6 +704,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Tarif"),
         "recordWeightLabel":
             MessageLookupByLibrary.simpleMessage("Kilomu güncelle"),
+        "remainingToLoseLabel":
+            MessageLookupByLibrary.simpleMessage("Hedefe kalan"),
         "remainingWeightLabel": MessageLookupByLibrary.simpleMessage("kalan"),
         "reportErrorDialogText": MessageLookupByLibrary.simpleMessage(
             "Geliştiriciye bir hata bildirmek istiyor musunuz?"),
@@ -713,6 +730,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "saturatedFatLabel": MessageLookupByLibrary.simpleMessage("doymuş yağ"),
         "saveMacroGoalsError": MessageLookupByLibrary.simpleMessage(
             "Makro hedefleri kaydedilirken sorun oluştu."),
+        "saveMyWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Kilomu kaydet"),
         "savePreferenceFailed":
             MessageLookupByLibrary.simpleMessage("Tercih kaydedilemedi."),
         "scanProductLabel": MessageLookupByLibrary.simpleMessage("Ürünü Tara"),
@@ -797,6 +816,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("hf."),
         "weeklyAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("7g ort."),
+        "weightDeletedSnackbar":
+            MessageLookupByLibrary.simpleMessage("Kilo silindi"),
+        "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
+        "weightHistoryLabel":
+            MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Kilo"),
         "yearsLabel": m6
       };
