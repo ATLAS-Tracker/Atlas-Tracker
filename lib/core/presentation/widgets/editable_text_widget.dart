@@ -6,9 +6,20 @@ import 'package:opennutritracker/core/formatters/one_decimal_place_formatter.dar
 class EditableTextWidget extends StatefulWidget {
   final String initialValue;
   final bool disabledEnter;
+  final String unit;
+  final TextStyle? textStyle;
+  final TextStyle? unitStyle;
+  final double width;
 
-  const EditableTextWidget(
-      {super.key, required this.initialValue, required this.disabledEnter});
+  const EditableTextWidget({
+    super.key,
+    required this.initialValue,
+    required this.disabledEnter,
+    this.unit = 'kg',
+    this.textStyle,
+    this.unitStyle,
+    this.width = 135.0,
+  });
 
   @override
   State<EditableTextWidget> createState() => _EditableTextWidgetState();
@@ -67,45 +78,92 @@ class _EditableTextWidgetState extends State<EditableTextWidget> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final TextStyle effectiveTextStyle =
-        theme.textTheme.headlineMedium ?? const TextStyle();
-    final String weightUnit = " kg";
+        widget.textStyle ?? theme.textTheme.headlineMedium ?? const TextStyle();
+    final TextStyle effectiveUnitStyle = widget.unitStyle ?? effectiveTextStyle;
+    final String weightUnit = " ${widget.unit}";
+    final TextPainter unitWidthPainter = TextPainter(
+      text: TextSpan(text: weightUnit, style: effectiveUnitStyle),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final TextPainter inputWidthPainter = TextPainter(
+      text: TextSpan(text: _textController.text, style: effectiveTextStyle),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+    final double maxInputWidth = (widget.width - unitWidthPainter.width)
+        .clamp(48.0, widget.width)
+        .toDouble();
+    final double inputWidth = inputWidthPainter.width
+        .clamp(
+          48.0,
+          maxInputWidth,
+        )
+        .toDouble();
 
     return SizedBox(
-        width: 135.0,
-        child: _isEditing && !widget.disabledEnter
-            ? TextFormField(
-                controller: _textController,
-                style: effectiveTextStyle,
-                textAlign: TextAlign.center,
-                focusNode: _focusNode,
-                keyboardType: TextInputType.numberWithOptions(
-                    decimal: true, signed: false),
-                decoration: InputDecoration(
-                  contentPadding:
-                      EdgeInsets.symmetric(horizontal: .5, vertical: 0.0),
-                  border: InputBorder.none,
-                  isDense: true,
-                  suffixText: weightUnit,
-                ),
-                inputFormatters: [
-                  OneDecimalPlaceFormatter(maxValue: _weightBloc.maxWeight),
+      width: widget.width,
+      child: _isEditing && !widget.disabledEnter
+          ? Center(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: inputWidth,
+                    child: TextFormField(
+                      controller: _textController,
+                      style: effectiveTextStyle,
+                      textAlign: TextAlign.end,
+                      focusNode: _focusNode,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: false,
+                      ),
+                      decoration: const InputDecoration(
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      inputFormatters: [
+                        OneDecimalPlaceFormatter(
+                          maxValue: _weightBloc.maxWeight,
+                        ),
+                      ],
+                      onTapOutside: (event) =>
+                          _saveAndSwitchToDisplayMode(_textController.text),
+                      onFieldSubmitted: (newValue) {
+                        _saveAndSwitchToDisplayMode(newValue);
+                      },
+                    ),
+                  ),
+                  Text(weightUnit, style: effectiveUnitStyle),
                 ],
-                onTapOutside: (event) =>
-                    _saveAndSwitchToDisplayMode(_textController.text),
-                onFieldSubmitted: (newValue) {
-                  _saveAndSwitchToDisplayMode(newValue);
-                })
-            : GestureDetector(
+              ),
+            )
+          : Center(
+              child: GestureDetector(
                 onTap: () {
                   setState(() => _isEditing = true);
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     if (mounted) _focusNode.requestFocus();
                   });
                 },
-                child: Text(
-                  _textController.text + weightUnit,
-                  textAlign: TextAlign.center,
-                  style: effectiveTextStyle,
-                )));
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: _textController.text),
+                        TextSpan(text: weightUnit, style: effectiveUnitStyle),
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
+                    style: effectiveTextStyle,
+                  ),
+                ),
+              ),
+            ),
+    );
   }
 }

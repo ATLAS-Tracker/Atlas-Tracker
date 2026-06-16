@@ -37,6 +37,13 @@ class GetWeightUsecase {
     return userData.weightKG;
   }
 
+  Future<List<UserWeightEntity>> getAllUserWeights() async {
+    final weights = await _userWeightRepository.getAllUserWeightDBOs();
+    final entities = weights.map(UserWeightEntity.fromUserWeightDbo).toList();
+    entities.sort((a, b) => a.date.compareTo(b.date));
+    return entities;
+  }
+
   Future<List<UserWeightEntity>> getWeightsFromPastDays(
       DateTime currentDay, int days,
       {bool includeToday = false}) async {
