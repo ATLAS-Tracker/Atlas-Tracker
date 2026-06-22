@@ -13,6 +13,7 @@ import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_activity_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
 import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
@@ -30,6 +31,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
   final AddTrackedDayUsecase _addTrackedDayUsecase;
   final GetWeightUsecase _getUserWeightUsecase;
   final DeleteUserWeightUsecase _deleteUserWeightUsecase;
+  final UpdateIntakeUsecase _updateIntakeUsecase;
 
   DateTime? _currentDay;
 
@@ -41,7 +43,8 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
       this._deleteUserWeightUsecase,
       this._getTrackedDayUsecase,
       this._addTrackedDayUsecase,
-      this._getUserWeightUsecase)
+      this._getUserWeightUsecase,
+      this._updateIntakeUsecase)
       : super(CalendarDayInitial()) {
     on<LoadCalendarDayEvent>((event, emit) async {
       emit(CalendarDayLoading());
@@ -93,6 +96,52 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
         carbsTracked: intakeEntity.totalCarbsGram,
         fatTracked: intakeEntity.totalFatsGram,
         proteinTracked: intakeEntity.totalProteinsGram);
+  }
+
+  Future<void> updateIntakeItem(
+      String intakeId, Map<String, dynamic> fields, DateTime day) async {
+    final oldIntakeObject = await _getIntakeUsecase.getIntakeById(intakeId);
+    assert(oldIntakeObject != null);
+    final newIntakeObject =
+        await _updateIntakeUsecase.updateIntake(intakeId, fields);
+    assert(newIntakeObject != null);
+
+    if (oldIntakeObject == null || newIntakeObject == null) {
+      return;
+    }
+
+    final kcalDelta = newIntakeObject.totalKcal - oldIntakeObject.totalKcal;
+    final carbsDelta =
+        newIntakeObject.totalCarbsGram - oldIntakeObject.totalCarbsGram;
+    final fatsDelta =
+        newIntakeObject.totalFatsGram - oldIntakeObject.totalFatsGram;
+    final proteinsDelta =
+        newIntakeObject.totalProteinsGram - oldIntakeObject.totalProteinsGram;
+
+    if (kcalDelta > 0) {
+      await _addTrackedDayUsecase.addDayCaloriesTracked(day, kcalDelta);
+    } else if (kcalDelta < 0) {
+      await _addTrackedDayUsecase.removeDayCaloriesTracked(
+          day, kcalDelta.abs());
+    }
+
+    if (carbsDelta > 0 || fatsDelta > 0 || proteinsDelta > 0) {
+      await _addTrackedDayUsecase.addDayMacrosTracked(
+        day,
+        carbsTracked: carbsDelta > 0 ? carbsDelta : 0,
+        fatTracked: fatsDelta > 0 ? fatsDelta : 0,
+        proteinTracked: proteinsDelta > 0 ? proteinsDelta : 0,
+      );
+    }
+
+    if (carbsDelta < 0 || fatsDelta < 0 || proteinsDelta < 0) {
+      await _addTrackedDayUsecase.removeDayMacrosTracked(
+        day,
+        carbsTracked: carbsDelta < 0 ? carbsDelta.abs() : 0,
+        fatTracked: fatsDelta < 0 ? fatsDelta.abs() : 0,
+        proteinTracked: proteinsDelta < 0 ? proteinsDelta.abs() : 0,
+      );
+    }
   }
 
   Future<void> deleteUserWeightItem(DateTime day) async {

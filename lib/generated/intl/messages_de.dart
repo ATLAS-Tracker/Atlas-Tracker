@@ -108,6 +108,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "consumedLabel": MessageLookupByLibrary.simpleMessage("verbraucht"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Zu welcher Mahlzeit hinzufügen?"),
+        "copyMealDialogTitle":
+            MessageLookupByLibrary.simpleMessage("Diese Mahlzeit kopieren"),
+        "copyMealLabel":
+            MessageLookupByLibrary.simpleMessage("Mahlzeit kopieren"),
+        "copyMealSelectDateLabel":
+            MessageLookupByLibrary.simpleMessage("Datum auswählen"),
+        "copyMealTargetDateLabel":
+            MessageLookupByLibrary.simpleMessage("Zieldatum"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
             "Auf \"Nach heute kopieren\" klicken, um die Mahlzeit nach heute zu kopieren. Mit \"Löschen\" kann die Mahlzeit entfernt werden"),
         "copyOrDeleteTimeDialogTitle":
@@ -124,6 +132,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("aktuelles Gewicht"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Tägliche kcal-Anpassung:"),
+        "dailySummaryLabel":
+            MessageLookupByLibrary.simpleMessage("Tagesübersicht"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
             "Unterstützen der Entwicklung durch Bereitstellung anonymer Nutzungsdaten"),
         "deleteAllLabel": MessageLookupByLibrary.simpleMessage("Alle löschen"),
@@ -156,6 +166,11 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Eintrag aktualisieren"),
         "editMealLabel":
             MessageLookupByLibrary.simpleMessage("Mahlzeit bearbeiten"),
+        "editWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Gewicht bearbeiten"),
+        "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
+        "energyConsumedLabel":
+            MessageLookupByLibrary.simpleMessage("Aufgenommene Energie"),
         "energyLabel": MessageLookupByLibrary.simpleMessage("Energie"),
         "errorFetchingProductData": MessageLookupByLibrary.simpleMessage(
             "Fehler beim Abrufen von Produktinformationen"),
@@ -302,6 +317,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealBrandsLabel": MessageLookupByLibrary.simpleMessage("Marken"),
         "mealCarbsLabel":
             MessageLookupByLibrary.simpleMessage("Kohlenhydrate pro 100 g/ml"),
+        "mealCopiedSnackbar":
+            MessageLookupByLibrary.simpleMessage("Mahlzeit kopiert"),
         "mealFatLabel":
             MessageLookupByLibrary.simpleMessage("Fett pro 100 g/ml"),
         "mealKcalLabel":
