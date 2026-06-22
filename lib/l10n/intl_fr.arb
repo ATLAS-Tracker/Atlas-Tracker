@@ -128,6 +128,11 @@
   "copyOrDeleteTimeDialogTitle": "Que voulez-vous faire ?",
   "copyOrDeleteTimeDialogContent": "Avec \"Copier vers aujourd'hui\", vous pouvez copier le repas vers aujourd'hui. Avec \"Supprimer\", vous pouvez supprimer le repas.",
   "dialogCopyLabel": "Copier vers aujourd'hui",
+  "copyMealLabel": "Copier le repas",
+  "copyMealDialogTitle": "Copier ce repas",
+  "copyMealTargetDateLabel": "Jour de destination",
+  "copyMealSelectDateLabel": "Choisir une date",
+  "mealCopiedSnackbar": "Repas copié",
   "dialogDeleteLabel": "SUPPRIMER",
   "viewProductSheetButtonLabel": "Voir la fiche produit",
   "@viewProductSheetButtonLabel": {
@@ -174,6 +179,7 @@
   "fatsLabel": "Lipides",
   "proteinsLabel": "Protéines",
   "energyLabel": "énergie",
+  "energyConsumedLabel": "Énergie consommée",
   "saturatedFatLabel": "graisses saturées",
   "carbohydrateLabel": "glucides",
   "sugarLabel": "sucre",
@@ -194,6 +200,7 @@
   "ozUnit": "oz",
   "flOzUnit": "fl.oz",
   "notAvailableLabel": "N/A",
+  "emptyValueLabel": "-",
   "missingProductInfo": "Le produit ne contient pas les informations requises sur les kcal ou les macronutriments",
   "saveMacroGoalsError": "Problème lors de l'enregistrement des objectifs macro.",
   "infoAddedIntakeLabel": "Nouvelle prise ajoutée",
@@ -506,6 +513,7 @@
   "currentWeightLabel": "poids actuel",
   "mealsOfDayLabel": "Repas du jour",
   "kcalMacrosLabel": "kcal • macros",
+  "dailySummaryLabel": "Résumé du jour",
   "helloLabel": "Bonjour",
   "coachFallbackName": "Coach",
   "weekLabel": "semaine",
@@ -536,5 +544,9 @@
   "goalGainWeightDashboard": "Prise de masse",
   "deleteWeightCardTitle": "Supprimer ce poids",
   "deleteWeightCardSubtitle": "Retirer le poids enregistré pour cette journée.",
-  "weightDeletedSnackbar": "Poids supprimé"
+  "weightDeletedSnackbar": "Poids supprimé",
+  "editWeightLabel": "Modifier le poids",
+  "@editWeightLabel": {
+    "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
+  }
 }

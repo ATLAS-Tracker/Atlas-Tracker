@@ -323,6 +323,7 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
       locator(),
       locator(),
       locator(),
+      locator(),
     ),
   );
   locator.registerLazySingleton<ProfileBloc>(

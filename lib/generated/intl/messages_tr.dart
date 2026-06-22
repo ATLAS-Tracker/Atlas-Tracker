@@ -107,6 +107,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "consumedLabel": MessageLookupByLibrary.simpleMessage("tüketildi"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Hangi yemek türüne kopyalamak istiyorsunuz?"),
+        "copyMealDialogTitle":
+            MessageLookupByLibrary.simpleMessage("Bu öğünü kopyala"),
+        "copyMealLabel": MessageLookupByLibrary.simpleMessage("Öğünü kopyala"),
+        "copyMealSelectDateLabel":
+            MessageLookupByLibrary.simpleMessage("Tarih seç"),
+        "copyMealTargetDateLabel":
+            MessageLookupByLibrary.simpleMessage("Hedef gün"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
             "\"Bugüne Kopyala\" ile yemeği bugüne kopyalayabilirsiniz. \"Sil\" ile yemeği silebilirsiniz."),
         "copyOrDeleteTimeDialogTitle":
@@ -123,6 +130,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("mevcut kilo"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Günlük Kcal ayarı:"),
+        "dailySummaryLabel": MessageLookupByLibrary.simpleMessage("Gün özeti"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
             "Anonim kullanım verileri sağlayarak geliştirmeyi destekleyin"),
         "deleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -152,6 +160,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "editItemDialogTitle":
             MessageLookupByLibrary.simpleMessage("Öğeyi Düzenle"),
         "editMealLabel": MessageLookupByLibrary.simpleMessage("Yemeği Düzenle"),
+        "editWeightLabel":
+            MessageLookupByLibrary.simpleMessage("Kiloyu düzenle"),
+        "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
+        "energyConsumedLabel":
+            MessageLookupByLibrary.simpleMessage("Tüketilen enerji"),
         "energyLabel": MessageLookupByLibrary.simpleMessage("enerji"),
         "errorFetchingProductData": MessageLookupByLibrary.simpleMessage(
             "Ürün verileri alınırken hata oluştu"),
@@ -295,6 +308,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "mealBrandsLabel": MessageLookupByLibrary.simpleMessage("Markalar"),
         "mealCarbsLabel":
             MessageLookupByLibrary.simpleMessage("karbonhidrat başına"),
+        "mealCopiedSnackbar":
+            MessageLookupByLibrary.simpleMessage("Öğün kopyalandı"),
         "mealFatLabel": MessageLookupByLibrary.simpleMessage("yağ başına"),
         "mealKcalLabel": MessageLookupByLibrary.simpleMessage("kcal başına"),
         "mealNameLabel": MessageLookupByLibrary.simpleMessage("Yemek adı"),

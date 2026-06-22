@@ -1312,6 +1312,56 @@ class S {
     );
   }
 
+  /// `Copy meal`
+  String get copyMealLabel {
+    return Intl.message(
+      'Copy meal',
+      name: 'copyMealLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy this meal`
+  String get copyMealDialogTitle {
+    return Intl.message(
+      'Copy this meal',
+      name: 'copyMealDialogTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination day`
+  String get copyMealTargetDateLabel {
+    return Intl.message(
+      'Destination day',
+      name: 'copyMealTargetDateLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose a date`
+  String get copyMealSelectDateLabel {
+    return Intl.message(
+      'Choose a date',
+      name: 'copyMealSelectDateLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Meal copied`
+  String get mealCopiedSnackbar {
+    return Intl.message(
+      'Meal copied',
+      name: 'mealCopiedSnackbar',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `DELETE`
   String get dialogDeleteLabel {
     return Intl.message(
@@ -1593,6 +1643,16 @@ class S {
     );
   }
 
+  /// `Energy consumed`
+  String get energyConsumedLabel {
+    return Intl.message(
+      'Energy consumed',
+      name: 'energyConsumedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `saturated fat`
   String get saturatedFatLabel {
     return Intl.message(
@@ -1788,6 +1848,16 @@ class S {
     return Intl.message(
       'N/A',
       name: 'notAvailableLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `-`
+  String get emptyValueLabel {
+    return Intl.message(
+      '-',
+      name: 'emptyValueLabel',
       desc: '',
       args: [],
     );
@@ -4903,6 +4973,16 @@ class S {
     );
   }
 
+  /// `Day summary`
+  String get dailySummaryLabel {
+    return Intl.message(
+      'Day summary',
+      name: 'dailySummaryLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Hello`
   String get helloLabel {
     return Intl.message(
@@ -5209,6 +5289,17 @@ class S {
       'Weight deleted',
       name: 'weightDeletedSnackbar',
       desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit weight`
+  String get editWeightLabel {
+    return Intl.message(
+      'Edit weight',
+      name: 'editWeightLabel',
+      desc:
+          'Tooltip/action label for editing the selected day\'s weight from the diary summary card.',
       args: [],
     );
   }

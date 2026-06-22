@@ -128,6 +128,11 @@
   "copyOrDeleteTimeDialogTitle": "What do you want to do?",
   "copyOrDeleteTimeDialogContent": "With \"Copy to today\" you can copy the meal to today. With \"Delete\" you can delete the meal.",
   "dialogCopyLabel": "Copy to today",
+  "copyMealLabel": "Copy meal",
+  "copyMealDialogTitle": "Copy this meal",
+  "copyMealTargetDateLabel": "Destination day",
+  "copyMealSelectDateLabel": "Choose a date",
+  "mealCopiedSnackbar": "Meal copied",
   "dialogDeleteLabel": "DELETE",
   "viewProductSheetButtonLabel": "View product page",
   "@viewProductSheetButtonLabel": {
@@ -174,6 +179,7 @@
   "fatsLabel": "Fats",
   "proteinsLabel": "Proteins",
   "energyLabel": "energy",
+  "energyConsumedLabel": "Energy consumed",
   "saturatedFatLabel": "saturated fat",
   "carbohydrateLabel": "carbohydrate",
   "sugarLabel": "sugar",
@@ -194,6 +200,7 @@
   "ozUnit": "oz",
   "flOzUnit": "fl.oz",
   "notAvailableLabel": "N/A",
+  "emptyValueLabel": "-",
   "missingProductInfo": "Product missing required kcal or macronutrients information",
   "saveMacroGoalsError": "Problem while saving macro goals.",
   "infoAddedIntakeLabel": "Added new intake",
@@ -506,6 +513,7 @@
   "currentWeightLabel": "current weight",
   "mealsOfDayLabel": "Today’s meals",
   "kcalMacrosLabel": "kcal • macros",
+  "dailySummaryLabel": "Day summary",
   "helloLabel": "Hello",
   "coachFallbackName": "Coach",
   "weekLabel": "week",
@@ -536,5 +544,9 @@
   "goalGainWeightDashboard": "Muscle gain",
   "deleteWeightCardTitle": "Delete this weight",
   "deleteWeightCardSubtitle": "Remove the weight saved for this day.",
-  "weightDeletedSnackbar": "Weight deleted"
+  "weightDeletedSnackbar": "Weight deleted",
+  "editWeightLabel": "Edit weight",
+  "@editWeightLabel": {
+    "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
+  }
 }

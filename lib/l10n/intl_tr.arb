@@ -123,6 +123,11 @@
   "copyOrDeleteTimeDialogTitle": "Ne yapmak istiyorsunuz?",
   "copyOrDeleteTimeDialogContent": "\"Bugüne Kopyala\" ile yemeği bugüne kopyalayabilirsiniz. \"Sil\" ile yemeği silebilirsiniz.",
   "dialogCopyLabel": "BUGÜNE KOPYALA",
+  "copyMealLabel": "Öğünü kopyala",
+  "copyMealDialogTitle": "Bu öğünü kopyala",
+  "copyMealTargetDateLabel": "Hedef gün",
+  "copyMealSelectDateLabel": "Tarih seç",
+  "mealCopiedSnackbar": "Öğün kopyalandı",
   "dialogDeleteLabel": "SİL",
   "viewProductSheetButtonLabel": "Ürün sayfasını aç",
   "@viewProductSheetButtonLabel": {
@@ -168,6 +173,7 @@
   "fatsLabel": "Yağlar",
   "proteinsLabel": "Proteinler",
   "energyLabel": "enerji",
+  "energyConsumedLabel": "Tüketilen enerji",
   "saturatedFatLabel": "doymuş yağ",
   "carbohydrateLabel": "karbonhidrat",
   "sugarLabel": "şeker",
@@ -188,6 +194,7 @@
   "ozUnit": "oz",
   "flOzUnit": "fl.oz",
   "notAvailableLabel": "Mevcut Değil",
+  "emptyValueLabel": "-",
   "saveMacroGoalsError": "Makro hedefleri kaydedilirken sorun oluştu.",
   "missingProductInfo": "Üründe gerekli kcal veya makro besin bilgileri eksik",
   "infoAddedIntakeLabel": "Yeni alım eklendi",
@@ -496,6 +503,7 @@
   "currentWeightLabel": "mevcut kilo",
   "mealsOfDayLabel": "Günün öğünleri",
   "kcalMacrosLabel": "kcal • makrolar",
+  "dailySummaryLabel": "Gün özeti",
   "helloLabel": "Merhaba",
   "coachFallbackName": "Koç",
   "weekLabel": "hafta",
@@ -526,5 +534,9 @@
   "goalGainWeightDashboard": "Kas kazanımı",
   "deleteWeightCardTitle": "Bu kiloyu sil",
   "deleteWeightCardSubtitle": "Bu gün için kaydedilen kiloyu kaldır.",
-  "weightDeletedSnackbar": "Kilo silindi"
+  "weightDeletedSnackbar": "Kilo silindi",
+  "editWeightLabel": "Kiloyu düzenle",
+  "@editWeightLabel": {
+    "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
+  }
 }

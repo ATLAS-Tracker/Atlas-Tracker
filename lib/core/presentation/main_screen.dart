@@ -87,7 +87,9 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     ];
     _appbarPages = [
       const HomeAppbar(),
-      MainAppbar(title: S.of(context).diaryLabel, iconData: Icons.book),
+      MainAppbar(
+          title: S.of(context).diaryLabel,
+          iconData: Icons.calendar_month_outlined),
       MainAppbar(
           title: S.of(context).profileLabel, iconData: Icons.account_circle)
     ];
@@ -111,8 +113,8 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               label: S.of(context).homeLabel),
           NavigationDestination(
               icon: _selectedPageIndex == 1
-                  ? const Icon(Icons.book)
-                  : const Icon((Icons.book_outlined)),
+                  ? const Icon(Icons.calendar_month)
+                  : const Icon(Icons.calendar_month_outlined),
               label: S.of(context).diaryLabel),
           NavigationDestination(
               icon: _selectedPageIndex == 2
