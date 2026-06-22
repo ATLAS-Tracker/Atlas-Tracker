@@ -261,6 +261,36 @@ class S {
     );
   }
 
+  /// `Search for food`
+  String get searchFoodTitle {
+    return Intl.message(
+      'Search for food',
+      name: 'searchFoodTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search for a food, a recipe...`
+  String get searchFoodRecipeHint {
+    return Intl.message(
+      'Search for a food, a recipe...',
+      name: 'searchFoodRecipeHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recipes`
+  String get searchRecipesTabLabel {
+    return Intl.message(
+      'Recipes',
+      name: 'searchRecipesTabLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Search results`
   String get searchResultsLabel {
     return Intl.message(

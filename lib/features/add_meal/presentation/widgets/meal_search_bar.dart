@@ -9,62 +9,87 @@ class MealSearchBar extends StatelessWidget {
 
   final _searchTextController = TextEditingController();
 
-  MealSearchBar(
-      {super.key,
-      required this.searchStringListener,
-      required this.onSearchSubmit,
-      required this.onBarcodePressed});
+  MealSearchBar({
+    super.key,
+    required this.searchStringListener,
+    required this.onSearchSubmit,
+    required this.onBarcodePressed,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Flexible(
-          flex: 1,
-          child: TextField(
-              controller: _searchTextController,
-              textInputAction: TextInputAction.search,
-              onChanged: (input) {
-                searchStringListener.value = input;
-              },
-              onSubmitted: onSearchSubmit,
-              decoration: InputDecoration(
-                hintText: S.of(context).searchLabel,
-                prefixIcon: const Icon(Icons.search_outlined),
-                suffixIcon: IconButton(
-                  icon: const Icon(CustomIcons.barcode_scan),
-                  onPressed: () {
-                    onBarcodePressed();
-                  },
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              )),
+    final colorScheme = Theme.of(context).colorScheme;
+    final searchSurface = Color.alphaBlend(
+      colorScheme.onPrimary.withValues(alpha: 0.16),
+      colorScheme.primary,
+    );
+    final hintColor = colorScheme.onPrimary.withValues(alpha: 0.78);
+    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.14);
+
+    return TextField(
+      controller: _searchTextController,
+      cursorColor: colorScheme.onPrimary,
+      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+      textInputAction: TextInputAction.search,
+      onChanged: (input) {
+        searchStringListener.value = input;
+      },
+      onSubmitted: onSearchSubmit,
+      decoration: InputDecoration(
+        hintText: S.of(context).searchFoodRecipeHint,
+        hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: hintColor,
+              fontWeight: FontWeight.w500,
+            ),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          color: colorScheme.onPrimary,
         ),
-        const SizedBox(width: 8.0),
-        IconButton(
-          onPressed: () {
-            FocusManager.instance.primaryFocus?.unfocus(); // Hide Keyboard
-            onSearchSubmit(_searchTextController.text);
-          },
-          icon: const Icon(Icons.search_outlined),
-          style: IconButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              backgroundColor: Theme.of(context).colorScheme.primary),
-        )
-      ],
+        suffixIcon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 36,
+              child: VerticalDivider(
+                width: 1,
+                thickness: 1,
+                color: dividerColor,
+              ),
+            ),
+            IconButton(
+              tooltip: S.of(context).searchLabel,
+              icon: Icon(
+                CustomIcons.barcode_scan,
+                color: colorScheme.onPrimary,
+              ),
+              onPressed: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                onBarcodePressed();
+              },
+            ),
+          ],
+        ),
+        filled: true,
+        fillColor: searchSurface,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(
+            color: colorScheme.onPrimary.withValues(alpha: 0.22),
+          ),
+        ),
+      ),
     );
   }
 }
