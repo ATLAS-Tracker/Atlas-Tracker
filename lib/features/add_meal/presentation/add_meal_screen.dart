@@ -105,24 +105,27 @@ class _AddMealScreenState extends State<AddMealScreen>
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           children: [
             AtlasBrandPanel(
-              padding: const EdgeInsets.all(28),
-              borderRadius: BorderRadius.circular(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  MealSearchBar(
-                    searchStringListener: _searchStringListener,
-                    onSearchSubmit: _onSearchSubmit,
-                    onBarcodePressed: _onBarcodeIconPressed,
-                  ),
-                  const SizedBox(height: 24),
-                  _SearchCategorySelector(
-                    controller: _tabController,
-                  ),
-                ],
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 214),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    MealSearchBar(
+                      searchStringListener: _searchStringListener,
+                      onSearchSubmit: _onSearchSubmit,
+                      onBarcodePressed: _onBarcodeIconPressed,
+                    ),
+                    const SizedBox(height: 30),
+                    _SearchCategorySelector(
+                      controller: _tabController,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -237,10 +240,10 @@ class _SearchCategorySelector extends StatelessWidget {
     final selectedIndex = controller.index;
 
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: containerColor,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(26),
       ),
       child: Row(
         children: [
@@ -254,7 +257,7 @@ class _SearchCategorySelector extends StatelessWidget {
             ),
             if (index != labels.length - 1)
               SizedBox(
-                height: 28,
+                height: 34,
                 child: VerticalDivider(
                   width: 1,
                   thickness: 1,
@@ -290,21 +293,23 @@ class _SearchCategoryChip extends StatelessWidget {
       color: isSelected
           ? colorScheme.onPrimary
           : colorScheme.onPrimary.withValues(alpha: 0),
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: foregroundColor,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                ),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: foregroundColor,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  ),
+            ),
           ),
         ),
       ),
