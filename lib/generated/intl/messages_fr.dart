@@ -790,8 +790,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "searchDefaultLabel": MessageLookupByLibrary.simpleMessage(
             "Veuillez entrer un mot de recherche"),
         "searchFoodPage": MessageLookupByLibrary.simpleMessage("Aliments"),
+        "searchFoodRecipeHint": MessageLookupByLibrary.simpleMessage(
+            "Rechercher un aliment, une recette..."),
+        "searchFoodTitle":
+            MessageLookupByLibrary.simpleMessage("Rechercher un aliment"),
         "searchLabel": MessageLookupByLibrary.simpleMessage("Rechercher"),
         "searchProductsPage": MessageLookupByLibrary.simpleMessage("Produits"),
+        "searchRecipesTabLabel":
+            MessageLookupByLibrary.simpleMessage("Recettes"),
         "searchResultsLabel":
             MessageLookupByLibrary.simpleMessage("Résultats de recherche"),
         "selectGenderDialogLabel":
