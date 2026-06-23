@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/utils/custom_icons.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class MealSearchBar extends StatelessWidget {
@@ -20,25 +19,23 @@ class MealSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final searchSurface = Color.alphaBlend(
-      colorScheme.onSurface.withValues(
-        alpha: colorScheme.brightness == Brightness.dark ? 0.08 : 0.00,
-      ),
-      colorScheme.surfaceContainerLowest,
+      colorScheme.onPrimary.withValues(alpha: 0.16),
+      colorScheme.primary,
     );
     final leadingSurface = Color.alphaBlend(
-      colorScheme.primary.withValues(alpha: 0.10),
-      colorScheme.surfaceContainerLowest,
+      colorScheme.onPrimary.withValues(alpha: 0.14),
+      colorScheme.primary,
     );
-    final hintColor = colorScheme.onSurfaceVariant;
-    final dividerColor = colorScheme.primary.withValues(alpha: 0.12);
+    final hintColor = colorScheme.onPrimary.withValues(alpha: 0.78);
+    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.14);
 
     return SizedBox(
       height: 76,
       child: TextField(
         controller: _searchTextController,
-        cursorColor: colorScheme.primary,
+        cursorColor: colorScheme.onPrimary,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurface,
+              color: colorScheme.onPrimary,
               fontWeight: FontWeight.w600,
             ),
         textInputAction: TextInputAction.search,
@@ -62,7 +59,7 @@ class MealSearchBar extends StatelessWidget {
               ),
               child: Icon(
                 Icons.search_rounded,
-                color: colorScheme.primary,
+                color: colorScheme.onPrimary,
                 size: 26,
               ),
             ),
@@ -88,9 +85,9 @@ class MealSearchBar extends StatelessWidget {
                 child: IconButton(
                   tooltip: S.of(context).searchLabel,
                   icon: Icon(
-                    CustomIcons.barcode_scan,
-                    color: colorScheme.primary,
-                    size: 28,
+                    Icons.qr_code_scanner_rounded,
+                    color: colorScheme.onPrimary,
+                    size: 30,
                   ),
                   onPressed: () {
                     FocusManager.instance.primaryFocus?.unfocus();
@@ -118,7 +115,7 @@ class MealSearchBar extends StatelessWidget {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(24),
             borderSide: BorderSide(
-              color: colorScheme.primary.withValues(alpha: 0.18),
+              color: colorScheme.onPrimary.withValues(alpha: 0.24),
             ),
           ),
         ),
