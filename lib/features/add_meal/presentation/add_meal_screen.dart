@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
+import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
@@ -105,28 +106,15 @@ class _AddMealScreenState extends State<AddMealScreen>
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+          padding: const EdgeInsets.fromLTRB(22, 10, 22, 32),
           children: [
-            AtlasBrandPanel(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 214),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    MealSearchBar(
-                      searchStringListener: _searchStringListener,
-                      onSearchSubmit: _onSearchSubmit,
-                      onBarcodePressed: _onBarcodeIconPressed,
-                    ),
-                    const SizedBox(height: 30),
-                    _SearchCategorySelector(
-                      controller: _tabController,
-                    ),
-                  ],
-                ),
-              ),
+            const _SearchHeroCard(),
+            const SizedBox(height: 22),
+            _SearchControlCard(
+              searchStringListener: _searchStringListener,
+              onSearchSubmit: _onSearchSubmit,
+              onBarcodePressed: _onBarcodeIconPressed,
+              tabController: _tabController,
             ),
           ],
         ),
@@ -219,6 +207,188 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 }
 
+class _SearchHeroCard extends StatelessWidget {
+  const _SearchHeroCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final brandOnSurface = colorScheme.brightness == Brightness.dark
+        ? lightColorScheme.onPrimary
+        : colorScheme.onPrimary;
+    final brandSecondary = brandOnSurface.withValues(alpha: 0.78);
+
+    return AtlasBrandPanel(
+      padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
+      borderRadius: BorderRadius.circular(22),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  S.of(context).searchFoodTitle,
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    color: brandOnSurface,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.7,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  S.of(context).searchFoodRecipeHint,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: brandSecondary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 18),
+          _SearchHeroIcon(color: colorScheme.primary),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchHeroIcon extends StatelessWidget {
+  final Color color;
+
+  const _SearchHeroIcon({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 82,
+      height: 82,
+      decoration: BoxDecoration(
+        color: colorScheme.onPrimary,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Center(
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(
+            Icons.search_rounded,
+            color: colorScheme.onPrimary,
+            size: 30,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchControlCard extends StatelessWidget {
+  final ValueNotifier<String> searchStringListener;
+  final ValueChanged<String> onSearchSubmit;
+  final VoidCallback onBarcodePressed;
+  final TabController tabController;
+
+  const _SearchControlCard({
+    required this.searchStringListener,
+    required this.onSearchSubmit,
+    required this.onBarcodePressed,
+    required this.tabController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return _SearchSurfaceCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Color.alphaBlend(
+                    colorScheme.primary.withValues(alpha: 0.10),
+                    colorScheme.surfaceContainerLowest,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  Icons.restaurant_menu_rounded,
+                  color: colorScheme.primary,
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  S.of(context).searchLabel,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          MealSearchBar(
+            searchStringListener: searchStringListener,
+            onSearchSubmit: onSearchSubmit,
+            onBarcodePressed: onBarcodePressed,
+          ),
+          const SizedBox(height: 18),
+          _SearchCategorySelector(controller: tabController),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchSurfaceCard extends StatelessWidget {
+  final Widget child;
+
+  const _SearchSurfaceCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
+        child: child,
+      ),
+    );
+  }
+}
+
 class _SearchCategorySelector extends StatelessWidget {
   final TabController controller;
 
@@ -233,17 +403,24 @@ class _SearchCategorySelector extends StatelessWidget {
     ];
     final colorScheme = Theme.of(context).colorScheme;
     final containerColor = Color.alphaBlend(
-      colorScheme.onPrimary.withValues(alpha: 0.10),
-      colorScheme.primary,
+      colorScheme.onSurface.withValues(
+        alpha: colorScheme.brightness == Brightness.dark ? 0.08 : 0.00,
+      ),
+      colorScheme.surfaceContainerLowest,
     );
-    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.10);
+    final dividerColor = colorScheme.primary.withValues(alpha: 0.10);
     final selectedIndex = controller.index;
 
     return Container(
-      padding: const EdgeInsets.all(6),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: containerColor,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: colorScheme.primary.withValues(
+            alpha: colorScheme.brightness == Brightness.dark ? 0.14 : 0.08,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -285,20 +462,22 @@ class _SearchCategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final foregroundColor = isSelected
-        ? colorScheme.primary
-        : colorScheme.onPrimary.withValues(alpha: 0.78);
+    final foregroundColor =
+        isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant;
 
     return Material(
       color: isSelected
-          ? colorScheme.onPrimary
-          : colorScheme.onPrimary.withValues(alpha: 0),
-      borderRadius: BorderRadius.circular(22),
+          ? Color.alphaBlend(
+              colorScheme.primary.withValues(alpha: 0.12),
+              colorScheme.surfaceContainerLowest,
+            )
+          : colorScheme.surfaceContainerLowest.withValues(alpha: 0),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(

@@ -20,19 +20,25 @@ class MealSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final searchSurface = Color.alphaBlend(
-      colorScheme.onPrimary.withValues(alpha: 0.16),
-      colorScheme.primary,
+      colorScheme.onSurface.withValues(
+        alpha: colorScheme.brightness == Brightness.dark ? 0.08 : 0.00,
+      ),
+      colorScheme.surfaceContainerLowest,
     );
-    final hintColor = colorScheme.onPrimary.withValues(alpha: 0.78);
-    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.14);
+    final leadingSurface = Color.alphaBlend(
+      colorScheme.primary.withValues(alpha: 0.10),
+      colorScheme.surfaceContainerLowest,
+    );
+    final hintColor = colorScheme.onSurfaceVariant;
+    final dividerColor = colorScheme.primary.withValues(alpha: 0.12);
 
     return SizedBox(
       height: 76,
       child: TextField(
         controller: _searchTextController,
-        cursorColor: colorScheme.onPrimary,
+        cursorColor: colorScheme.primary,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimary,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
         textInputAction: TextInputAction.search,
@@ -46,13 +52,23 @@ class MealSearchBar extends StatelessWidget {
                 color: hintColor,
                 fontWeight: FontWeight.w600,
               ),
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: colorScheme.onPrimary,
-            size: 32,
+          prefixIcon: Center(
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: leadingSurface,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Icon(
+                Icons.search_rounded,
+                color: colorScheme.primary,
+                size: 26,
+              ),
+            ),
           ),
           prefixIconConstraints: const BoxConstraints(
-            minWidth: 66,
+            minWidth: 62,
             minHeight: 76,
           ),
           suffixIcon: Row(
@@ -73,8 +89,8 @@ class MealSearchBar extends StatelessWidget {
                   tooltip: S.of(context).searchLabel,
                   icon: Icon(
                     CustomIcons.barcode_scan,
-                    color: colorScheme.onPrimary,
-                    size: 30,
+                    color: colorScheme.primary,
+                    size: 28,
                   ),
                   onPressed: () {
                     FocusManager.instance.primaryFocus?.unfocus();
@@ -102,7 +118,7 @@ class MealSearchBar extends StatelessWidget {
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(24),
             borderSide: BorderSide(
-              color: colorScheme.onPrimary.withValues(alpha: 0.22),
+              color: colorScheme.primary.withValues(alpha: 0.18),
             ),
           ),
         ),
