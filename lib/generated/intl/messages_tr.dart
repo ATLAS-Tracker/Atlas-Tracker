@@ -758,6 +758,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "searchFoodTitle": MessageLookupByLibrary.simpleMessage("Yiyecek ara"),
         "searchLabel": MessageLookupByLibrary.simpleMessage("Ara"),
         "searchProductsPage": MessageLookupByLibrary.simpleMessage("Ürünler"),
+        "searchRecentTabLabel": MessageLookupByLibrary.simpleMessage("Yeni"),
         "searchRecipesTabLabel":
             MessageLookupByLibrary.simpleMessage("Tarifler"),
         "searchResultsLabel":

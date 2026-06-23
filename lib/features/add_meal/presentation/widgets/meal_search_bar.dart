@@ -49,23 +49,28 @@ class MealSearchBar extends StatelessWidget {
                 color: hintColor,
                 fontWeight: FontWeight.w600,
               ),
-          prefixIcon: Center(
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: leadingSurface,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Icon(
-                Icons.search_rounded,
-                color: colorScheme.onPrimary,
-                size: 26,
+          prefixIcon: SizedBox(
+            width: 94,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: leadingSurface,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Icon(
+                  Icons.search_rounded,
+                  color: colorScheme.onPrimary,
+                  size: 26,
+                ),
               ),
             ),
           ),
           prefixIconConstraints: const BoxConstraints(
-            minWidth: 62,
+            minWidth: 112,
+            maxWidth: 112,
             minHeight: 76,
           ),
           suffixIcon: Row(
@@ -103,7 +108,7 @@ class MealSearchBar extends StatelessWidget {
           ),
           filled: true,
           fillColor: searchSurface,
-          contentPadding: const EdgeInsets.symmetric(vertical: 26),
+          contentPadding: const EdgeInsets.fromLTRB(4, 26, 10, 26),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(24),
             borderSide: BorderSide.none,

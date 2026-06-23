@@ -27,6 +27,7 @@
   "productSearchMayTakeLongerMessage": "Anfragen können bis zu 20 Sekunden dauern. Danach werden nur noch Atlas Tracker Ergebnisse angezeigt.",
   "allItemsLabel": "Alle",
   "recentlyAddedLabel": "Kürzlich",
+  "searchRecentTabLabel": "Neu",
   "noMealsRecentlyAddedLabel": "Keine kürzlich hinzugefügten Mahlzeiten",
   "noActivityRecentlyAddedLabel": "Keine kürzlich hinzugefügten Aktivitäten",
   "dialogOKLabel": "OK",

@@ -31,6 +31,7 @@
   "productSearchMayTakeLongerMessage": "Une requête peut prendre jusqu'à 20 secondes. Passé ce délai, seuls les résultats Atlas Tracker sont affichés.",
   "allItemsLabel": "Tous",
   "recentlyAddedLabel": "Récemment",
+  "searchRecentTabLabel": "Récents",
   "noMealsRecentlyAddedLabel": "Aucun repas ajouté récemment",
   "noActivityRecentlyAddedLabel": "Aucune activité ajoutée récemment",
   "dialogOKLabel": "OK",
