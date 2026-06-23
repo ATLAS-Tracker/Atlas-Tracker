@@ -80,13 +80,6 @@ class _AddMealScreenState extends State<AddMealScreen>
         surfaceTintColor: colorScheme.surface,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          S.of(context).searchFoodTitle,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-        ),
         actions: [
           BlocBuilder<AddMealBloc, AddMealState>(
             bloc: locator<AddMealBloc>()..add(InitializeAddMealEvent()),
@@ -274,7 +267,7 @@ class _SearchCategorySelector extends StatelessWidget {
     final labels = [
       S.of(context).searchFoodPage,
       S.of(context).searchRecipesTabLabel,
-      S.of(context).recentlyAddedLabel,
+      S.of(context).searchRecentTabLabel,
     ];
     final colorScheme = Theme.of(context).colorScheme;
     final containerColor = Color.alphaBlend(
@@ -296,7 +289,8 @@ class _SearchCategorySelector extends StatelessWidget {
       child: Row(
         children: [
           for (var index = 0; index < labels.length; index++) ...[
-            Expanded(
+            Flexible(
+              flex: index == 2 ? 9 : 10,
               child: _SearchCategoryChip(
                 label: labels[index],
                 isSelected: selectedIndex == index,
@@ -347,17 +341,17 @@ class _SearchCategoryChip extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              label,
-              maxLines: 1,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: foregroundColor,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  ),
-            ),
+          child: Text(
+            label,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.fade,
+            softWrap: false,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: foregroundColor,
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                ),
           ),
         ),
       ),

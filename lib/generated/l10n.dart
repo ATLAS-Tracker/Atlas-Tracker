@@ -341,6 +341,16 @@ class S {
     );
   }
 
+  /// `Recent`
+  String get searchRecentTabLabel {
+    return Intl.message(
+      'Recent',
+      name: 'searchRecentTabLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No meals recently added`
   String get noMealsRecentlyAddedLabel {
     return Intl.message(

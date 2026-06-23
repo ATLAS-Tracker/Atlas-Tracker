@@ -26,6 +26,7 @@
   "productSearchMayTakeLongerMessage": "İstekler 20 saniyeye kadar sürebilir. Bu süreden sonra yalnızca Atlas Tracker sonuçları gösterilir.",
   "allItemsLabel": "Tümü",
   "recentlyAddedLabel": "Son Eklenenler",
+  "searchRecentTabLabel": "Yeni",
   "noMealsRecentlyAddedLabel": "Son zamanlarda eklenen yemek yok",
   "noActivityRecentlyAddedLabel": "Son zamanlarda eklenen aktivite yok",
   "dialogOKLabel": "TAMAM",
