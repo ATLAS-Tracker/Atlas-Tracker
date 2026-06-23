@@ -55,139 +55,130 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
   Widget build(BuildContext context) {
     _log.fine("Recipe result list build method");
 
-    return Column(
-      children: [
-        BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
-          bloc: widget.bloc,
-          builder: (context, state) {
-            if (state is RecipeInitial) {
-              return const DefaultsResultsWidget();
-            } else if (state is RecipeLoadingState) {
-              return const Padding(
-                padding: EdgeInsets.only(top: 32),
-                child: CircularProgressIndicator(),
-              );
-            } else if (state is RecipeLoadedState) {
-              return state.recipes.isNotEmpty
-                  ? Flexible(
-                      child: Stack(
-                        children: [
-                          ListView.builder(
-                            itemCount: state.recipes.length,
-                            itemBuilder: (context, index) {
-                              final recipe = state.recipes[index];
-                              return LongPressDraggable(
-                                data: recipe,
-                                onDragStarted: () {
-                                  setState(() {
-                                    _isDragging = true;
-                                  });
-                                },
-                                onDraggableCanceled: (_, __) {
-                                  setState(() {
-                                    _isDragging = false;
-                                  });
-                                },
-                                onDragEnd: (_) {
-                                  setState(() {
-                                    _isDragging = false;
-                                  });
-                                },
-                                feedback: Material(
-                                  color: Colors.transparent,
-                                  child: ConstrainedBox(
-                                    constraints:
-                                        const BoxConstraints(maxWidth: 300),
-                                    child: Opacity(
-                                      opacity: 0.85,
-                                      child: MealItemCard(
-                                        day: widget.day,
-                                        mealEntity: recipe,
-                                        addMealType: widget.mealType,
-                                        usesImperialUnits:
-                                            state.usesImperialUnits,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                childWhenDragging: Opacity(
-                                  opacity: 0.3,
-                                  child: MealItemCard(
-                                    day: widget.day,
-                                    mealEntity: recipe,
-                                    addMealType: widget.mealType,
-                                    usesImperialUnits: state.usesImperialUnits,
-                                  ),
-                                ),
+    return BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
+      bloc: widget.bloc,
+      builder: (context, state) {
+        if (state is RecipeInitial) {
+          return const DefaultsResultsWidget();
+        } else if (state is RecipeLoadingState) {
+          return const Padding(
+            padding: EdgeInsets.only(top: 32),
+            child: CircularProgressIndicator(),
+          );
+        } else if (state is RecipeLoadedState) {
+          return state.recipes.isNotEmpty
+              ? Stack(
+                  children: [
+                    ListView.builder(
+                      itemCount: state.recipes.length,
+                      itemBuilder: (context, index) {
+                        final recipe = state.recipes[index];
+                        return LongPressDraggable(
+                          data: recipe,
+                          onDragStarted: () {
+                            setState(() {
+                              _isDragging = true;
+                            });
+                          },
+                          onDraggableCanceled: (_, __) {
+                            setState(() {
+                              _isDragging = false;
+                            });
+                          },
+                          onDragEnd: (_) {
+                            setState(() {
+                              _isDragging = false;
+                            });
+                          },
+                          feedback: Material(
+                            color: Colors.transparent,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 300),
+                              child: Opacity(
+                                opacity: 0.85,
                                 child: MealItemCard(
                                   day: widget.day,
                                   mealEntity: recipe,
                                   addMealType: widget.mealType,
                                   usesImperialUnits: state.usesImperialUnits,
                                 ),
+                              ),
+                            ),
+                          ),
+                          childWhenDragging: Opacity(
+                            opacity: 0.3,
+                            child: MealItemCard(
+                              day: widget.day,
+                              mealEntity: recipe,
+                              addMealType: widget.mealType,
+                              usesImperialUnits: state.usesImperialUnits,
+                            ),
+                          ),
+                          child: MealItemCard(
+                            day: widget.day,
+                            mealEntity: recipe,
+                            addMealType: widget.mealType,
+                            usesImperialUnits: state.usesImperialUnits,
+                          ),
+                        );
+                      },
+                    ),
+                    if (_isDragging)
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          height: 70,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .error
+                              .withValues(alpha: 0.3),
+                          child: DragTarget(
+                            onWillAcceptWithDetails: (data) => true,
+                            onAcceptWithDetails: (details) {
+                              setState(() {
+                                _isDragging = false;
+                              });
+
+                              final draggedData = details.data;
+
+                              if (draggedData is MealEntity) {
+                                _deleteImageIfLocal(draggedData.url);
+
+                                if (draggedData.code != null) {
+                                  widget.bloc.add(DeleteRecipeEvent(
+                                      recipeId: draggedData.code!));
+                                }
+                              }
+                            },
+                            onLeave: (data) {
+                              setState(() {
+                                _isDragging = false;
+                              });
+                            },
+                            builder: (context, candidateData, rejectedData) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.delete_outline,
+                                  size: 36,
+                                  color: Colors.white,
+                                ),
                               );
                             },
                           ),
-                          if (_isDragging)
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                height: 70,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .error
-                                    .withValues(alpha: 0.3),
-                                child: DragTarget(
-                                  onWillAcceptWithDetails: (data) => true,
-                                  onAcceptWithDetails: (details) {
-                                    setState(() {
-                                      _isDragging = false;
-                                    });
-
-                                    final draggedData = details.data;
-
-                                    if (draggedData is MealEntity) {
-                                      _deleteImageIfLocal(draggedData.url);
-
-                                      if (draggedData.code != null) {
-                                        widget.bloc.add(DeleteRecipeEvent(
-                                            recipeId: draggedData.code!));
-                                      }
-                                    }
-                                  },
-                                  onLeave: (data) {
-                                    setState(() {
-                                      _isDragging = false;
-                                    });
-                                  },
-                                  builder:
-                                      (context, candidateData, rejectedData) {
-                                    return const Center(
-                                      child: Icon(
-                                        Icons.delete_outline,
-                                        size: 36,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
-                    )
-                  : const Center(child: NoResultsWidget());
-            } else if (state is RecipeFailedState) {
-              return ErrorDialog(
-                errorText: S.of(context).errorRecipeLabel,
-                onRefreshPressed: _onRecipeRefreshButtonPressed,
-              );
-            } else {
-              return const SizedBox();
-            }
-          },
-        ),
-      ],
+                  ],
+                )
+              : const Center(child: NoResultsWidget());
+        } else if (state is RecipeFailedState) {
+          return ErrorDialog(
+            errorText: S.of(context).errorRecipeLabel,
+            onRefreshPressed: _onRecipeRefreshButtonPressed,
+          );
+        } else {
+          return const SizedBox();
+        }
+      },
     );
   }
 }
