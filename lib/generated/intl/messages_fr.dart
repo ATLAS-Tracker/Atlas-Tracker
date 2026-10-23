@@ -31,9 +31,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(date) => "Dernier objectif appliqué le ${date}";
 
-  static String m5(message) => "Erreur Supabase : ${message}";
+  static String m5(count) =>
+      "${Intl.plural(count, one: 'Voir ${count} autre aliment', other: 'Voir ${count} autres aliments')}";
 
-  static String m6(age) => "${age} ans";
+  static String m6(message) => "Erreur Supabase : ${message}";
+
+  static String m7(age) => "${age} ans";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -852,6 +855,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Par défaut du système"),
         "settingsUnitsLabel": MessageLookupByLibrary.simpleMessage("Unités"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Volume"),
+        "showFewerFoods": MessageLookupByLibrary.simpleMessage("Réduire"),
+        "showMoreFoods": m5,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "Vous ne pouvez vous déconnecter que lorsque la connexion internet est rétablie pour ne pas perdre vos données."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -864,7 +869,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Votre abonnement n\'est plus actif. Veuillez contacter votre coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sucre"),
-        "supabaseError": m5,
+        "supabaseError": m6,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("Ingérées"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Cible"),
         "targetWeightLabel":
@@ -886,6 +891,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Historique des poids"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Poids"),
-        "yearsLabel": m6
+        "yearsLabel": m7
       };
 }

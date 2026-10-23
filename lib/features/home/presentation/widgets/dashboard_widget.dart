@@ -109,52 +109,66 @@ class DashboardWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            s.coachObjectiveLabel,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: brandTertiary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _goalTitle(s),
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: brandOnSurface,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.6,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            remainingWeightText == null
-                                ? '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit'
-                                : '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit\n$remainingWeightText',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: brandSecondary,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                LayoutBuilder(builder: (context, constraints) {
+                  final goalDetails = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        s.coachObjectiveLabel,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: brandTertiary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 18),
-                    _WeightSummaryCard(
-                      userWeight: userWeight,
-                      weeklyWeightDelta: weeklyWeightDelta,
-                      usesImperialUnits: usesImperialUnits,
-                      userWeightGoal: userWeightGoal,
-                      onTap: () => _openWeightScreen(context),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _goalTitle(s),
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: brandOnSurface,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        remainingWeightText == null
+                            ? '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit'
+                            : '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit\n$remainingWeightText',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: brandSecondary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  );
+                  final weightCard = _WeightSummaryCard(
+                    userWeight: userWeight,
+                    weeklyWeightDelta: weeklyWeightDelta,
+                    usesImperialUnits: usesImperialUnits,
+                    userWeightGoal: userWeightGoal,
+                    onTap: () => _openWeightScreen(context),
+                  );
+                  if (constraints.maxWidth < 260 ||
+                      MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        goalDetails,
+                        const SizedBox(height: 12),
+                        Align(
+                            alignment: Alignment.centerRight, child: weightCard)
+                      ],
+                    );
+                  }
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: goalDetails),
+                      const SizedBox(width: 18),
+                      weightCard
+                    ],
+                  );
+                }),
                 const SizedBox(height: 14),
                 Divider(
                   height: 1,
@@ -311,28 +325,31 @@ class _WeightSummaryCard extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        weight == null ? '—' : weight.toStringAsFixed(1),
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.7,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          weight == null ? '—' : weight.toStringAsFixed(1),
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            color: theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.7,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        unit,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                          fontWeight: FontWeight.w800,
+                        const SizedBox(width: 5),
+                        Text(
+                          unit,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: theme.colorScheme.onSurface,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -493,11 +510,17 @@ class _MacroSummaryCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            '${intake.toInt()} / ${goal.toInt()} g',
-            style: theme.textTheme.titleSmall?.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w800,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '${intake.toInt()} / ${goal.toInt()} g',
+              maxLines: 1,
+              softWrap: false,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
           const SizedBox(height: 12),

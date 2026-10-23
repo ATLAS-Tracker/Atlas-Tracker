@@ -5343,6 +5343,28 @@ class S {
       args: [],
     );
   }
+
+  /// `{count, plural, one{See {count} more food} other{See {count} more foods}}`
+  String showMoreFoods(num count) {
+    return Intl.plural(
+      count,
+      one: 'See $count more food',
+      other: 'See $count more foods',
+      name: 'showMoreFoods',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Show less`
+  String get showFewerFoods {
+    return Intl.message(
+      'Show less',
+      name: 'showFewerFoods',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -31,8 +31,11 @@ class IntakeVerticalList extends StatefulWidget {
   final Function(BuildContext, IntakeEntity)? onItemLongPressedCallback;
   final Function(bool)? onItemDragCallback;
   final Function(BuildContext, IntakeEntity, bool)? onItemTappedCallback;
-  final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity,
-      AddMealType? type)? onCopyIntakeCallback;
+  final Function(
+    IntakeEntity intake,
+    TrackedDayEntity? trackedDayEntity,
+    AddMealType? type,
+  )? onCopyIntakeCallback;
   final Future<void> Function(
     List<IntakeEntity> intakes,
     DateTime targetDay,
@@ -41,6 +44,7 @@ class IntakeVerticalList extends StatefulWidget {
   final TrackedDayEntity? trackedDayEntity;
   final bool isDropZone;
   final bool isCollapsible;
+  final bool compact;
   final bool initiallyExpanded;
   final double horizontalMargin;
 
@@ -61,6 +65,7 @@ class IntakeVerticalList extends StatefulWidget {
     this.trackedDayEntity,
     this.isDropZone = true,
     this.isCollapsible = false,
+    this.compact = false,
     this.initiallyExpanded = true,
     this.horizontalMargin = 20,
   });
@@ -74,6 +79,7 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
   late HomeBloc _homeBloc;
   late final ScrollController _horizontalScrollController;
   late bool _isExpanded;
+  bool _showAllFoods = false;
 
   @override
   void initState() {
@@ -96,7 +102,9 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
     if (!DateUtils.isSameDay(oldWidget.day, widget.day) ||
         oldWidget.addMealType != widget.addMealType) {
       _isExpanded = widget.initiallyExpanded;
+      _showAllFoods = false;
     }
+    if (widget.intakeList.length <= 2) _showAllFoods = false;
   }
 
   double get totalKcal => widget.intakeList.fold(
@@ -139,6 +147,7 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.compact) return _buildHomeMeal(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final accentColor = _mealAccentColor();
@@ -212,8 +221,9 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color:
-                                          accentColor.withValues(alpha: 0.18),
+                                      color: accentColor.withValues(
+                                        alpha: 0.18,
+                                      ),
                                       blurRadius: 12,
                                       spreadRadius: -6,
                                       offset: const Offset(0, 7),
@@ -286,11 +296,7 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                       ],
                     ),
                     if (totalKcal > 0 && !widget.isCollapsible)
-                      Positioned(
-                        top: -8,
-                        right: -10,
-                        child: _buildPopupMenu(),
-                      ),
+                      Positioned(top: -8, right: -10, child: _buildPopupMenu()),
                   ],
                 ),
               ],
@@ -369,8 +375,9 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                             ),
                                             colorScheme.surfaceContainerLow,
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -394,6 +401,148 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                   )
                 : const SizedBox.shrink(key: ValueKey('collapsed-intake-list')),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeMeal(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final separatorColor = colors.onSurface.withValues(
+      alpha: colors.brightness == Brightness.dark ? 0.10 : 0.06,
+    );
+    return Container(
+      margin: EdgeInsets.fromLTRB(
+        widget.horizontalMargin,
+        12,
+        widget.horizontalMargin,
+        0,
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.onSurface.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              _MealTypeIcon(
+                  mealType: widget.addMealType,
+                  color: colors.primary,
+                  size: 23),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(widget.title,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800)),
+                    Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(color: colors.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              IconButton(
+                tooltip: '${S.of(context).addLabel} · ${widget.title}',
+                onPressed: () => _onPlaceholderCardTapped(context),
+                icon: Icon(
+                  Icons.add_circle_outline_rounded,
+                  color: colors.primary,
+                ),
+              ),
+              if (widget.intakeList.isNotEmpty) _buildPopupMenu(),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: _MealMacroTotals(
+                totalCarbs: totalCarbs,
+                totalFats: totalFats,
+                totalProteins: totalProteins),
+          ),
+          if (widget.intakeList.isNotEmpty)
+            Divider(height: 1, thickness: 0.5, color: separatorColor),
+          DragTarget<IntakeEntity>(
+            onWillAcceptWithDetails: (_) => widget.isDropZone,
+            onAcceptWithDetails: (details) => _onItemDropped(details.data),
+            builder: (context, candidates, rejected) => Container(
+              decoration: BoxDecoration(
+                color: candidates.isEmpty
+                    ? null
+                    : colors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: widget.intakeList.isEmpty
+                  ? TextButton.icon(
+                      onPressed: () => _onPlaceholderCardTapped(context),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: Text(S.of(context).addLabel),
+                    )
+                  : Column(
+                      children: [
+                        for (final intake in (_showAllFoods
+                            ? widget.intakeList
+                            : widget.intakeList.take(2))) ...[
+                          if (intake != widget.intakeList.first)
+                            Divider(
+                              height: 8,
+                              thickness: 0.5,
+                              indent: 68,
+                              endIndent: 4,
+                              color: separatorColor,
+                            ),
+                          LongPressDraggable<IntakeEntity>(
+                            key: ValueKey(intake.id),
+                            data: intake,
+                            onDragStarted: () =>
+                                widget.onItemDragCallback?.call(true),
+                            onDragEnd: (_) =>
+                                widget.onItemDragCallback?.call(false),
+                            feedback: Material(
+                              color: colors.surfaceContainerLowest,
+                              borderRadius: BorderRadius.circular(16),
+                              child: SizedBox(
+                                width: 280,
+                                child: IntakeCard(
+                                  key: ValueKey('drag-${intake.id}'),
+                                  intake: intake,
+                                  firstListElement: false,
+                                  usesImperialUnits: widget.usesImperialUnits,
+                                  compact: true,
+                                ),
+                              ),
+                            ),
+                            child: IntakeCard(
+                              key: ValueKey('home-${intake.id}'),
+                              intake: intake,
+                              firstListElement: false,
+                              usesImperialUnits: widget.usesImperialUnits,
+                              onItemTapped: widget.onItemTappedCallback,
+                              onItemLongPressed:
+                                  widget.onItemLongPressedCallback,
+                              compact: true,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+            ),
+          ),
+          if (widget.intakeList.length > 2)
+            TextButton.icon(
+              key: const ValueKey('toggle-meal-foods'),
+              onPressed: () => setState(() => _showAllFoods = !_showAllFoods),
+              icon: Icon(_showAllFoods ? Icons.expand_less : Icons.expand_more),
+              label: Text(_showAllFoods
+                  ? S.of(context).showFewerFoods
+                  : S.of(context).showMoreFoods(widget.intakeList.length - 2)),
+            ),
         ],
       ),
     );
@@ -538,9 +687,8 @@ class _CopyMealToDateDialogState extends State<_CopyMealToDateDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final formattedDate = MaterialLocalizations.of(context).formatFullDate(
-      _targetDate,
-    );
+    final formattedDate =
+        MaterialLocalizations.of(context).formatFullDate(_targetDate);
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
@@ -693,10 +841,7 @@ class _CopyDialogField extends StatelessWidget {
   final String? label;
   final Widget child;
 
-  const _CopyDialogField({
-    this.label,
-    required this.child,
-  });
+  const _CopyDialogField({this.label, required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -738,10 +883,7 @@ class _CopyMealButton extends StatelessWidget {
   final Color accentColor;
   final VoidCallback onPressed;
 
-  const _CopyMealButton({
-    required this.accentColor,
-    required this.onPressed,
-  });
+  const _CopyMealButton({required this.accentColor, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -765,11 +907,7 @@ class _CopyMealButton extends StatelessWidget {
           child: SizedBox(
             width: 36,
             height: 36,
-            child: Icon(
-              Icons.file_copy_rounded,
-              color: accentColor,
-              size: 19,
-            ),
+            child: Icon(Icons.file_copy_rounded, color: accentColor, size: 19),
           ),
         ),
       ),
@@ -794,11 +932,7 @@ class _MealCollapsedEnergy extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.local_fire_department_rounded,
-          size: 15,
-          color: accentColor,
-        ),
+        Icon(Icons.local_fire_department_rounded, size: 15, color: accentColor),
         const SizedBox(width: 5),
         Text(
           '${totalKcal.toInt()} ${S.of(context).kcalLabel}',
@@ -871,10 +1005,7 @@ class _MealEnergyBadge extends StatelessWidget {
   final double totalKcal;
   final Color accentColor;
 
-  const _MealEnergyBadge({
-    required this.totalKcal,
-    required this.accentColor,
-  });
+  const _MealEnergyBadge({required this.totalKcal, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
@@ -946,18 +1077,12 @@ class _MealTotalChip extends StatelessWidget {
       height: 24,
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 5,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(999),
         ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: chipContent,
-        ),
+        child: FittedBox(fit: BoxFit.scaleDown, child: chipContent),
       ),
     );
   }

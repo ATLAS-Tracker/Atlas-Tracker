@@ -31,9 +31,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(date) => "Son hedef ${date} tarihinde uygulandı";
 
-  static String m5(message) => "Supabase hatası: ${message}";
+  static String m5(count) =>
+      "${Intl.plural(count, other: '${count} yiyecek daha göster')}";
 
-  static String m6(age) => "${age} yıl";
+  static String m6(message) => "Supabase hatası: ${message}";
+
+  static String m7(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -812,6 +815,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Sistem varsayılanı"),
         "settingsUnitsLabel": MessageLookupByLibrary.simpleMessage("Birimler"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Hacim"),
+        "showFewerFoods":
+            MessageLookupByLibrary.simpleMessage("Daha az göster"),
+        "showMoreFoods": m5,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "Verilerin kaybolmaması için yalnızca internet bağlantısı olduğunda çıkış yapabilirsiniz."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -823,7 +829,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Aboneliğiniz artık aktif değil. Lütfen antrenörünüzle iletişime geçin."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
-        "supabaseError": m5,
+        "supabaseError": m6,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
@@ -843,6 +849,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Kilo"),
-        "yearsLabel": m6
+        "yearsLabel": m7
       };
 }

@@ -552,5 +552,7 @@
   "editWeightLabel": "Modifier le poids",
   "@editWeightLabel": {
     "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
-  }
+  },
+  "showMoreFoods": "{count, plural, one{Voir {count} autre aliment} other{Voir {count} autres aliments}}",
+  "showFewerFoods": "Réduire"
 }

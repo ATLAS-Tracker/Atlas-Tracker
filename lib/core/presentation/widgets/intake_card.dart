@@ -23,6 +23,7 @@ class IntakeCard extends StatelessWidget {
   final Function(BuildContext, IntakeEntity, bool)? onItemTapped;
   final bool firstListElement;
   final bool usesImperialUnits;
+  final bool compact;
 
   const IntakeCard({
     required super.key,
@@ -31,10 +32,12 @@ class IntakeCard extends StatelessWidget {
     this.onItemTapped,
     required this.firstListElement,
     required this.usesImperialUnits,
+    this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (compact) return _buildCompact(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final cardSurface = Color.alphaBlend(
@@ -206,6 +209,88 @@ class IntakeCard extends StatelessWidget {
     );
   }
 
+  Widget _buildCompact(BuildContext context) {
+    final theme = Theme.of(context);
+    final s = S.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onItemTapped == null
+            ? null
+            : () => onTappedItem(context, usesImperialUnits),
+        onLongPress:
+            onItemLongPressed == null ? null : () => onLongPressedItem(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                    width: 56, height: 56, child: _buildMealImage(context)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Expanded(
+                        child: Text(intake.meal.name ?? '?',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium
+                                ?.copyWith(fontWeight: FontWeight.w600))),
+                    const SizedBox(width: 8),
+                    Text('${intake.totalKcal.toInt()} ${s.kcalLabel}',
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ]),
+                  const SizedBox(height: 4),
+                  MealValueUnitText(
+                    value: intake.amount,
+                    meal: intake.meal,
+                    displayUnit: intake.unit.toLowerCase() == 'serving'
+                        ? 'serving'
+                        : null,
+                    usesImperialUnits: usesImperialUnits,
+                    textStyle: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(
+                        child: Tooltip(
+                            message: s.carbsLabel,
+                            child: _MacroValue(
+                                visual: MacroVisuals.carbs,
+                                value: intake.totalCarbsGram))),
+                    const SizedBox(width: 4),
+                    Expanded(
+                        child: Tooltip(
+                            message: s.fatLabel,
+                            child: _MacroValue(
+                                visual: MacroVisuals.fats,
+                                value: intake.totalFatsGram))),
+                    const SizedBox(width: 4),
+                    Expanded(
+                        child: Tooltip(
+                            message: s.proteinLabel,
+                            child: _MacroValue(
+                                visual: MacroVisuals.proteins,
+                                value: intake.totalProteinsGram))),
+                  ]),
+                ],
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void onLongPressedItem(BuildContext context) {
     onItemLongPressed?.call(context, intake);
   }
@@ -298,10 +383,7 @@ class _MetricPill extends StatelessWidget {
         color: surface,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: child,
-      ),
+      child: FittedBox(fit: BoxFit.scaleDown, child: child),
     );
   }
 }
@@ -310,10 +392,7 @@ class _MacroValue extends StatelessWidget {
   final MacroVisual visual;
   final double value;
 
-  const _MacroValue({
-    required this.visual,
-    required this.value,
-  });
+  const _MacroValue({required this.visual, required this.value});
 
   @override
   Widget build(BuildContext context) {
