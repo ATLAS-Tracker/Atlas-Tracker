@@ -228,9 +228,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "forgotPasswordTitle":
             MessageLookupByLibrary.simpleMessage("Şifreni mi unuttun?"),
         "ftLabel": MessageLookupByLibrary.simpleMessage("ft"),
-        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("♀ kadın"),
+        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("kadın"),
         "genderLabel": MessageLookupByLibrary.simpleMessage("Cinsiyet"),
-        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("♂ erkek"),
+        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("erkek"),
         "genericErrorOccurred":
             MessageLookupByLibrary.simpleMessage("Bir hata oluştu."),
         "goalGainWeight": MessageLookupByLibrary.simpleMessage("Kilo Al"),

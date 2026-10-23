@@ -236,9 +236,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "forgotPasswordTitle":
             MessageLookupByLibrary.simpleMessage("Forgot your password?"),
         "ftLabel": MessageLookupByLibrary.simpleMessage("ft"),
-        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("♀ female"),
+        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("female"),
         "genderLabel": MessageLookupByLibrary.simpleMessage("Gender"),
-        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("♂ male"),
+        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("male"),
         "genericErrorOccurred":
             MessageLookupByLibrary.simpleMessage("An error occurred."),
         "goalGainWeight": MessageLookupByLibrary.simpleMessage("Gain Weight"),

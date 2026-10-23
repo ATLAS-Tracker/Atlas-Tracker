@@ -233,9 +233,9 @@ class MessageLookup extends MessageLookupByLibrary {
             "Fehler beim Senden der E-Mail:"),
         "forgotPasswordTitle":
             MessageLookupByLibrary.simpleMessage("Passwort vergessen?"),
-        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("♀ weiblich"),
+        "genderFemaleLabel": MessageLookupByLibrary.simpleMessage("weiblich"),
         "genderLabel": MessageLookupByLibrary.simpleMessage("Geschlecht"),
-        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("♂ männlich"),
+        "genderMaleLabel": MessageLookupByLibrary.simpleMessage("männlich"),
         "genericErrorOccurred":
             MessageLookupByLibrary.simpleMessage("Ein Fehler ist aufgetreten."),
         "goalGainWeight":
