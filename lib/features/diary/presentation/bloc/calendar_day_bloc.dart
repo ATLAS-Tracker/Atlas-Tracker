@@ -77,6 +77,18 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
     final userWeightEntity =
         await _getUserWeightUsecase.getUserWeightByDate(day);
 
+    double? weeklyWeightDelta;
+    if (userWeightEntity != null) {
+      final pastWeights =
+          await _getUserWeightUsecase.getWeightsFromPastDays(day, 7);
+      if (pastWeights.isNotEmpty) {
+        final average =
+            pastWeights.fold<double>(0, (sum, entry) => sum + entry.weight) /
+                pastWeights.length;
+        weeklyWeightDelta = userWeightEntity.weight - average;
+      }
+    }
+
     emit(CalendarDayLoaded(
         trackedDayEntity,
         userActivities,
@@ -84,7 +96,8 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
         lunchIntakeList,
         dinnerIntakeList,
         snackIntakeList,
-        userWeightEntity));
+        userWeightEntity,
+        weeklyWeightDelta: weeklyWeightDelta));
   }
 
   Future<void> deleteIntakeItem(
