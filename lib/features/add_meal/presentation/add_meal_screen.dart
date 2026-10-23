@@ -1,7 +1,6 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
-import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
-import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
@@ -85,7 +84,17 @@ class _AddMealScreenState extends State<AddMealScreen>
         backgroundColor: colorScheme.surface,
         surfaceTintColor: colorScheme.surface,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
+        title: Row(children: [
+          Icon(Icons.restaurant_rounded, color: colorScheme.primary, size: 23),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(S.of(context).searchLabel,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800))),
+        ]),
         actions: [
           BlocBuilder<AddMealBloc, AddMealState>(
             bloc: locator<AddMealBloc>()..add(InitializeAddMealEvent()),
@@ -105,43 +114,52 @@ class _AddMealScreenState extends State<AddMealScreen>
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(22, 10, 22, 32),
-          child: Column(
-            children: [
-              _SearchHeroCard(
-                searchStringListener: _searchStringListener,
-                onSearchSubmit: _onSearchSubmit,
-                onBarcodePressed: _onBarcodeIconPressed,
-                tabController: _tabController,
-              ),
-              const SizedBox(height: 18),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: SizedBox(
+                height: math.max(constraints.maxHeight,
+                    320 * MediaQuery.textScalerOf(context).scale(1)),
+                child: Column(
                   children: [
-                    _ProductsResultsPane(
-                      bloc: _productsBloc,
-                      scrollController: _productsScrollController,
-                      day: _day,
-                      mealType: _mealType,
-                      onRefreshPressed: _onProductsRefreshButtonPressed,
+                    _SearchHeader(
+                      searchStringListener: _searchStringListener,
+                      onSearchSubmit: _onSearchSubmit,
+                      onBarcodePressed: _onBarcodeIconPressed,
+                      tabController: _tabController,
                     ),
-                    RecipeResultsList(
-                      day: _day,
-                      mealType: _mealType,
-                      bloc: _recipeSearchBloc,
-                    ),
-                    _RecentMealsPane(
-                      bloc: _recentMealBloc,
-                      day: _day,
-                      mealType: _mealType,
-                      onRefreshPressed: _onRecentMealsRefreshButtonPressed,
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _ProductsResultsPane(
+                            bloc: _productsBloc,
+                            scrollController: _productsScrollController,
+                            day: _day,
+                            mealType: _mealType,
+                            onRefreshPressed: _onProductsRefreshButtonPressed,
+                          ),
+                          RecipeResultsList(
+                            day: _day,
+                            mealType: _mealType,
+                            bloc: _recipeSearchBloc,
+                          ),
+                          _RecentMealsPane(
+                            bloc: _recentMealBloc,
+                            day: _day,
+                            mealType: _mealType,
+                            onRefreshPressed:
+                                _onRecentMealsRefreshButtonPressed,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            );
+          }),
         ),
       ),
     );
@@ -240,13 +258,13 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 }
 
-class _SearchHeroCard extends StatelessWidget {
+class _SearchHeader extends StatelessWidget {
   final ValueNotifier<String> searchStringListener;
   final ValueChanged<String> onSearchSubmit;
   final VoidCallback onBarcodePressed;
   final TabController tabController;
 
-  const _SearchHeroCard({
+  const _SearchHeader({
     required this.searchStringListener,
     required this.onSearchSubmit,
     required this.onBarcodePressed,
@@ -255,147 +273,56 @@ class _SearchHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final brandOnSurface = colorScheme.brightness == Brightness.dark
-        ? lightColorScheme.onPrimary
-        : colorScheme.onPrimary;
-    final brandSecondary = brandOnSurface.withValues(alpha: 0.78);
-
-    return AtlasBrandPanel(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-      borderRadius: BorderRadius.circular(22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            S.of(context).searchFoodTitle,
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: brandOnSurface,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.7,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            S.of(context).searchFoodRecipeHint,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: brandSecondary,
-              fontWeight: FontWeight.w700,
-              height: 1.25,
-            ),
-          ),
-          const SizedBox(height: 22),
-          MealSearchBar(
-            searchStringListener: searchStringListener,
-            onSearchSubmit: onSearchSubmit,
-            onBarcodePressed: onBarcodePressed,
-          ),
-          const SizedBox(height: 18),
-          _SearchCategorySelector(controller: tabController),
-        ],
-      ),
-    );
-  }
-}
-
-class _SearchCategorySelector extends StatelessWidget {
-  final TabController controller;
-
-  const _SearchCategorySelector({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    final labels = [
-      S.of(context).searchFoodPage,
-      S.of(context).searchRecipesTabLabel,
-      S.of(context).searchRecentTabLabel,
-    ];
-    final colorScheme = Theme.of(context).colorScheme;
-    final containerColor = Color.alphaBlend(
-      colorScheme.onPrimary.withValues(alpha: 0.10),
-      colorScheme.primary,
-    );
-    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.10);
-    final selectedIndex = controller.index;
-
-    return Container(
-      padding: const EdgeInsets.all(5),
-      decoration: BoxDecoration(
-        color: containerColor,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: colorScheme.onPrimary.withValues(alpha: 0.12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MealSearchBar(
+          searchStringListener: searchStringListener,
+          onSearchSubmit: onSearchSubmit,
+          onBarcodePressed: onBarcodePressed,
         ),
-      ),
-      child: Row(
-        children: [
-          for (var index = 0; index < labels.length; index++) ...[
-            Expanded(
-              child: _SearchCategoryChip(
-                label: labels[index],
-                isSelected: selectedIndex == index,
-                onTap: () => controller.animateTo(index),
-              ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.06)),
+          ),
+          child: TabBar(
+            controller: tabController,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
-            if (index != labels.length - 1)
-              SizedBox(
-                height: 34,
-                child: VerticalDivider(
-                  width: 1,
-                  thickness: 1,
-                  color: dividerColor,
-                ),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _SearchCategoryChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SearchCategoryChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final foregroundColor = isSelected
-        ? colorScheme.primary
-        : colorScheme.onPrimary.withValues(alpha: 0.78);
-
-    return Material(
-      color: isSelected
-          ? colorScheme.onPrimary
-          : colorScheme.onPrimary.withValues(alpha: 0),
-      borderRadius: BorderRadius.circular(18),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 8),
-          child: Text(
-            label,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: foregroundColor,
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                ),
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor:
+                Theme.of(context).colorScheme.onSurfaceVariant,
+            labelStyle: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+            tabs: [
+              for (final label in [
+                S.of(context).searchFoodPage,
+                S.of(context).searchRecipesTabLabel,
+                S.of(context).searchRecentTabLabel
+              ])
+                Tab(
+                    child:
+                        FittedBox(fit: BoxFit.scaleDown, child: Text(label))),
+            ],
           ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -422,7 +349,7 @@ class _ProductsResultsPane extends StatelessWidget {
       children: [
         Text(
           S.of(context).searchResultsLabel,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
                 fontWeight: FontWeight.w800,
               ),
@@ -436,17 +363,20 @@ class _ProductsResultsPane extends StatelessWidget {
                 return const DefaultsResultsWidget();
               } else if (state is ProductsLoadingState) {
                 return Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CircularProgressIndicator(),
-                      const SizedBox(height: 12),
-                      Text(
-                        S.of(context).productSearchMayTakeLongerMessage,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text(
+                          S.of(context).productSearchMayTakeLongerMessage,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               } else if (state is ProductsLoadedState) {

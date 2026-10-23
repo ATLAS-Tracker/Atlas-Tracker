@@ -1,127 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
-class MealSearchBar extends StatelessWidget {
+class MealSearchBar extends StatefulWidget {
   final ValueNotifier<String> searchStringListener;
-  final Function(String) onSearchSubmit;
-  final Function() onBarcodePressed;
+  final ValueChanged<String> onSearchSubmit;
+  final VoidCallback onBarcodePressed;
 
-  final _searchTextController = TextEditingController();
+  const MealSearchBar(
+      {super.key,
+      required this.searchStringListener,
+      required this.onSearchSubmit,
+      required this.onBarcodePressed});
 
-  MealSearchBar({
-    super.key,
-    required this.searchStringListener,
-    required this.onSearchSubmit,
-    required this.onBarcodePressed,
-  });
+  @override
+  State<MealSearchBar> createState() => _MealSearchBarState();
+}
+
+class _MealSearchBarState extends State<MealSearchBar> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.searchStringListener.value);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final searchSurface = Color.alphaBlend(
-      colorScheme.onPrimary.withValues(alpha: 0.16),
-      colorScheme.primary,
-    );
-    final leadingSurface = Color.alphaBlend(
-      colorScheme.onPrimary.withValues(alpha: 0.14),
-      colorScheme.primary,
-    );
-    final hintColor = colorScheme.onPrimary.withValues(alpha: 0.78);
-    final dividerColor = colorScheme.onPrimary.withValues(alpha: 0.14);
-
-    return SizedBox(
-      height: 76,
-      child: TextField(
-        controller: _searchTextController,
-        cursorColor: colorScheme.onPrimary,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: colorScheme.onPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-        textInputAction: TextInputAction.search,
-        onChanged: (input) {
-          searchStringListener.value = input;
-          onSearchSubmit(input);
-        },
-        onSubmitted: onSearchSubmit,
-        decoration: InputDecoration(
-          hintText: S.of(context).searchFoodRecipeHint,
-          hintStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: hintColor,
-                fontWeight: FontWeight.w600,
-              ),
-          prefixIcon: Center(
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: leadingSurface,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Icon(
-                Icons.search_rounded,
-                color: colorScheme.onPrimary,
-                size: 26,
-              ),
-            ),
+    final colors = Theme.of(context).colorScheme;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+            child: TextField(
+          controller: _controller,
+          textInputAction: TextInputAction.search,
+          onChanged: (input) {
+            widget.searchStringListener.value = input;
+            widget.onSearchSubmit(input);
+          },
+          onSubmitted: widget.onSearchSubmit,
+          style: Theme.of(context).textTheme.bodyMedium,
+          decoration: InputDecoration(
+            hintText: S.of(context).searchLabel,
+            hintMaxLines: 1,
+            hintStyle: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: colors.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search_rounded,
+                color: colors.onSurfaceVariant, size: 23),
+            filled: true,
+            fillColor: colors.surfaceContainerLowest,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                    color: colors.onSurface.withValues(alpha: 0.08))),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: colors.primary, width: 1.5)),
           ),
-          prefixIconConstraints: const BoxConstraints(
-            minWidth: 64,
-            maxWidth: 64,
-            minHeight: 76,
-          ),
-          suffixIcon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 42,
-                child: VerticalDivider(
-                  width: 1,
-                  thickness: 1,
-                  color: dividerColor,
-                ),
-              ),
-              SizedBox(
-                width: 64,
-                height: 76,
-                child: IconButton(
-                  tooltip: S.of(context).searchLabel,
-                  icon: Icon(
-                    Icons.qr_code_scanner_rounded,
-                    color: colorScheme.onPrimary,
-                    size: 30,
-                  ),
-                  onPressed: () {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    onBarcodePressed();
-                  },
-                ),
-              ),
-            ],
-          ),
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 82,
-            minHeight: 76,
-          ),
-          filled: true,
-          fillColor: searchSurface,
-          contentPadding: const EdgeInsets.fromLTRB(0, 26, 10, 26),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide(
-              color: colorScheme.onPrimary.withValues(alpha: 0.24),
-            ),
-          ),
+        )),
+        const SizedBox(width: 10),
+        IconButton.filled(
+          constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
+          style: IconButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16))),
+          tooltip: S.of(context).searchLabel,
+          icon: const Icon(Icons.qr_code_scanner_rounded, size: 25),
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            widget.onBarcodePressed();
+          },
         ),
-      ),
+      ],
     );
   }
 }

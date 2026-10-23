@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -27,60 +26,70 @@ class MealItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      child: InkWell(
-        child: SizedBox(
-          height: 100,
-          child: Center(
-              child: ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                width: 60,
-                height: 60,
-                child: _buildThumbnail(context),
-              ),
-            ),
-            title: AutoSizeText.rich(
-                TextSpan(
-                    text: mealEntity.name ?? "?",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface),
-                    children: [
-                      TextSpan(
-                          text: ' ${mealEntity.brands ?? ""}',
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: colors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: colors.onSurface.withValues(alpha: 0.06))),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _onItemPressed(context),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: _buildThumbnail(context))),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(mealEntity.name ?? '?',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    if (mealEntity.brands?.trim().isNotEmpty == true) ...[
+                      const SizedBox(height: 3),
+                      Text(mealEntity.brands!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context)
                               .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.8))),
-                    ]),
-                style: Theme.of(context).textTheme.titleLarge,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-            subtitle: mealEntity.mealQuantity != null
-                ? MealValueUnitText(
-                    value: double.parse(mealEntity.mealQuantity ?? "0"),
-                    meal: mealEntity,
-                    usesImperialUnits: usesImperialUnits)
-                : const SizedBox(),
-            trailing: IconButton(
-              style: IconButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-              ),
-              icon: const Icon(Icons.add_outlined),
-              onPressed: () => _onItemPressed(context),
+                              .bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant)),
+                    ],
+                    if (mealEntity.mealQuantity != null) ...[
+                      const SizedBox(height: 5),
+                      MealValueUnitText(
+                          value: double.parse(mealEntity.mealQuantity ?? '0'),
+                          meal: mealEntity,
+                          usesImperialUnits: usesImperialUnits),
+                    ],
+                  ],
+                )),
+                const SizedBox(width: 4),
+                IconButton(
+                  style: IconButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      backgroundColor: colors.primary.withValues(alpha: 0.08)),
+                  onPressed: () => _onItemPressed(context),
+                  icon: const Icon(Icons.add_rounded, size: 23),
+                ),
+              ],
             ),
-          )),
+          ),
         ),
-        onTap: () => _onItemPressed(context),
       ),
     );
   }
@@ -131,15 +140,15 @@ class MealItemCard extends StatelessWidget {
   }
 
   Widget _buildFallbackPlaceholder(BuildContext context) => Container(
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         child: Icon(
           Icons.restaurant_outlined,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
+          color: Theme.of(context).colorScheme.primary,
         ),
       );
 
   Widget _buildLoadingPlaceholder(BuildContext context) => Container(
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         alignment: Alignment.center,
         child: SizedBox(
           width: 20,
