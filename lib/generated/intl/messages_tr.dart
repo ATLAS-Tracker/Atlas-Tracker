@@ -36,7 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(message) => "Supabase hatası: ${message}";
 
-  static String m7(age) => "${age} yıl";
+  static String m7(date) => "${date} tarihli tartım";
+
+  static String m8(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+
+  static String m9(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -843,12 +847,27 @@ class MessageLookup extends MessageLookupByLibrary {
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("hf."),
         "weeklyAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("7g ort."),
+        "weightAverageDeltaLabel":
+            MessageLookupByLibrary.simpleMessage("7 günlük ortalamadan fark"),
+        "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Ortalama"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Kilo silindi"),
+        "weightEntryDate": m7,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Kilo"),
-        "yearsLabel": m7
+        "weightMeasurementsLabel":
+            MessageLookupByLibrary.simpleMessage("Tartımlar"),
+        "weightNoMeasurementsLabel":
+            MessageLookupByLibrary.simpleMessage("Bu dönemde tartım yok"),
+        "weightPeriodAverage": m8,
+        "weightSaveError": MessageLookupByLibrary.simpleMessage(
+            "Kilonuz kaydedilemedi. Lütfen tekrar deneyin."),
+        "weightSavedLabel":
+            MessageLookupByLibrary.simpleMessage("Kilo kaydedildi"),
+        "weightSavingLabel":
+            MessageLookupByLibrary.simpleMessage("Kaydediliyor…"),
+        "yearsLabel": m9
       };
 }

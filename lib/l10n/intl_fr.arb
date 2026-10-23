@@ -554,5 +554,14 @@
     "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
   },
   "showMoreFoods": "{count, plural, one{Voir {count} autre aliment} other{Voir {count} autres aliments}}",
-  "showFewerFoods": "Réduire"
+  "showFewerFoods": "Réduire",
+  "weightEntryDate": "Pesée du {date}",
+  "weightSavingLabel": "Enregistrement…",
+  "weightSavedLabel": "Poids enregistré",
+  "weightSaveError": "Impossible d’enregistrer le poids. Réessayez.",
+  "weightAverageDeltaLabel": "Écart à la moyenne sur 7 jours",
+  "weightPeriodAverage": "Moyenne de la période : {value} {unit}",
+  "weightMeasurementsLabel": "Pesées",
+  "weightAverageLabel": "Moyenne",
+  "weightNoMeasurementsLabel": "Aucune pesée sur cette période"
 }

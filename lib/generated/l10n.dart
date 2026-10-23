@@ -5365,6 +5365,96 @@ class S {
       args: [],
     );
   }
+
+  /// `Weigh-in for {date}`
+  String weightEntryDate(Object date) {
+    return Intl.message(
+      'Weigh-in for $date',
+      name: 'weightEntryDate',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Saving…`
+  String get weightSavingLabel {
+    return Intl.message(
+      'Saving…',
+      name: 'weightSavingLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Weight saved`
+  String get weightSavedLabel {
+    return Intl.message(
+      'Weight saved',
+      name: 'weightSavedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not save your weight. Please try again.`
+  String get weightSaveError {
+    return Intl.message(
+      'Could not save your weight. Please try again.',
+      name: 'weightSaveError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Difference from the 7-day average`
+  String get weightAverageDeltaLabel {
+    return Intl.message(
+      'Difference from the 7-day average',
+      name: 'weightAverageDeltaLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Period average: {value} {unit}`
+  String weightPeriodAverage(Object value, Object unit) {
+    return Intl.message(
+      'Period average: $value $unit',
+      name: 'weightPeriodAverage',
+      desc: '',
+      args: [value, unit],
+    );
+  }
+
+  /// `Weigh-ins`
+  String get weightMeasurementsLabel {
+    return Intl.message(
+      'Weigh-ins',
+      name: 'weightMeasurementsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average`
+  String get weightAverageLabel {
+    return Intl.message(
+      'Average',
+      name: 'weightAverageLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No weigh-ins for this period`
+  String get weightNoMeasurementsLabel {
+    return Intl.message(
+      'No weigh-ins for this period',
+      name: 'weightNoMeasurementsLabel',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

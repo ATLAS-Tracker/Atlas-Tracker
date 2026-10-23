@@ -544,5 +544,14 @@
     "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
   },
   "showMoreFoods": "{count, plural, other{{count} yiyecek daha göster}}",
-  "showFewerFoods": "Daha az göster"
+  "showFewerFoods": "Daha az göster",
+  "weightEntryDate": "{date} tarihli tartım",
+  "weightSavingLabel": "Kaydediliyor…",
+  "weightSavedLabel": "Kilo kaydedildi",
+  "weightSaveError": "Kilonuz kaydedilemedi. Lütfen tekrar deneyin.",
+  "weightAverageDeltaLabel": "7 günlük ortalamadan fark",
+  "weightPeriodAverage": "Dönem ortalaması: {value} {unit}",
+  "weightMeasurementsLabel": "Tartımlar",
+  "weightAverageLabel": "Ortalama",
+  "weightNoMeasurementsLabel": "Bu dönemde tartım yok"
 }
