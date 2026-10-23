@@ -554,5 +554,14 @@
     "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
   },
   "showMoreFoods": "{count, plural, one{See {count} more food} other{See {count} more foods}}",
-  "showFewerFoods": "Show less"
+  "showFewerFoods": "Show less",
+  "weightEntryDate": "Weigh-in for {date}",
+  "weightSavingLabel": "Saving…",
+  "weightSavedLabel": "Weight saved",
+  "weightSaveError": "Could not save your weight. Please try again.",
+  "weightAverageDeltaLabel": "Difference from the 7-day average",
+  "weightPeriodAverage": "Period average: {value} {unit}",
+  "weightMeasurementsLabel": "Weigh-ins",
+  "weightAverageLabel": "Average",
+  "weightNoMeasurementsLabel": "No weigh-ins for this period"
 }

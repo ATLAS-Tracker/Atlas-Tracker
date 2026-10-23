@@ -36,7 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(message) => "Supabase-Fehler: ${message}";
 
-  static String m7(age) => "${age} Jahre";
+  static String m7(date) => "Wiegen am ${date}";
+
+  static String m8(value, unit) => "Durchschnitt im Zeitraum: ${value} ${unit}";
+
+  static String m9(age) => "${age} Jahre";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -871,12 +875,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("Wo."),
         "weeklyAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("vs 7-Tage-Ø"),
+        "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
+            "Abweichung vom 7-Tage-Durchschnitt"),
+        "weightAverageLabel":
+            MessageLookupByLibrary.simpleMessage("Durchschnitt"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Gewicht gelöscht"),
+        "weightEntryDate": m7,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Gewicht"),
-        "yearsLabel": m7
+        "weightMeasurementsLabel":
+            MessageLookupByLibrary.simpleMessage("Wiegungen"),
+        "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
+            "Keine Wiegungen in diesem Zeitraum"),
+        "weightPeriodAverage": m8,
+        "weightSaveError": MessageLookupByLibrary.simpleMessage(
+            "Gewicht konnte nicht gespeichert werden. Bitte erneut versuchen."),
+        "weightSavedLabel":
+            MessageLookupByLibrary.simpleMessage("Gewicht gespeichert"),
+        "weightSavingLabel":
+            MessageLookupByLibrary.simpleMessage("Wird gespeichert…"),
+        "yearsLabel": m9
       };
 }

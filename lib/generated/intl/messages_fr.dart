@@ -36,7 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(message) => "Erreur Supabase : ${message}";
 
-  static String m7(age) => "${age} ans";
+  static String m7(date) => "Pesée du ${date}";
+
+  static String m8(value, unit) => "Moyenne de la période : ${value} ${unit}";
+
+  static String m9(age) => "${age} ans";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -884,13 +888,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("sem."),
         "weeklyAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("vs moy. 7j"),
+        "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
+            "Écart à la moyenne sur 7 jours"),
+        "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Moyenne"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Poids supprimé"),
+        "weightEntryDate": m7,
         "weightGoalShortLabel":
             MessageLookupByLibrary.simpleMessage("Objectif"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Historique des poids"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Poids"),
-        "yearsLabel": m7
+        "weightMeasurementsLabel":
+            MessageLookupByLibrary.simpleMessage("Pesées"),
+        "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
+            "Aucune pesée sur cette période"),
+        "weightPeriodAverage": m8,
+        "weightSaveError": MessageLookupByLibrary.simpleMessage(
+            "Impossible d’enregistrer le poids. Réessayez."),
+        "weightSavedLabel":
+            MessageLookupByLibrary.simpleMessage("Poids enregistré"),
+        "weightSavingLabel":
+            MessageLookupByLibrary.simpleMessage("Enregistrement…"),
+        "yearsLabel": m9
       };
 }
