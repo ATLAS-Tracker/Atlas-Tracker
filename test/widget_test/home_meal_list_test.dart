@@ -51,6 +51,8 @@ void main() {
       Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
       DateTime? mealDay,
       double textScale = 1,
+      bool journal = false,
+      void Function(IntakeEntity)? onDelete,
       Function(bool)? onDrag}) {
     return MaterialApp(
       locale: const Locale('fr'),
@@ -77,7 +79,11 @@ void main() {
         intakeList: intakes,
         usesImperialUnits: false,
         compact: true,
-        onDeleteIntakeCallback: (_, __) {},
+        isCollapsible: journal,
+        initiallyExpanded: !journal,
+        foodPreviewLimit: journal ? null : 2,
+        onCopyMealToDateCallback: journal ? (_, __, ___) async {} : null,
+        onDeleteIntakeCallback: (item, _) => onDelete?.call(item),
         onItemTappedCallback: onTapped,
         onItemDragCallback: onDrag,
       ))),
@@ -151,6 +157,49 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('journal shows every food and keeps meal collapse and copy',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(320, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final foods = List.generate(
+        4, (index) => intake.copyWith(id: 'food-$index', amount: 1000));
+    await tester
+        .pumpWidget(buildMeal(intakes: foods, journal: true, textScale: 1.5));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNothing);
+    await tester.tap(find.byIcon(Icons.expand_more));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNWidgets(4));
+    expect(find.byKey(const ValueKey('toggle-meal-foods')), findsNothing);
+    expect(find.byTooltip(S.current.copyMealLabel), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.expand_less));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNothing);
+    await tester.tap(find.byIcon(Icons.expand_more));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNWidgets(4));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('journal delete-all keeps confirmation and cancels safely',
+      (tester) async {
+    final deleted = <IntakeEntity>[];
+    await tester.pumpWidget(
+        buildMeal(intakes: [intake], journal: true, onDelete: deleted.add));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(S.current.deleteAllLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogCancelLabel));
+    await tester.pumpAndSettle();
+    expect(deleted, isEmpty);
+    await tester.tap(find.byTooltip(S.current.deleteAllLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogOKLabel));
+    await tester.pumpAndSettle();
+    expect(deleted, [intake]);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('new day resets an expanded meal', (tester) async {
     final foods =

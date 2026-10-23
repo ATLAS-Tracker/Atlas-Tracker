@@ -45,6 +45,7 @@ class IntakeVerticalList extends StatefulWidget {
   final bool isDropZone;
   final bool isCollapsible;
   final bool compact;
+  final int? foodPreviewLimit;
   final bool initiallyExpanded;
   final double horizontalMargin;
 
@@ -66,6 +67,7 @@ class IntakeVerticalList extends StatefulWidget {
     this.isDropZone = true,
     this.isCollapsible = false,
     this.compact = false,
+    this.foodPreviewLimit = 2,
     this.initiallyExpanded = true,
     this.horizontalMargin = 20,
   });
@@ -428,124 +430,234 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              _MealTypeIcon(
-                  mealType: widget.addMealType,
-                  color: colors.primary,
-                  size: 23),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.title,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800)),
-                    Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
-                        style: theme.textTheme.bodySmall
-                            ?.copyWith(color: colors.onSurfaceVariant)),
-                  ],
+          if (widget.isCollapsible)
+            _buildJournalMealHeader(context)
+          else ...[
+            Row(
+              children: [
+                _MealTypeIcon(
+                    mealType: widget.addMealType,
+                    color: _mealAccentColor(),
+                    size: 23),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.title,
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800)),
+                      Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant)),
+                    ],
+                  ),
                 ),
-              ),
-              IconButton(
-                tooltip: '${S.of(context).addLabel} · ${widget.title}',
-                onPressed: () => _onPlaceholderCardTapped(context),
-                icon: Icon(
-                  Icons.add_circle_outline_rounded,
-                  color: colors.primary,
+                IconButton(
+                  tooltip: '${S.of(context).addLabel} · ${widget.title}',
+                  onPressed: () => _onPlaceholderCardTapped(context),
+                  icon: Icon(
+                    Icons.add_circle_outline_rounded,
+                    color: colors.primary,
+                  ),
                 ),
+                if (!widget.isCollapsible && widget.intakeList.isNotEmpty)
+                  _buildPopupMenu(),
+                if (widget.isCollapsible)
+                  IconButton(
+                    tooltip: widget.title,
+                    onPressed: () => setState(() => _isExpanded = !_isExpanded),
+                    icon: Icon(
+                        _isExpanded ? Icons.expand_less : Icons.expand_more),
+                  ),
+              ],
+            ),
+            if (widget.isCollapsible && widget.intakeList.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (_canCopyMeal)
+                    IconButton(
+                      tooltip: S.of(context).copyMealLabel,
+                      onPressed: _showCopyMealDialog,
+                      icon: const Icon(Icons.content_copy_rounded, size: 20),
+                    ),
+                  _buildPopupMenu(),
+                ],
               ),
-              if (widget.intakeList.isNotEmpty) _buildPopupMenu(),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: _MealMacroTotals(
-                totalCarbs: totalCarbs,
-                totalFats: totalFats,
-                totalProteins: totalProteins),
-          ),
-          if (widget.intakeList.isNotEmpty)
-            Divider(height: 1, thickness: 0.5, color: separatorColor),
-          DragTarget<IntakeEntity>(
-            onWillAcceptWithDetails: (_) => widget.isDropZone,
-            onAcceptWithDetails: (details) => _onItemDropped(details.data),
-            builder: (context, candidates, rejected) => Container(
-              decoration: BoxDecoration(
-                color: candidates.isEmpty
-                    ? null
-                    : colors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: widget.intakeList.isEmpty
-                  ? TextButton.icon(
-                      onPressed: () => _onPlaceholderCardTapped(context),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: Text(S.of(context).addLabel),
-                    )
-                  : Column(
-                      children: [
-                        for (final intake in (_showAllFoods
-                            ? widget.intakeList
-                            : widget.intakeList.take(2))) ...[
-                          if (intake != widget.intakeList.first)
-                            Divider(
-                              height: 8,
-                              thickness: 0.5,
-                              indent: 68,
-                              endIndent: 4,
-                              color: separatorColor,
-                            ),
-                          LongPressDraggable<IntakeEntity>(
-                            key: ValueKey(intake.id),
-                            data: intake,
-                            onDragStarted: () =>
-                                widget.onItemDragCallback?.call(true),
-                            onDragEnd: (_) =>
-                                widget.onItemDragCallback?.call(false),
-                            feedback: Material(
-                              color: colors.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(16),
-                              child: SizedBox(
-                                width: 280,
-                                child: IntakeCard(
-                                  key: ValueKey('drag-${intake.id}'),
-                                  intake: intake,
-                                  firstListElement: false,
-                                  usesImperialUnits: widget.usesImperialUnits,
-                                  compact: true,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _MealMacroTotals(
+                  totalCarbs: totalCarbs,
+                  totalFats: totalFats,
+                  totalProteins: totalProteins),
+            ),
+          ],
+          if (!widget.isCollapsible || _isExpanded) ...[
+            if (widget.intakeList.isNotEmpty)
+              Divider(height: 1, thickness: 0.5, color: separatorColor),
+            DragTarget<IntakeEntity>(
+              onWillAcceptWithDetails: (_) => widget.isDropZone,
+              onAcceptWithDetails: (details) => _onItemDropped(details.data),
+              builder: (context, candidates, rejected) => Container(
+                decoration: BoxDecoration(
+                  color: candidates.isEmpty
+                      ? null
+                      : colors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: widget.intakeList.isEmpty
+                    ? TextButton.icon(
+                        onPressed: () => _onPlaceholderCardTapped(context),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: Text(S.of(context).addLabel),
+                      )
+                    : Column(
+                        children: [
+                          for (final intake in (_showAllFoods ||
+                                  widget.foodPreviewLimit == null
+                              ? widget.intakeList
+                              : widget.intakeList
+                                  .take(widget.foodPreviewLimit!))) ...[
+                            if (intake != widget.intakeList.first)
+                              Divider(
+                                height: 8,
+                                thickness: 0.5,
+                                indent: 68,
+                                endIndent: 4,
+                                color: separatorColor,
+                              ),
+                            LongPressDraggable<IntakeEntity>(
+                              key: ValueKey(intake.id),
+                              data: intake,
+                              onDragStarted: () =>
+                                  widget.onItemDragCallback?.call(true),
+                              onDragEnd: (_) =>
+                                  widget.onItemDragCallback?.call(false),
+                              feedback: Material(
+                                color: colors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(16),
+                                child: SizedBox(
+                                  width: 280,
+                                  child: IntakeCard(
+                                    key: ValueKey('drag-${intake.id}'),
+                                    intake: intake,
+                                    firstListElement: false,
+                                    usesImperialUnits: widget.usesImperialUnits,
+                                    compact: true,
+                                  ),
                                 ),
                               ),
+                              child: IntakeCard(
+                                key: ValueKey('home-${intake.id}'),
+                                intake: intake,
+                                firstListElement: false,
+                                usesImperialUnits: widget.usesImperialUnits,
+                                onItemTapped: widget.onItemTappedCallback,
+                                onItemLongPressed:
+                                    widget.onItemLongPressedCallback,
+                                compact: true,
+                              ),
                             ),
-                            child: IntakeCard(
-                              key: ValueKey('home-${intake.id}'),
-                              intake: intake,
-                              firstListElement: false,
-                              usesImperialUnits: widget.usesImperialUnits,
-                              onItemTapped: widget.onItemTappedCallback,
-                              onItemLongPressed:
-                                  widget.onItemLongPressedCallback,
-                              compact: true,
-                            ),
-                          ),
+                          ],
                         ],
-                      ],
-                    ),
+                      ),
+              ),
             ),
-          ),
-          if (widget.intakeList.length > 2)
-            TextButton.icon(
-              key: const ValueKey('toggle-meal-foods'),
-              onPressed: () => setState(() => _showAllFoods = !_showAllFoods),
-              icon: Icon(_showAllFoods ? Icons.expand_less : Icons.expand_more),
-              label: Text(_showAllFoods
-                  ? S.of(context).showFewerFoods
-                  : S.of(context).showMoreFoods(widget.intakeList.length - 2)),
-            ),
+            if (widget.foodPreviewLimit != null &&
+                widget.intakeList.length > widget.foodPreviewLimit!)
+              TextButton.icon(
+                key: const ValueKey('toggle-meal-foods'),
+                onPressed: () => setState(() => _showAllFoods = !_showAllFoods),
+                icon:
+                    Icon(_showAllFoods ? Icons.expand_less : Icons.expand_more),
+                label: Text(_showAllFoods
+                    ? S.of(context).showFewerFoods
+                    : S.of(context).showMoreFoods(
+                        widget.intakeList.length - widget.foodPreviewLimit!)),
+              ),
+          ],
         ],
       ),
     );
+  }
+
+  Widget _buildJournalMealHeader(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final accent = _mealAccentColor();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            _MealTypeIcon(
+                mealType: widget.addMealType, color: accent, size: 23),
+            const SizedBox(width: 10),
+            Expanded(
+                child: Text(widget.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800))),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: '${S.of(context).addLabel} · ${widget.title}',
+              onPressed: () => _onPlaceholderCardTapped(context),
+              icon:
+                  Icon(Icons.add_circle_outline_rounded, color: colors.primary),
+            ),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: S.of(context).copyMealLabel,
+              onPressed: _canCopyMeal ? _showCopyMealDialog : null,
+              icon: const Icon(Icons.content_copy_rounded, size: 20),
+            ),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: S.of(context).deleteAllLabel,
+              onPressed: widget.intakeList.isEmpty ? null : _deleteAllIntakes,
+              icon: Icon(Icons.delete_outline_rounded,
+                  color: widget.intakeList.isEmpty ? null : colors.error),
+            ),
+          ],
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _MealEnergyBadge(totalKcal: totalKcal, accentColor: accent),
+        ),
+        Row(
+          children: [
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _MealMacroTotals(
+                  totalCarbs: totalCarbs,
+                  totalFats: totalFats,
+                  totalProteins: totalProteins),
+            )),
+            IconButton(
+              tooltip: widget.title,
+              onPressed: () => setState(() => _isExpanded = !_isExpanded),
+              icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _deleteAllIntakes() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => const DeleteAllDialog(),
+    );
+    if (confirmed != true || !mounted) return;
+    for (final intake in List<IntakeEntity>.of(widget.intakeList)) {
+      widget.onDeleteIntakeCallback(intake, widget.trackedDayEntity);
+    }
   }
 
   Widget _buildPopupMenu({Widget? child}) {
@@ -568,16 +680,8 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
             }
             break;
           case VerticalListPopupMenuSelections.onDelete:
-            final shouldDeleteIntakes = await showDialog<bool>(
-              context: context,
-              builder: (context) => const DeleteAllDialog(),
-            );
-            if (shouldDeleteIntakes != null) {
-              for (IntakeEntity intake in widget.intakeList) {
-                widget.onDeleteIntakeCallback(intake, widget.trackedDayEntity);
-              }
-              break;
-            }
+            await _deleteAllIntakes();
+            break;
         }
       },
       itemBuilder: (BuildContext context) =>
@@ -954,48 +1058,35 @@ class _MealMacroTotals extends StatelessWidget {
   final double totalFats;
   final double totalProteins;
 
-  const _MealMacroTotals({
-    required this.totalCarbs,
-    required this.totalFats,
-    required this.totalProteins,
-  });
+  const _MealMacroTotals(
+      {required this.totalCarbs,
+      required this.totalFats,
+      required this.totalProteins});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: _MealTotalChip(
-              value: '${totalCarbs.toInt()} ${S.of(context).gramUnit}',
-              visual: MacroVisuals.carbs,
-            ),
-          ),
-        ),
-        const SizedBox(width: 7),
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value: '${totalCarbs.toInt()} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.carbs))),
+        const SizedBox(width: 6),
         Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: _MealTotalChip(
-              value: '${totalFats.toInt()} ${S.of(context).gramUnit}',
-              visual: MacroVisuals.fats,
-            ),
-          ),
-        ),
-        const SizedBox(width: 7),
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value: '${totalFats.toInt()} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.fats))),
+        const SizedBox(width: 6),
         Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: _MealTotalChip(
-              value: '${totalProteins.toInt()} ${S.of(context).gramUnit}',
-              visual: MacroVisuals.proteins,
-            ),
-          ),
-        ),
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value: '${totalProteins.toInt()} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.proteins))),
       ],
     );
   }
@@ -1073,17 +1164,13 @@ class _MealTotalChip extends StatelessWidget {
       ],
     );
 
-    return SizedBox(
-      height: 24,
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(999),
-        ),
-        child: FittedBox(fit: BoxFit.scaleDown, child: chipContent),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
       ),
+      child: chipContent,
     );
   }
 }

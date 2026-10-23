@@ -102,7 +102,14 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
           selectedDate: _selectedDate,
           focusedDate: _focusedDate,
         ),
-        const SizedBox(height: 14.0),
+        const SizedBox(height: 18.0),
+        Text(
+          MaterialLocalizations.of(context).formatFullDate(_selectedDate),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+        ),
+        const SizedBox(height: 12.0),
         BlocBuilder<CalendarDayBloc, CalendarDayState>(
           bloc: _calendarDayBloc,
           builder: (context, calendarDayState) {
@@ -127,6 +134,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                     DiarySummaryCard(
                       trackedDay: selectedTrackedDay,
                       selectedDayWeight: loadedDay?.userWeightEntity,
+                      weeklyWeightDelta: loadedDay?.weeklyWeightDelta,
                       homeState:
                           homeState is HomeLoadedState ? homeState : null,
                       onEditWeight: _openSelectedDayWeightScreen,
@@ -151,6 +159,8 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                         isDropZone: false,
                         isCollapsible: true,
                         initiallyExpanded: false,
+                        compact: true,
+                        foodPreviewLimit: null,
                         horizontalMargin: 0,
                       ),
                       IntakeVerticalList(
@@ -171,6 +181,8 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                         isDropZone: false,
                         isCollapsible: true,
                         initiallyExpanded: false,
+                        compact: true,
+                        foodPreviewLimit: null,
                         horizontalMargin: 0,
                       ),
                       IntakeVerticalList(
@@ -191,6 +203,8 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                         isDropZone: false,
                         isCollapsible: true,
                         initiallyExpanded: false,
+                        compact: true,
+                        foodPreviewLimit: null,
                         horizontalMargin: 0,
                       ),
                       IntakeVerticalList(
@@ -211,6 +225,8 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                         isDropZone: false,
                         isCollapsible: true,
                         initiallyExpanded: false,
+                        compact: true,
+                        foodPreviewLimit: null,
                         horizontalMargin: 0,
                       ),
                     ],
