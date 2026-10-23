@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_dialog_widgets.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -50,8 +51,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       if (saved != value) {
         setState(() => _syncEnabled = saved);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(S.of(context).savePreferenceFailed)),
+          SnackBar(content: Text(S.of(context).savePreferenceFailed)),
         );
       }
     } catch (e) {
@@ -68,7 +68,13 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(S.of(context).manageAccountTitle),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      title: ProfileDialogTitle(
+          title: S.of(context).manageAccountTitle,
+          icon: Icons.manage_accounts_outlined,
+          color: Theme.of(context).colorScheme.primary),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -77,14 +83,20 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
             Text(S.of(context).manageAccountDescription),
             const SizedBox(height: 16),
             SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(Icons.cloud_sync_outlined,
+                  color: Theme.of(context).colorScheme.primary),
               title: Text(S.of(context).manageAccountEnableSync),
               value: _syncEnabled,
               onChanged: _saving ? null : _toggleSync,
             ),
             const SizedBox(height: 8),
-            TextButton(
+            TextButton.icon(
+              style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error),
+              icon: const Icon(Icons.delete_outline_rounded),
               onPressed: () => _confirmDelete(context),
-              child: Text(S.of(context).manageAccountDelete),
+              label: Text(S.of(context).manageAccountDelete),
             ),
           ],
         ),
@@ -102,7 +114,13 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(S.of(context).manageAccountConfirmTitle),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        title: ProfileDialogTitle(
+            title: S.of(context).manageAccountConfirmTitle,
+            icon: Icons.delete_outline_rounded,
+            color: Theme.of(context).colorScheme.error),
         content: Text(S.of(context).manageAccountConfirmMessage),
         actions: [
           TextButton(
@@ -167,10 +185,13 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
             .pushReplacementNamed(NavigationOptions.loginRoute);
         debugPrint('safeSignOut terminé → retour login.');
       } else {
-        final errorMessage = response.data?['error'] ?? S.of(context).loginUnknownError;
+        final errorMessage =
+            response.data?['error'] ?? S.of(context).loginUnknownError;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).failedToDeleteWithReason(errorMessage))),
+          SnackBar(
+              content:
+                  Text(S.of(context).failedToDeleteWithReason(errorMessage))),
         );
       }
     } catch (e, stackTrace) {

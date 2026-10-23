@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/user_bmi_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_entity.dart';
@@ -90,33 +93,67 @@ class _ProfilePageState extends State<ProfilePage> {
       UserEntity user, bool usesImperialUnits) {
     final isCoach = user.role == UserRoleEntity.coach;
     return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
-        const SizedBox(height: 32.0),
-        Center(
-          child: Column(
+        AtlasBrandPanel(
+          child: Row(
             children: [
-              ProfilePhotoPicker(
-                initialImagePath: user.profileImagePath,
-                onImagePicked: (path) {
-                  final updatedUser = user.copyWith(profileImagePath: path);
-                  _profileBloc.updateUser(updatedUser);
-                },
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3), width: 2)),
+                child: ProfilePhotoPicker(
+                  size: 72,
+                  initialImagePath: user.profileImagePath,
+                  onImagePicked: (path) {
+                    final updatedUser = user.copyWith(profileImagePath: path);
+                    _profileBloc.updateUser(updatedUser);
+                  },
+                ),
               ),
-              const SizedBox(height: 16.0),
-              Text(user.name, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(width: 16),
+              Expanded(
+                  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(user.name,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5)),
+                  const SizedBox(height: 8),
+                  BlocBuilder<HomeBloc, HomeState>(
+                    bloc: locator<HomeBloc>(),
+                    builder: (context, state) {
+                      final coach = !isCoach && state is HomeLoadedState
+                          ? state.coachName?.trim()
+                          : null;
+                      return Text(
+                        coach == null || coach.isEmpty
+                            ? user.role.getName(context)
+                            : '${user.role.getName(context)} · $coach',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.75),
+                            fontWeight: FontWeight.w600),
+                      );
+                    },
+                  ),
+                ],
+              )),
             ],
           ),
         ),
-        const SizedBox(height: 32.0),
+        const SizedBox(height: 18),
         if (!isCoach)
-          ListTile(
+          _ProfileTile(
+            accent: lunchColor,
             title: Text(
               S.of(context).activityLabel,
-              style: Theme.of(context).textTheme.titleLarge,
             ),
             subtitle: Text(
               user.pal.getName(context),
-              style: Theme.of(context).textTheme.titleMedium,
             ),
             leading: const SizedBox(
               height: double.infinity,
@@ -125,14 +162,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () => _showSetPALCategoryDialog(context, user),
           ),
         if (!isCoach)
-          ListTile(
+          _ProfileTile(
+            accent: dinnerColor,
             title: Text(
               S.of(context).goalLabel,
-              style: Theme.of(context).textTheme.titleLarge,
             ),
             subtitle: Text(
               user.goal.getName(context),
-              style: Theme.of(context).textTheme.titleMedium,
             ),
             leading: const SizedBox(
               height: double.infinity,
@@ -141,79 +177,97 @@ class _ProfilePageState extends State<ProfilePage> {
             onTap: () => _showSetGoalDialog(context, user),
           ),
         if (!isCoach)
-          ListTile(
-            title: Text(
-              S.of(context).weightLabel,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            subtitle: Text(
-              '${_profileBloc.getDisplayWeight(user, usesImperialUnits)} ${usesImperialUnits ? S.of(context).lbsLabel : S.of(context).kgLabel}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            leading: const SizedBox(
-              height: double.infinity,
-              child: Icon(Icons.monitor_weight_outlined),
-            ),
-            onTap: () {
-              _showSetWeightDialog(context, user, usesImperialUnits);
-            },
-          ),
-        if (!isCoach)
-          ListTile(
-            title: Text(
-              S.of(context).heightLabel,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            subtitle: Text(
-              '${_profileBloc.getDisplayHeight(user, usesImperialUnits)} ${usesImperialUnits ? S.of(context).ftLabel : S.of(context).cmLabel}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            leading: const SizedBox(
-              height: double.infinity,
-              child: Icon(Icons.height_outlined),
-            ),
-            onTap: () {
-              _showSetHeightDialog(context, user, usesImperialUnits);
-            },
-          ),
-        if (!isCoach)
-          ListTile(
-            title: Text(
-              S.of(context).ageLabel,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            subtitle: Text(
-              S.of(context).yearsLabel(user.age),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            leading: const SizedBox(
-              height: double.infinity,
-              child: Icon(Icons.cake_outlined),
-            ),
-            onTap: () {
-              _showSetBirthdayDialog(context, user);
-            },
-          ),
-        if (!isCoach)
-          ListTile(
-            title: Text(
-              S.of(context).genderLabel,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            subtitle: Text(
-              user.gender.getName(context),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            leading: SizedBox(
-              height: double.infinity,
-              child: Icon(user.gender.getIcon()),
-            ),
-            onTap: () {
-              _showSetGenderDialog(context, user);
-            },
-          ),
+          LayoutBuilder(builder: (context, constraints) {
+            final columns = constraints.maxWidth < 260 ||
+                    MediaQuery.textScalerOf(context).scale(1) > 1.3
+                ? 1
+                : 2;
+            final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Wrap(spacing: 12, runSpacing: 12, children: [
+                SizedBox(
+                    width: width,
+                    child: _ProfileTile(
+                      compact: true,
+                      accent: proteinColor,
+                      title: Text(
+                        S.of(context).weightLabel,
+                      ),
+                      subtitle: Text(
+                        '${_profileBloc.getDisplayWeight(user, usesImperialUnits)} ${usesImperialUnits ? S.of(context).lbsLabel : S.of(context).kgLabel}',
+                      ),
+                      leading: const SizedBox(
+                        height: double.infinity,
+                        child: Icon(Icons.monitor_weight_outlined),
+                      ),
+                      onTap: () {
+                        _showSetWeightDialog(context, user, usesImperialUnits);
+                      },
+                    )),
+                SizedBox(
+                    width: width,
+                    child: _ProfileTile(
+                      compact: true,
+                      accent: carbColor,
+                      title: Text(
+                        S.of(context).heightLabel,
+                      ),
+                      subtitle: Text(
+                        '${_profileBloc.getDisplayHeight(user, usesImperialUnits)} ${usesImperialUnits ? S.of(context).ftLabel : S.of(context).cmLabel}',
+                      ),
+                      leading: const SizedBox(
+                        height: double.infinity,
+                        child: Icon(Icons.height_outlined),
+                      ),
+                      onTap: () {
+                        _showSetHeightDialog(context, user, usesImperialUnits);
+                      },
+                    )),
+                SizedBox(
+                    width: width,
+                    child: _ProfileTile(
+                      compact: true,
+                      accent: snackColor,
+                      title: Text(
+                        S.of(context).ageLabel,
+                      ),
+                      subtitle: Text(
+                        S.of(context).yearsLabel(user.age),
+                      ),
+                      leading: const SizedBox(
+                        height: double.infinity,
+                        child: Icon(Icons.cake_outlined),
+                      ),
+                      onTap: () {
+                        _showSetBirthdayDialog(context, user);
+                      },
+                    )),
+                SizedBox(
+                    width: width,
+                    child: _ProfileTile(
+                      compact: true,
+                      accent: dinnerColor,
+                      title: Text(
+                        S.of(context).genderLabel,
+                      ),
+                      subtitle: Text(
+                        user.gender.getName(context),
+                      ),
+                      leading: SizedBox(
+                        height: double.infinity,
+                        child: Icon(user.gender.getIcon()),
+                      ),
+                      onTap: () {
+                        _showSetGenderDialog(context, user);
+                      },
+                    )),
+              ]),
+            );
+          }),
+        const SizedBox(height: 10),
         if (isCoach)
-          ListTile(
+          _ProfileTile(
             leading: const SizedBox(
               height: double.infinity,
               child: Icon(Icons.group_outlined),
@@ -249,7 +303,7 @@ class _ProfilePageState extends State<ProfilePage> {
               }
             },
           ),
-        ListTile(
+        _ProfileTile(
           leading: const SizedBox(
             height: double.infinity,
             child: Icon(Icons.manage_accounts_outlined),
@@ -332,6 +386,18 @@ class _ProfilePageState extends State<ProfilePage> {
       BuildContext context, UserEntity userEntity) async {
     final selectedDate = await showDatePicker(
         context: context,
+        builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                datePickerTheme: DatePickerThemeData(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(26)),
+                  headerBackgroundColor: snackColor.withValues(alpha: 0.12),
+                  headerForegroundColor:
+                      Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              child: child!,
+            ),
         initialDate: userEntity.birthday,
         firstDate: DateTime(1900),
         lastDate: DateTime(2100));
@@ -351,5 +417,94 @@ class _ProfilePageState extends State<ProfilePage> {
 
       _profileBloc.updateUser(userEntity);
     }
+  }
+}
+
+class _ProfileTile extends StatelessWidget {
+  final Widget title;
+  final Color? accent;
+  final Widget? subtitle;
+  final Widget leading;
+  final VoidCallback onTap;
+  final bool compact;
+
+  const _ProfileTile(
+      {this.accent,
+      required this.title,
+      this.subtitle,
+      required this.leading,
+      required this.onTap,
+      this.compact = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final tint = accent ?? colors.primary;
+    final icon = Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+          color: tint.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12)),
+      child:
+          IconTheme(data: IconThemeData(color: tint, size: 21), child: leading),
+    );
+    final label = DefaultTextStyle.merge(
+        style: theme.textTheme.bodySmall!.copyWith(
+            color: colors.onSurfaceVariant, fontWeight: FontWeight.w500),
+        child: title);
+    final value = subtitle == null
+        ? null
+        : DefaultTextStyle.merge(
+            style: theme.textTheme.titleMedium!.copyWith(
+                color: colors.onSurface,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.3),
+            child: subtitle!);
+    return Padding(
+      padding: EdgeInsets.only(bottom: compact ? 0 : 10),
+      child: Material(
+        color: colors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(color: colors.onSurface.withValues(alpha: 0.05))),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: compact
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      icon,
+                      const SizedBox(height: 18),
+                      label,
+                      if (value != null) ...[const SizedBox(height: 4), value],
+                    ],
+                  )
+                : Row(children: [
+                    icon,
+                    const SizedBox(width: 14),
+                    Expanded(
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                          if (value != null) ...[
+                            label,
+                            const SizedBox(height: 4),
+                            value
+                          ] else
+                            DefaultTextStyle.merge(
+                                style: theme.textTheme.titleSmall!
+                                    .copyWith(fontWeight: FontWeight.w700),
+                                child: title),
+                        ])),
+                  ]),
+          ),
+        ),
+      ),
+    );
   }
 }

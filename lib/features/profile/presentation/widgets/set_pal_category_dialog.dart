@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/user_pal_entity.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'profile_dialog_widgets.dart';
 
 class SetPALCategoryDialog extends StatelessWidget {
   const SetPALCategoryDialog({super.key});
@@ -8,32 +10,35 @@ class SetPALCategoryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      title: Text(S.of(context).selectPalCategoryLabel),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      contentPadding: const EdgeInsets.only(top: 12, bottom: 20),
+      title: ProfileDialogTitle(
+          title: S.of(context).selectPalCategoryLabel,
+          icon: Icons.directions_walk_outlined,
+          color: lunchColor),
       children: [
-        SimpleDialogOption(
-          child: Text(S.of(context).palSedentaryLabel),
-          onPressed: () {
-            Navigator.pop(context, UserPALEntity.sedentary);
-          },
-        ),
-        SimpleDialogOption(
-          child: Text(S.of(context).palLowLActiveLabel),
-          onPressed: () {
-            Navigator.pop(context, UserPALEntity.lowActive);
-          },
-        ),
-        SimpleDialogOption(
-          child: Text(S.of(context).palActiveLabel),
-          onPressed: () {
-            Navigator.pop(context, UserPALEntity.active);
-          },
-        ),
-        SimpleDialogOption(
-          child: Text(S.of(context).palVeryActiveLabel),
-          onPressed: () {
-            Navigator.pop(context, UserPALEntity.veryActive);
-          },
-        ),
+        ProfileDialogOption(
+            label: S.of(context).palSedentaryLabel,
+            icon: Icons.chair_outlined,
+            color: proteinColor,
+            onPressed: () => Navigator.pop(context, UserPALEntity.sedentary)),
+        ProfileDialogOption(
+            label: S.of(context).palLowLActiveLabel,
+            icon: Icons.directions_walk_rounded,
+            color: lunchColor,
+            onPressed: () => Navigator.pop(context, UserPALEntity.lowActive)),
+        ProfileDialogOption(
+            label: S.of(context).palActiveLabel,
+            icon: Icons.directions_run_rounded,
+            color: breakfastColor,
+            onPressed: () => Navigator.pop(context, UserPALEntity.active)),
+        ProfileDialogOption(
+            label: S.of(context).palVeryActiveLabel,
+            icon: Icons.fitness_center_rounded,
+            color: dinnerColor,
+            onPressed: () => Navigator.pop(context, UserPALEntity.veryActive)),
       ],
     );
   }

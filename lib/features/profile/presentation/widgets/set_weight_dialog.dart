@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:horizontal_picker/horizontal_picker.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'profile_dialog_widgets.dart';
+import 'profile_value_picker.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class SetWeightDialog extends StatelessWidget {
@@ -16,37 +18,31 @@ class SetWeightDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     double selectedWeight = userWeight;
     return AlertDialog(
-      title: Text(S.of(context).selectWeightDialogLabel),
-      content: Wrap(children: [
-        Column(
-          children: [
-            HorizontalPicker(
-                height: 100,
-                backgroundColor: Colors.transparent,
-                minValue: usesImperialUnits
-                    ? userWeight - weightRangeLbs
-                    : userWeight - weightRangeKg,
-                maxValue: usesImperialUnits
-                    ? userWeight + weightRangeLbs
-                    : userWeight + weightRangeKg,
-                initialPosition: InitialPosition.center,
-                divisions: 1000,
-                suffix: usesImperialUnits
-                    ? S.of(context).lbsLabel
-                    : S.of(context).kgLabel,
-                onChanged: (value) {
-                  selectedWeight = value;
-                })
-          ],
-        )
-      ]),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      title: ProfileDialogTitle(
+          title: S.of(context).selectWeightDialogLabel,
+          icon: Icons.monitor_weight_outlined,
+          color: proteinColor),
+      scrollable: true,
+      content: ProfileValuePicker(
+        initialValue: userWeight,
+        min: userWeight - (usesImperialUnits ? weightRangeLbs : weightRangeKg),
+        max: userWeight + (usesImperialUnits ? weightRangeLbs : weightRangeKg),
+        divisions: 1000,
+        unit:
+            usesImperialUnits ? S.of(context).lbsLabel : S.of(context).kgLabel,
+        color: proteinColor,
+        onChanged: (value) => selectedWeight = value,
+      ),
       actions: <Widget>[
         TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
             child: Text(S.of(context).dialogCancelLabel)),
-        TextButton(
+        FilledButton(
             onPressed: () {
               // TODO validate selected weight
               Navigator.pop(context, selectedWeight);
