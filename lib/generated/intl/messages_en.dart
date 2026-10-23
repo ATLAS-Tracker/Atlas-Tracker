@@ -31,9 +31,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(date) => "Last goal applied on ${date}";
 
-  static String m5(message) => "Supabase error: ${message}";
+  static String m5(count) =>
+      "${Intl.plural(count, one: 'See ${count} more food', other: 'See ${count} more foods')}";
 
-  static String m6(age) => "${age} years";
+  static String m6(message) => "Supabase error: ${message}";
+
+  static String m7(age) => "${age} years";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -834,6 +837,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("System default"),
         "settingsUnitsLabel": MessageLookupByLibrary.simpleMessage("Units"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Volume"),
+        "showFewerFoods": MessageLookupByLibrary.simpleMessage("Show less"),
+        "showMoreFoods": m5,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "You can only sign out when internet connection is available to avoid losing data."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -846,7 +851,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Your subscription is no longer active. Please contact your coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sugar"),
-        "supabaseError": m5,
+        "supabaseError": m6,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("supplied"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Target"),
         "targetWeightLabel":
@@ -867,6 +872,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Weight history"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Weight"),
-        "yearsLabel": m6
+        "yearsLabel": m7
       };
 }

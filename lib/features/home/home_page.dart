@@ -222,6 +222,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               ),
             ),
             IntakeVerticalList(
+              compact: true,
               day: DateTime.now(),
               title: S.of(context).breakfastLabel,
               listIcon: IntakeTypeEntity.breakfast.getIconData(),
@@ -233,6 +234,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               usesImperialUnits: usesImperialUnits,
             ),
             IntakeVerticalList(
+              compact: true,
               day: DateTime.now(),
               title: S.of(context).lunchLabel,
               listIcon: IntakeTypeEntity.lunch.getIconData(),
@@ -244,6 +246,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               usesImperialUnits: usesImperialUnits,
             ),
             IntakeVerticalList(
+              compact: true,
               day: DateTime.now(),
               title: S.of(context).dinnerLabel,
               addMealType: AddMealType.dinnerType,
@@ -255,6 +258,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               usesImperialUnits: usesImperialUnits,
             ),
             IntakeVerticalList(
+              compact: true,
               day: DateTime.now(),
               title: S.of(context).snackLabel,
               listIcon: IntakeTypeEntity.snack.getIconData(),

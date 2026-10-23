@@ -542,5 +542,7 @@
   "editWeightLabel": "Kiloyu düzenle",
   "@editWeightLabel": {
     "description": "Tooltip/action label for editing the selected day's weight from the diary summary card."
-  }
+  },
+  "showMoreFoods": "{count, plural, other{{count} yiyecek daha göster}}",
+  "showFewerFoods": "Daha az göster"
 }

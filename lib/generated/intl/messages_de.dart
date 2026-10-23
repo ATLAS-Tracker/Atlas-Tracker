@@ -31,9 +31,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(date) => "Zuletzt angewendetes Ziel am ${date}";
 
-  static String m5(message) => "Supabase-Fehler: ${message}";
+  static String m5(count) =>
+      "${Intl.plural(count, one: '${count} weiteres Lebensmittel anzeigen', other: '${count} weitere Lebensmittel anzeigen')}";
 
-  static String m6(age) => "${age} Jahre";
+  static String m6(message) => "Supabase-Fehler: ${message}";
+
+  static String m7(age) => "${age} Jahre";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -839,6 +842,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Systemstandard"),
         "settingsUnitsLabel": MessageLookupByLibrary.simpleMessage("Einheiten"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Volumen"),
+        "showFewerFoods":
+            MessageLookupByLibrary.simpleMessage("Weniger anzeigen"),
+        "showMoreFoods": m5,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "Sie können sich nur abmelden, wenn eine Internetverbindung besteht, um Datenverlust zu vermeiden."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -850,7 +856,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Ihr Abonnement ist nicht mehr aktiv. Bitte kontaktieren Sie Ihren Coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("Zucker"),
-        "supabaseError": m5,
+        "supabaseError": m6,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("zugeführt"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "targetWeightLabel":
@@ -871,6 +877,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Gewicht"),
-        "yearsLabel": m6
+        "yearsLabel": m7
       };
 }
