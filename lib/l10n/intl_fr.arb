@@ -563,5 +563,24 @@
   "weightPeriodAverage": "Moyenne de la période : {value} {unit}",
   "weightMeasurementsLabel": "Pesées",
   "weightAverageLabel": "Moyenne",
-  "weightNoMeasurementsLabel": "Aucune pesée sur cette période"
+  "weightNoMeasurementsLabel": "Aucune pesée sur cette période",
+  "customFoodTitle": "Aliment personnalisé",
+  "customFoodPortionMode": "Portion",
+  "customFoodQuantityMode": "Quantité",
+  "customFoodPortionName": "Nom de la portion (facultatif)",
+  "customFoodPortionHint": "Ex. : 6 nuggets",
+  "customFoodPerPortion": "Valeurs pour une portion",
+  "customFoodPer100": "Valeurs pour 100 {unit}",
+  "customFoodReferenceHelp": "Saisis les valeurs indiquées pour cette référence. La quantité consommée sera choisie ensuite.",
+  "customFoodNameError": "Renseigne le nom de l’aliment.",
+  "customFoodNumberError": "Saisis un nombre positif ou zéro.",
+  "customFoodOptionalDetails": "Informations facultatives",
+  "@customFoodPer100": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "customFoodNameLabel": "Nom de l’aliment"
 }

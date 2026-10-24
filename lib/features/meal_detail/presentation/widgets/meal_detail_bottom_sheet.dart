@@ -103,8 +103,9 @@ class MealDetailBottomSheet extends StatelessWidget {
                               border: const OutlineInputBorder(),
                               labelText: S.of(context).unitLabel,
                             ),
-                            items: (product.mealOrRecipe ==
-                                    MealOrRecipeEntity.recipe)
+                            items: (product.isPortionBased ||
+                                    product.mealOrRecipe ==
+                                        MealOrRecipeEntity.recipe)
                                 ? [_getServingDropdownItem(context)]
                                 : <DropdownMenuItem<String>>[
                                     if (product.hasServingValues)
@@ -227,6 +228,10 @@ class MealDetailBottomSheet extends StatelessWidget {
 
   DropdownMenuItem<String> _getServingDropdownItem(BuildContext context) {
     String? servingSize = product.servingSize;
+    if (product.isPortionBased &&
+        (servingSize == null || servingSize.trim().isEmpty)) {
+      servingSize = S.of(context).servingLabel;
+    }
     if (servingSize != null) {
       servingSize = servingSize.replaceAll(
         'serving',

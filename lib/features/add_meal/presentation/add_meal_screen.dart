@@ -86,7 +86,8 @@ class _AddMealScreenState extends State<AddMealScreen>
         elevation: 0,
         centerTitle: false,
         title: Row(children: [
-          Icon(Icons.restaurant_rounded, color: colorScheme.primary, size: 23),
+          Icon(Icons.manage_search_rounded,
+              color: colorScheme.primary, size: 23),
           const SizedBox(width: 10),
           Expanded(
               child: Text(S.of(context).searchLabel,

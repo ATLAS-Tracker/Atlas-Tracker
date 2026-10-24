@@ -553,5 +553,24 @@
   "weightPeriodAverage": "Dönem ortalaması: {value} {unit}",
   "weightMeasurementsLabel": "Tartımlar",
   "weightAverageLabel": "Ortalama",
-  "weightNoMeasurementsLabel": "Bu dönemde tartım yok"
+  "weightNoMeasurementsLabel": "Bu dönemde tartım yok",
+  "customFoodTitle": "Özel besin",
+  "customFoodPortionMode": "Porsiyon",
+  "customFoodQuantityMode": "Miktar",
+  "customFoodPortionName": "Porsiyon adı (isteğe bağlı)",
+  "customFoodPortionHint": "Örn. 6 nugget",
+  "customFoodPerPortion": "Porsiyon başına değerler",
+  "customFoodPer100": "100 {unit} için değerler",
+  "customFoodReferenceHelp": "Bu referans için değerleri girin. Tüketilen miktarı sonraki ekranda seçin.",
+  "customFoodNameError": "Besin adını girin.",
+  "customFoodNumberError": "Sıfır veya pozitif bir sayı girin.",
+  "customFoodOptionalDetails": "İsteğe bağlı bilgiler",
+  "@customFoodPer100": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "customFoodNameLabel": "Besin adı"
 }

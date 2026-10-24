@@ -30,10 +30,12 @@ class MealDetailNutrimentsTable extends StatelessWidget {
 
     final unit = product.mealUnit ?? FDCConst.fdcDefaultUnit;
 
-    final headerText = (usesImperialUnits && servingQuantity != null) ||
-            product.mealOrRecipe == MealOrRecipeEntity.recipe
-        ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${_localizedUnit(context, servingUnit)})"
-        : "${S.of(context).per100gmlLabel} $unit";
+    final headerText = product.isPortionBased
+        ? '${S.of(context).perServingLabel}${product.servingSize == null ? '' : ' · ${product.servingSize}'}'
+        : (usesImperialUnits && servingQuantity != null) ||
+                product.mealOrRecipe == MealOrRecipeEntity.recipe
+            ? "${S.of(context).perServingLabel} (${servingQuantity!.roundToPrecision(1)} ${_localizedUnit(context, servingUnit)})"
+            : "${S.of(context).per100gmlLabel} $unit";
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,6 +96,7 @@ class MealDetailNutrimentsTable extends StatelessWidget {
   }
 
   double _adjustValueForServing(double value) {
+    if (product.isPortionBased) return value / 100;
     if (!usesImperialUnits || servingQuantity == null) {
       return value;
     }
