@@ -43,6 +43,9 @@ class MealEntity extends Equatable {
 
   final MealNutrimentsEntity nutriments;
 
+  bool get isPortionBased =>
+      mealUnit == 'serving' && servingUnit == 'serving' && servingQuantity == 1;
+
   bool get isLiquid => liquidUnits.contains(mealUnit);
 
   bool get isSolid => solidUnits.contains(mealUnit);

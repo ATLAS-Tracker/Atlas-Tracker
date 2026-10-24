@@ -25,22 +25,24 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m1(pctCarbs, pctFats, pctProteins) =>
       "%${pctCarbs} karbonhidrat, %${pctFats} yağ, %${pctProteins} protein";
 
-  static String m2(reason) => "Silme başarısız: ${reason}";
+  static String m2(unit) => "100 ${unit} için değerler";
 
-  static String m3(riskValue) => "Eşlik eden hastalık riski: ${riskValue}";
+  static String m3(reason) => "Silme başarısız: ${reason}";
 
-  static String m4(date) => "Son hedef ${date} tarihinde uygulandı";
+  static String m4(riskValue) => "Eşlik eden hastalık riski: ${riskValue}";
 
-  static String m5(count) =>
+  static String m5(date) => "Son hedef ${date} tarihinde uygulandı";
+
+  static String m6(count) =>
       "${Intl.plural(count, other: '${count} yiyecek daha göster')}";
 
-  static String m6(message) => "Supabase hatası: ${message}";
+  static String m7(message) => "Supabase hatası: ${message}";
 
-  static String m7(date) => "${date} tarihli tartım";
+  static String m8(date) => "${date} tarihli tartım";
 
-  static String m8(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+  static String m9(value, unit) => "Dönem ortalaması: ${value} ${unit}";
 
-  static String m9(age) => "${age} yıl";
+  static String m10(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -135,6 +137,28 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Mevcut hedef"),
         "currentWeightLabel":
             MessageLookupByLibrary.simpleMessage("mevcut kilo"),
+        "customFoodNameError":
+            MessageLookupByLibrary.simpleMessage("Besin adını girin."),
+        "customFoodNameLabel":
+            MessageLookupByLibrary.simpleMessage("Besin adı"),
+        "customFoodNumberError": MessageLookupByLibrary.simpleMessage(
+            "Sıfır veya pozitif bir sayı girin."),
+        "customFoodOptionalDetails":
+            MessageLookupByLibrary.simpleMessage("İsteğe bağlı bilgiler"),
+        "customFoodPer100": m2,
+        "customFoodPerPortion":
+            MessageLookupByLibrary.simpleMessage("Porsiyon başına değerler"),
+        "customFoodPortionHint":
+            MessageLookupByLibrary.simpleMessage("Örn. 6 nugget"),
+        "customFoodPortionMode":
+            MessageLookupByLibrary.simpleMessage("Porsiyon"),
+        "customFoodPortionName":
+            MessageLookupByLibrary.simpleMessage("Porsiyon adı (isteğe bağlı)"),
+        "customFoodQuantityMode":
+            MessageLookupByLibrary.simpleMessage("Miktar"),
+        "customFoodReferenceHelp": MessageLookupByLibrary.simpleMessage(
+            "Bu referans için değerleri girin. Tüketilen miktarı sonraki ekranda seçin."),
+        "customFoodTitle": MessageLookupByLibrary.simpleMessage("Özel besin"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Günlük Kcal ayarı:"),
         "dailySummaryLabel": MessageLookupByLibrary.simpleMessage("Gün özeti"),
@@ -208,7 +232,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Verilerinizi zip dosyası olarak Supabase depolamasına yedekleyin."),
         "exportSupabaseLabel":
             MessageLookupByLibrary.simpleMessage("Supabase\'e Aktar"),
-        "failedToDeleteWithReason": m2,
+        "failedToDeleteWithReason": m3,
         "fatLabel": MessageLookupByLibrary.simpleMessage("yağ"),
         "fatsLabel": MessageLookupByLibrary.simpleMessage("Yağlar"),
         "fiberLabel": MessageLookupByLibrary.simpleMessage("lif"),
@@ -373,7 +397,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Ortalama"),
         "nutritionalStatusRiskIncreased":
             MessageLookupByLibrary.simpleMessage("Artmış"),
-        "nutritionalStatusRiskLabel": m3,
+        "nutritionalStatusRiskLabel": m4,
         "nutritionalStatusRiskLow": MessageLookupByLibrary.simpleMessage(
             "Düşük \n(ancak diğer \nklinik sorunların riski artmış)"),
         "nutritionalStatusRiskModerate":
@@ -710,7 +734,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Porsiyon Başına"),
         "portionEatLabel":
             MessageLookupByLibrary.simpleMessage("Yenilen porsiyon"),
-        "previousGoalAppliedOn": m4,
+        "previousGoalAppliedOn": m5,
         "privacyPolicyLabel":
             MessageLookupByLibrary.simpleMessage("Gizlilik politikası"),
         "productSearchMayTakeLongerMessage": MessageLookupByLibrary.simpleMessage(
@@ -821,7 +845,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Hacim"),
         "showFewerFoods":
             MessageLookupByLibrary.simpleMessage("Daha az göster"),
-        "showMoreFoods": m5,
+        "showMoreFoods": m6,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "Verilerin kaybolmaması için yalnızca internet bağlantısı olduğunda çıkış yapabilirsiniz."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -833,7 +857,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Aboneliğiniz artık aktif değil. Lütfen antrenörünüzle iletişime geçin."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
-        "supabaseError": m6,
+        "supabaseError": m7,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
@@ -852,7 +876,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Ortalama"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Kilo silindi"),
-        "weightEntryDate": m7,
+        "weightEntryDate": m8,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
@@ -861,13 +885,13 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Tartımlar"),
         "weightNoMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Bu dönemde tartım yok"),
-        "weightPeriodAverage": m8,
+        "weightPeriodAverage": m9,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Kilonuz kaydedilemedi. Lütfen tekrar deneyin."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Kilo kaydedildi"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Kaydediliyor…"),
-        "yearsLabel": m9
+        "yearsLabel": m10
       };
 }

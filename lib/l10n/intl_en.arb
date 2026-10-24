@@ -563,5 +563,24 @@
   "weightPeriodAverage": "Period average: {value} {unit}",
   "weightMeasurementsLabel": "Weigh-ins",
   "weightAverageLabel": "Average",
-  "weightNoMeasurementsLabel": "No weigh-ins for this period"
+  "weightNoMeasurementsLabel": "No weigh-ins for this period",
+  "customFoodTitle": "Custom food",
+  "customFoodPortionMode": "Portion",
+  "customFoodQuantityMode": "Quantity",
+  "customFoodPortionName": "Portion name (optional)",
+  "customFoodPortionHint": "e.g. 6 nuggets",
+  "customFoodPerPortion": "Values per portion",
+  "customFoodPer100": "Values per 100 {unit}",
+  "customFoodReferenceHelp": "Enter the values for this reference. Choose the amount consumed on the next screen.",
+  "customFoodNameError": "Enter a food name.",
+  "customFoodNumberError": "Enter a non-negative number.",
+  "customFoodOptionalDetails": "Optional details",
+  "@customFoodPer100": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "customFoodNameLabel": "Food name"
 }

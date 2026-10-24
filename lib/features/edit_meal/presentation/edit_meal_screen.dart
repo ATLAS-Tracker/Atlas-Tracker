@@ -1,364 +1,303 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:logging/logging.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
-import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/custom_text_input_formatter.dart';
-import 'package:opennutritracker/core/utils/extensions.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/features/edit_meal/presentation/bloc/edit_meal_bloc.dart';
-import 'package:opennutritracker/features/edit_meal/presentation/widgets/default_meal_image.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class EditMealScreen extends StatefulWidget {
   const EditMealScreen({super.key});
-
   @override
   State<EditMealScreen> createState() => _EditMealScreenState();
 }
 
 class _EditMealScreenState extends State<EditMealScreen> {
-  final log = Logger('EditMealScreen');
-  late MealEntity _mealEntity;
-  late DateTime _day;
-  late IntakeTypeEntity _intakeTypeEntity;
-  late bool _usesImperialUnits;
-
-  late EditMealBloc _editMealBloc;
-
-  final _nameTextController = TextEditingController();
-  final _brandsTextController = TextEditingController();
-  final _mealQuantityTextController = TextEditingController();
-  final _servingQuantityTextController = TextEditingController();
-  final _baseQuantityTextController = TextEditingController();
-  final _kcalTextController = TextEditingController();
-  final _carbsTextController = TextEditingController();
-  final _fatTextController = TextEditingController();
-  final _proteinTextController = TextEditingController();
-
-  final _units = ['g', 'ml'];
-  late String? selectedUnit;
-
-  // late List<DropdownMenuItem> _mealUnitDropdownItems;
-  late List<ButtonSegment<String>> _mealUnitButtonSegment;
-
-  String baseQuantity = " 100 ";
-  String baseQuantityUnit = "g";
-
-  @override
-  void initState() {
-    _editMealBloc = locator<EditMealBloc>();
-    super.initState();
-
-    _baseQuantityTextController.addListener(() {
-      setState(() {
-        baseQuantity = _baseQuantityTextController.text;
-      });
-    });
-  }
+  final _form = GlobalKey<FormState>();
+  final _name = TextEditingController();
+  final _brands = TextEditingController();
+  final _portionName = TextEditingController();
+  final _kcal = TextEditingController();
+  final _carbs = TextEditingController();
+  final _fat = TextEditingController();
+  final _protein = TextEditingController();
+  EditMealScreenArguments? _args;
+  bool _perPortion = true;
+  String _unit = 'g';
 
   @override
   void didChangeDependencies() {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as EditMealScreenArguments;
-    _mealEntity = args.mealEntity;
-    _day = args.day;
-    _intakeTypeEntity = args.intakeTypeEntity;
-    _usesImperialUnits = args.usesImperialUnits;
-
-    _nameTextController.text = _mealEntity.name ?? "";
-    _brandsTextController.text = _mealEntity.brands ?? "";
-    _mealQuantityTextController.text = _mealEntity.mealQuantity ?? "";
-    _servingQuantityTextController.text =
-        _mealEntity.servingQuantity.toStringOrEmpty();
-    _kcalTextController.text =
-        _mealEntity.nutriments.energyKcalPerQuantity.toStringOrEmpty();
-    _carbsTextController.text =
-        _mealEntity.nutriments.carbohydratesPerQuantity.toStringOrEmpty();
-    _fatTextController.text =
-        _mealEntity.nutriments.fatPerQuantity.toStringOrEmpty();
-    _proteinTextController.text =
-        _mealEntity.nutriments.proteinsPerQuantity.toStringOrEmpty();
-    selectedUnit = _switchButtonUnit(_mealEntity.mealUnit);
-    baseQuantityUnit = selectedUnit ?? _units[0];
-
-    // Convert meal size to imperial units if necessary
-    if (_usesImperialUnits) {
-      _mealQuantityTextController.text = _convertToImperial(
-        _mealQuantityTextController.text,
-        _mealEntity.mealUnit ?? "0",
-      );
-      _servingQuantityTextController.text = _convertToImperial(
-        _servingQuantityTextController.text,
-        _mealEntity.mealUnit ?? "0",
-      );
-    }
-
-    _mealUnitButtonSegment = [
-      ButtonSegment(
-        value: _units[0],
-        label: Text(
-          _usesImperialUnits ? S.of(context).ozUnit : S.of(context).gramUnit,
-        ),
-      ),
-      ButtonSegment(
-        value: _units[1],
-        label: Text(
-          _usesImperialUnits
-              ? S.of(context).flOzUnit
-              : S.of(context).milliliterUnit,
-        ),
-      )
-    ];
-
     super.didChangeDependencies();
+    if (_args != null) return;
+    _args =
+        ModalRoute.of(context)!.settings.arguments as EditMealScreenArguments;
+    final meal = _args!.mealEntity;
+    _perPortion = meal.isPortionBased || meal.name == null;
+    _unit = meal.isLiquid ? 'ml' : 'g';
+    _name.text = meal.name ?? '';
+    _brands.text = meal.brands ?? '';
+    _portionName.text = meal.isPortionBased ? meal.servingSize ?? '' : '';
+    String number(double? value) => value == null
+        ? ''
+        : (meal.isPortionBased ? value / 100 : value).toString();
+    _kcal.text = number(meal.nutriments.energyKcalPerQuantity);
+    _carbs.text = number(meal.nutriments.carbohydratesPerQuantity);
+    _fat.text = number(meal.nutriments.fatPerQuantity);
+    _protein.text = number(meal.nutriments.proteinsPerQuantity);
+  }
+
+  @override
+  void dispose() {
+    for (final controller in [
+      _name,
+      _brands,
+      _portionName,
+      _kcal,
+      _carbs,
+      _fat,
+      _protein
+    ]) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  InputDecoration _decoration(String label,
+      {String? hint, Widget? icon, String? suffix}) {
+    final colors = Theme.of(context).colorScheme;
+    return InputDecoration(
+      labelText: label,
+      errorMaxLines: 2,
+      hintText: hint,
+      prefixIcon: icon,
+      suffixText: suffix,
+      filled: true,
+      fillColor: colors.surfaceContainerLow,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide:
+              BorderSide(color: colors.onSurface.withValues(alpha: 0.04))),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: colors.primary, width: 1.5)),
+    );
+  }
+
+  Widget _section(List<Widget> children) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: colors.onSurface.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+    );
+  }
+
+  Widget _numeric(TextEditingController controller, String label, Widget icon,
+      String unit) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: CustomTextInputFormatter.doubleOnly(),
+        decoration: _decoration(label, icon: icon, suffix: unit),
+        validator: (text) {
+          final value = double.tryParse((text ?? '').replaceAll(',', '.'));
+          return value == null || !value.isFinite || value < 0
+              ? S.of(context).customFoodNumberError
+              : null;
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(S.of(context).editMealLabel),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: FilledButton(
-                onPressed: () => _onSavePressed(_usesImperialUnits),
-                child: Text(S.of(context).buttonSaveLabel),
+    final s = S.of(context);
+    final colors = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(
+          title: Text(s.customFoodTitle,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800))),
+      body: SafeArea(
+          child: Form(
+        key: _form,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _section([
+                TextFormField(
+                    controller: _name,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: _decoration(s.customFoodNameLabel,
+                        icon: Icon(Icons.restaurant_outlined,
+                            color: colors.primary)),
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? s.customFoodNameError
+                        : null),
+              ]),
+              const SizedBox(height: 16),
+              _section([
+                SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(
+                        value: true, label: Text(s.customFoodPortionMode)),
+                    ButtonSegment(
+                        value: false, label: Text(s.customFoodQuantityMode)),
+                  ],
+                  selected: {_perPortion},
+                  onSelectionChanged: (selection) =>
+                      setState(() => _perPortion = selection.first),
+                ),
+                const SizedBox(height: 16),
+                if (_perPortion)
+                  TextFormField(
+                      controller: _portionName,
+                      decoration: _decoration(s.customFoodPortionName,
+                          hint: s.customFoodPortionHint))
+                else
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'g', label: Text('100 g')),
+                      ButtonSegment(value: 'ml', label: Text('100 ml'))
+                    ],
+                    selected: {_unit},
+                    onSelectionChanged: (selection) =>
+                        setState(() => _unit = selection.first),
+                  ),
+              ]),
+              const SizedBox(height: 18),
+              AtlasBrandPanel(
+                padding: const EdgeInsets.all(20),
+                borderRadius: BorderRadius.circular(22),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                          _perPortion
+                              ? s.customFoodPerPortion
+                              : s.customFoodPer100(_unit),
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 6),
+                      Text(s.customFoodReferenceHelp,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.76))),
+                    ]),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _section([
+                _numeric(
+                    _kcal,
+                    s.energyLabel,
+                    Icon(Icons.local_fire_department_outlined,
+                        color: breakfastColor),
+                    s.kcalLabel),
+                _numeric(
+                    _carbs,
+                    s.carbsLabel,
+                    const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: MacroIcon(visual: MacroVisuals.carbs, size: 22)),
+                    s.gramUnit),
+                _numeric(
+                    _fat,
+                    s.fatLabel,
+                    const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: MacroIcon(visual: MacroVisuals.fats, size: 22)),
+                    s.gramUnit),
+                _numeric(
+                    _protein,
+                    s.proteinLabel,
+                    const Padding(
+                        padding: EdgeInsets.all(12),
+                        child:
+                            MacroIcon(visual: MacroVisuals.proteins, size: 22)),
+                    s.gramUnit),
+              ]),
+              const SizedBox(height: 16),
+              _section([
+                ExpansionTile(
+                  tilePadding: EdgeInsets.zero,
+                  shape: const Border(),
+                  collapsedShape: const Border(),
+                  leading: Icon(Icons.info_outline_rounded,
+                      color: colors.primary, size: 21),
+                  title: Text(s.customFoodOptionalDetails,
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  children: [
+                    TextFormField(
+                        controller: _brands,
+                        decoration: _decoration(s.mealBrandsLabel)),
+                    const SizedBox(height: 16)
+                  ],
+                ),
+              ]),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                key: const ValueKey('save-custom-food'),
+                onPressed: _save,
+                icon: const Icon(Icons.check_rounded),
+                label: Text(s.buttonSaveLabel),
+                style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16))),
+              ),
+            ],
+          ),
         ),
-        body: BlocBuilder<EditMealBloc, EditMealState>(
-          bloc: locator<EditMealBloc>()..add(InitializeEditMealEvent()),
-          builder: (BuildContext context, EditMealState state) {
-            if (state is EditMealLoadingState) {
-              return _getLoadingContent();
-            } else if (state is EditMealLoadedState) {
-              return _getLoadedContent(state.usesImperialUnits);
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
+      )),
     );
   }
 
-  Widget _getLoadingContent() {
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  Widget _getLoadedContent(bool usesImperialUnits) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Center(
-          child: ClipOval(
-            child: CachedNetworkImage(
-              cacheManager: locator<CacheManager>(),
-              width: 120,
-              height: 120,
-              placeholder: (context, string) => const DefaultMealImage(),
-              errorWidget: (context, exception, stacktrace) =>
-                  const DefaultMealImage(),
-              fit: BoxFit.cover,
-              imageUrl: _mealEntity.mainImageUrl ?? "",
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-        TextFormField(
-          controller: _nameTextController,
-          decoration: InputDecoration(
-            labelText: S.of(context).mealNameLabel,
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.text,
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _brandsTextController,
-          decoration: InputDecoration(
-            labelText: S.of(context).mealBrandsLabel,
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.text,
-        ),
-        const SizedBox(height: 32),
-        TextFormField(
-          controller: _mealQuantityTextController,
-          decoration: InputDecoration(
-            labelText: _usesImperialUnits
-                ? '${S.of(context).mealSizeLabelImperial} ($baseQuantityUnit)'
-                : '${S.of(context).mealSizeLabel} ($baseQuantityUnit)',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _servingQuantityTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText: _usesImperialUnits
-                ? '${S.of(context).servingSizeLabelImperial} ($baseQuantityUnit)'
-                : '${S.of(context).servingSizeLabelMetric} ($baseQuantityUnit)',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 16),
-        SegmentedButton<String>(
-          segments: _mealUnitButtonSegment,
-          selected: {selectedUnit ?? _units[0]},
-          onSelectionChanged: (Set<String> newSelection) {
-            setState(() {
-              selectedUnit = newSelection.first;
-              baseQuantityUnit = newSelection.first;
-            });
-          },
-        ),
-        const SizedBox(height: 48),
-        TextFormField(
-          controller: _baseQuantityTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText: '${S.of(context).baseQuantityLabel} ($baseQuantityUnit)',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.number,
-        ),
-        const SizedBox(height: 48),
-        TextFormField(
-          controller: _kcalTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText:
-                '${S.of(context).mealKcalLabel}$baseQuantity$baseQuantityUnit',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _carbsTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText:
-                '${S.of(context).mealCarbsLabel}$baseQuantity$baseQuantityUnit',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _fatTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText:
-                '${S.of(context).mealFatLabel}$baseQuantity$baseQuantityUnit',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 16),
-        TextFormField(
-          controller: _proteinTextController,
-          inputFormatters: CustomTextInputFormatter.doubleOnly(),
-          decoration: InputDecoration(
-            labelText:
-                '${S.of(context).mealProteinLabel}$baseQuantity$baseQuantityUnit',
-            border: const OutlineInputBorder(),
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-      ],
+  void _save() {
+    if (!_form.currentState!.validate()) return;
+    double value(TextEditingController controller) =>
+        double.parse(controller.text.replaceAll(',', '.'));
+    final meal = locator<EditMealBloc>().createCustomFood(
+        original: _args!.mealEntity,
+        name: _name.text,
+        brands: _brands.text,
+        perPortion: _perPortion,
+        unit: _unit,
+        portionName: _portionName.text,
+        kcal: value(_kcal),
+        carbs: value(_carbs),
+        fat: value(_fat),
+        protein: value(_protein));
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      NavigationOptions.mealDetailRoute,
+      ModalRoute.withName(NavigationOptions.addMealRoute),
+      arguments: MealDetailScreenArguments(
+          meal, _args!.intakeTypeEntity, _args!.day, _args!.usesImperialUnits),
     );
-  }
-
-  void _onSavePressed(bool usesImperialUnits) {
-    try {
-      // Convert meal size back to metric units if necessary
-      final mealQuantity = usesImperialUnits
-          ? _convertToMetric(
-              _mealQuantityTextController.text,
-              _mealEntity.mealUnit ?? "0",
-            )
-          : _mealQuantityTextController.text;
-
-      final newMealEntity = _editMealBloc.createNewMealEntity(
-        _mealEntity,
-        _nameTextController.text,
-        _brandsTextController.text,
-        mealQuantity,
-        _servingQuantityTextController.text,
-        _baseQuantityTextController.text,
-        selectedUnit,
-        _kcalTextController.text,
-        _carbsTextController.text,
-        _fatTextController.text,
-        _proteinTextController.text,
-      );
-
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        NavigationOptions.mealDetailRoute,
-        ModalRoute.withName(NavigationOptions.addMealRoute),
-        arguments: MealDetailScreenArguments(
-          newMealEntity,
-          _intakeTypeEntity,
-          _day,
-          usesImperialUnits,
-        ),
-      );
-    } catch (exception, stacktrace) {
-      log.warning("Error while creating new meal entity");
-      FirebaseCrashlytics.instance.recordError(exception, stacktrace);
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(S.of(context).errorMealSave)));
-    }
-  }
-
-  String? _switchButtonUnit(String? unit) {
-    String? selectedUnit;
-    if (!_units.contains(unit)) {
-      selectedUnit = _units[0]; // Default to g
-    } else {
-      selectedUnit = unit;
-    }
-    return selectedUnit;
-  }
-
-  String _convertToImperial(String value, String unit) {
-    final double quantityValue = double.tryParse(value) ?? 0.0;
-    switch (unit) {
-      case 'g':
-        return (UnitCalc.gToOz(quantityValue)).toStringAsFixed(2);
-      case 'ml':
-        return (UnitCalc.mlToFlOz(quantityValue)).toStringAsFixed(2);
-      default:
-        return value;
-    }
-  }
-
-  String _convertToMetric(String value, String unit) {
-    final double quantityValue = double.tryParse(value) ?? 0.0;
-    switch (unit) {
-      case 'g':
-        return (UnitCalc.ozToG(quantityValue)).toStringAsFixed(2);
-      case 'ml':
-        return (UnitCalc.flOzToMl(quantityValue)).toStringAsFixed(2);
-      default:
-        return value;
-    }
   }
 }
 
@@ -367,11 +306,6 @@ class EditMealScreenArguments {
   final MealEntity mealEntity;
   final IntakeTypeEntity intakeTypeEntity;
   final bool usesImperialUnits;
-
   EditMealScreenArguments(
-    this.day,
-    this.mealEntity,
-    this.intakeTypeEntity,
-    this.usesImperialUnits,
-  );
+      this.day, this.mealEntity, this.intakeTypeEntity, this.usesImperialUnits);
 }

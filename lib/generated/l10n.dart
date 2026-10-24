@@ -5455,6 +5455,126 @@ class S {
       args: [],
     );
   }
+
+  /// `Custom food`
+  String get customFoodTitle {
+    return Intl.message(
+      'Custom food',
+      name: 'customFoodTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Portion`
+  String get customFoodPortionMode {
+    return Intl.message(
+      'Portion',
+      name: 'customFoodPortionMode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Quantity`
+  String get customFoodQuantityMode {
+    return Intl.message(
+      'Quantity',
+      name: 'customFoodQuantityMode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Portion name (optional)`
+  String get customFoodPortionName {
+    return Intl.message(
+      'Portion name (optional)',
+      name: 'customFoodPortionName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `e.g. 6 nuggets`
+  String get customFoodPortionHint {
+    return Intl.message(
+      'e.g. 6 nuggets',
+      name: 'customFoodPortionHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Values per portion`
+  String get customFoodPerPortion {
+    return Intl.message(
+      'Values per portion',
+      name: 'customFoodPerPortion',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Values per 100 {unit}`
+  String customFoodPer100(String unit) {
+    return Intl.message(
+      'Values per 100 $unit',
+      name: 'customFoodPer100',
+      desc: '',
+      args: [unit],
+    );
+  }
+
+  /// `Enter the values for this reference. Choose the amount consumed on the next screen.`
+  String get customFoodReferenceHelp {
+    return Intl.message(
+      'Enter the values for this reference. Choose the amount consumed on the next screen.',
+      name: 'customFoodReferenceHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a food name.`
+  String get customFoodNameError {
+    return Intl.message(
+      'Enter a food name.',
+      name: 'customFoodNameError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a non-negative number.`
+  String get customFoodNumberError {
+    return Intl.message(
+      'Enter a non-negative number.',
+      name: 'customFoodNumberError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional details`
+  String get customFoodOptionalDetails {
+    return Intl.message(
+      'Optional details',
+      name: 'customFoodOptionalDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Food name`
+  String get customFoodNameLabel {
+    return Intl.message(
+      'Food name',
+      name: 'customFoodNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
