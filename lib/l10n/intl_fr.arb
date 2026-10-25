@@ -565,8 +565,8 @@
   "weightAverageLabel": "Moyenne",
   "weightNoMeasurementsLabel": "Aucune pesée sur cette période",
   "customFoodTitle": "Aliment personnalisé",
-  "customFoodPortionMode": "Portion",
-  "customFoodQuantityMode": "Quantité",
+  "customFoodPortionMode": "1 portion",
+  "customFoodQuantityMode": "100 g / 100 ml",
   "customFoodPortionName": "Nom de la portion (facultatif)",
   "customFoodPortionHint": "Ex. : 6 nuggets",
   "customFoodPerPortion": "Valeurs pour une portion",
@@ -582,5 +582,10 @@
       }
     }
   },
-  "customFoodNameLabel": "Nom de l’aliment"
+  "customFoodNameLabel": "Nom de l’aliment",
+  "customFoodAddPhoto": "Ajouter une photo",
+  "customFoodChangePhoto": "Changer la photo",
+  "customFoodPhotoError": "Impossible de charger ou d’enregistrer cette photo. Réessaie.",
+  "selectedPortionCount": "{count, plural, one{{count} portion} other{{count} portions}}",
+  "selectedPortionWeight": "{portions} (de {weight})"
 }

@@ -10,7 +10,6 @@ import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/path_helper.dart';
-import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class IntakeCard extends StatelessWidget {
@@ -305,7 +304,7 @@ class IntakeCard extends StatelessWidget {
       return _buildFallbackBackground(context);
     }
 
-    if (intake.meal.mealOrRecipe == MealOrRecipeEntity.recipe) {
+    if (!imageUrl.startsWith('http')) {
       return FutureBuilder<String>(
         future: PathHelper.localImagePath(imageUrl),
         builder: (context, snapshot) {

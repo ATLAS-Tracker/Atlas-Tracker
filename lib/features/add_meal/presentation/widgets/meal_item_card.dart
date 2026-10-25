@@ -6,7 +6,6 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/core/utils/path_helper.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
-import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'dart:io';
@@ -106,7 +105,7 @@ class MealItemCard extends StatelessWidget {
       return _buildFallbackPlaceholder(context);
     }
 
-    if (mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe) {
+    if (!thumbnailUrl.startsWith('http')) {
       return FutureBuilder<String>(
         future: PathHelper.localImagePath(thumbnailUrl),
         builder: (context, snapshot) {

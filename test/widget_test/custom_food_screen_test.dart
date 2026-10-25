@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'package:flutter/services.dart';
+import 'package:opennutritracker/core/utils/path_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_nutriments_table.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_bottom_sheet.dart';
@@ -21,6 +24,16 @@ class MockGetConfigUsecase extends Mock implements GetConfigUsecase {}
 class MockMealDetailBloc extends Mock implements MealDetailBloc {}
 
 void main() {
+  late Directory photoDir;
+  setUpAll(() async {
+    photoDir = await Directory.systemTemp.createTemp('atlas-custom-photo-');
+    await File('assets/icon/app_icon.png')
+        .copy('${photoDir.path}/selected.png');
+    await File('assets/icon/app_icon.png').copy('${photoDir.path}/old.png');
+  });
+  tearDownAll(() async {
+    await photoDir.delete(recursive: true);
+  });
   late EditMealBloc bloc;
   setUp(() {
     bloc = EditMealBloc(MockGetConfigUsecase());
@@ -31,9 +44,24 @@ void main() {
     await locator.reset();
   });
 
-  for (final mode in ['portion', 'g', 'ml']) {
+  for (final mode in ['portion', 'g', 'ml', 'photo']) {
     testWidgets('custom food $mode keeps reference and navigation context',
         (tester) async {
+      final perPortion = mode == 'portion' || mode == 'photo';
+      if (mode == 'photo') {
+        PathHelper.overrideDirectory = photoDir;
+        addTearDown(() => PathHelper.overrideDirectory = null);
+        const channel = MethodChannel('plugins.flutter.io/image_picker');
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(
+                channel,
+                (call) async => call.method == 'pickImage'
+                    ? '${photoDir.path}/selected.png'
+                    : null);
+        addTearDown(() => TestDefaultBinaryMessengerBinding
+            .instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null));
+      }
       await tester.binding.setSurfaceSize(const Size(320, 1000));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       MealDetailScreenArguments? result;
@@ -60,11 +88,26 @@ void main() {
           return MaterialPageRoute<void>(
               settings: RouteSettings(
                   arguments: EditMealScreenArguments(
-                      day, MealEntity.empty(), IntakeTypeEntity.lunch, false)),
+                      day,
+                      mode == 'photo'
+                          ? MealEntity.empty().copyWith(
+                              mainImageUrl: 'old.png',
+                              thumbnailImageUrl: 'old.png')
+                          : MealEntity.empty(),
+                      IntakeTypeEntity.lunch,
+                      false)),
               builder: (_) => const EditMealScreen());
         },
       ));
       await tester.pumpAndSettle();
+      if (mode == 'photo') {
+        await tester.tap(find.byKey(const ValueKey('custom-food-photo')));
+        await tester.runAsync(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        });
+        await tester.pumpAndSettle();
+        expect(find.text(S.current.customFoodChangePhoto), findsOneWidget);
+      }
       if (mode == 'portion') {
         final save = find.byKey(const ValueKey('save-custom-food'));
         await tester.ensureVisible(save);
@@ -74,7 +117,7 @@ void main() {
         expect(find.text(S.current.customFoodNameError), findsOneWidget);
         await tester.ensureVisible(find.byType(TextFormField).first);
       }
-      if (mode != 'portion') {
+      if (!perPortion) {
         await tester.tap(find.text(S.current.customFoodQuantityMode));
         await tester.pumpAndSettle();
         if (mode == 'ml') {
@@ -83,7 +126,7 @@ void main() {
         }
       }
       final fields = find.byType(TextFormField);
-      final values = mode == 'portion'
+      final values = perPortion
           ? ['Nuggets', '6 nuggets', '250,5', '20', '12', '15']
           : ['Nuggets', '250,5', '20', '12', '15'];
       for (var index = 0; index < values.length; index++) {
@@ -95,17 +138,35 @@ void main() {
       await tester
           .ensureVisible(find.byKey(const ValueKey('save-custom-food')));
       await tester.tap(find.byKey(const ValueKey('save-custom-food')));
+      if (mode == 'photo') {
+        await tester.runAsync(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        });
+      }
       await tester.pumpAndSettle();
       expect(result, isNotNull);
       expect(result!.day, day);
       expect(result!.intakeTypeEntity, IntakeTypeEntity.lunch);
-      expect(result!.mealEntity.isPortionBased, mode == 'portion');
+      expect(result!.mealEntity.isPortionBased, perPortion);
       expect(result!.mealEntity.nutriments.energyPerUnit,
-          mode == 'portion' ? 250.5 : 2.505);
-      if (mode == 'portion') {
+          perPortion ? 250.5 : 2.505);
+      if (perPortion) {
         expect(result!.mealEntity.servingSize, '6 nuggets');
       } else {
         expect(result!.mealEntity.mealUnit, mode);
+      }
+      if (mode == 'photo') {
+        final path = result!.mealEntity.mainImageUrl!;
+        expect(path, startsWith('food_photo_'));
+        expect(result!.mealEntity.thumbnailImageUrl, path);
+        expect(
+            await tester
+                .runAsync(() => File('${photoDir.path}/$path').exists()),
+            isTrue);
+        expect(
+            await tester
+                .runAsync(() => File('${photoDir.path}/old.png').exists()),
+            isTrue);
       }
       expect(tester.takeException(), isNull);
     });

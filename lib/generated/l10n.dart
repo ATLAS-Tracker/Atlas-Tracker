@@ -5466,20 +5466,20 @@ class S {
     );
   }
 
-  /// `Portion`
+  /// `1 serving`
   String get customFoodPortionMode {
     return Intl.message(
-      'Portion',
+      '1 serving',
       name: 'customFoodPortionMode',
       desc: '',
       args: [],
     );
   }
 
-  /// `Quantity`
+  /// `100 g / 100 ml`
   String get customFoodQuantityMode {
     return Intl.message(
-      'Quantity',
+      '100 g / 100 ml',
       name: 'customFoodQuantityMode',
       desc: '',
       args: [],
@@ -5573,6 +5573,58 @@ class S {
       name: 'customFoodNameLabel',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Add a photo`
+  String get customFoodAddPhoto {
+    return Intl.message(
+      'Add a photo',
+      name: 'customFoodAddPhoto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change photo`
+  String get customFoodChangePhoto {
+    return Intl.message(
+      'Change photo',
+      name: 'customFoodChangePhoto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to load or save this photo. Please try again.`
+  String get customFoodPhotoError {
+    return Intl.message(
+      'Unable to load or save this photo. Please try again.',
+      name: 'customFoodPhotoError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count, plural, one{{count} serving} other{{count} servings}}`
+  String selectedPortionCount(num count) {
+    return Intl.plural(
+      count,
+      one: '$count serving',
+      other: '$count servings',
+      name: 'selectedPortionCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{portions} ({weight})`
+  String selectedPortionWeight(Object portions, Object weight) {
+    return Intl.message(
+      '$portions ($weight)',
+      name: 'selectedPortionWeight',
+      desc: '',
+      args: [portions, weight],
     );
   }
 }

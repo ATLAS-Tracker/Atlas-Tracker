@@ -34,15 +34,21 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m5(date) => "Zuletzt angewendetes Ziel am ${date}";
 
   static String m6(count) =>
+      "${Intl.plural(count, one: '${count} Portion', other: '${count} Portionen')}";
+
+  static String m7(portions, weight) => "${portions} (${weight})";
+
+  static String m8(count) =>
       "${Intl.plural(count, one: '${count} weiteres Lebensmittel anzeigen', other: '${count} weitere Lebensmittel anzeigen')}";
 
-  static String m7(message) => "Supabase-Fehler: ${message}";
+  static String m9(message) => "Supabase-Fehler: ${message}";
 
-  static String m8(date) => "Wiegen am ${date}";
+  static String m10(date) => "Wiegen am ${date}";
 
-  static String m9(value, unit) => "Durchschnitt im Zeitraum: ${value} ${unit}";
+  static String m11(value, unit) =>
+      "Durchschnitt im Zeitraum: ${value} ${unit}";
 
-  static String m10(age) => "${age} Jahre";
+  static String m12(age) => "${age} Jahre";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -139,6 +145,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Aktuelles Ziel"),
         "currentWeightLabel":
             MessageLookupByLibrary.simpleMessage("aktuelles Gewicht"),
+        "customFoodAddPhoto":
+            MessageLookupByLibrary.simpleMessage("Foto hinzufügen"),
+        "customFoodChangePhoto":
+            MessageLookupByLibrary.simpleMessage("Foto ändern"),
         "customFoodNameError":
             MessageLookupByLibrary.simpleMessage("Lebensmittelnamen eingeben."),
         "customFoodNameLabel":
@@ -150,13 +160,16 @@ class MessageLookup extends MessageLookupByLibrary {
         "customFoodPer100": m2,
         "customFoodPerPortion":
             MessageLookupByLibrary.simpleMessage("Werte pro Portion"),
+        "customFoodPhotoError": MessageLookupByLibrary.simpleMessage(
+            "Das Foto konnte nicht geladen oder gespeichert werden. Bitte erneut versuchen."),
         "customFoodPortionHint":
             MessageLookupByLibrary.simpleMessage("z. B. 6 Nuggets"),
         "customFoodPortionMode":
-            MessageLookupByLibrary.simpleMessage("Portion"),
+            MessageLookupByLibrary.simpleMessage("1 Portion"),
         "customFoodPortionName":
             MessageLookupByLibrary.simpleMessage("Portionsname (optional)"),
-        "customFoodQuantityMode": MessageLookupByLibrary.simpleMessage("Menge"),
+        "customFoodQuantityMode":
+            MessageLookupByLibrary.simpleMessage("100 g / 100 ml"),
         "customFoodReferenceHelp": MessageLookupByLibrary.simpleMessage(
             "Werte für diese Bezugsmenge eingeben. Die verzehrte Menge folgt im nächsten Schritt."),
         "customFoodTitle":
@@ -836,6 +849,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Rolle auswählen"),
         "selectWeightDialogLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht auswählen"),
+        "selectedPortionCount": m6,
+        "selectedPortionWeight": m7,
         "sendAnonymousUserData": MessageLookupByLibrary.simpleMessage(
             "Anonyme Nutzungsdaten senden?"),
         "servingLabel": MessageLookupByLibrary.simpleMessage("Portion"),
@@ -872,7 +887,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Volumen"),
         "showFewerFoods":
             MessageLookupByLibrary.simpleMessage("Weniger anzeigen"),
-        "showMoreFoods": m6,
+        "showMoreFoods": m8,
         "signOutOfflineMessage": MessageLookupByLibrary.simpleMessage(
             "Sie können sich nur abmelden, wenn eine Internetverbindung besteht, um Datenverlust zu vermeiden."),
         "signOutSyncFailedMessage": MessageLookupByLibrary.simpleMessage(
@@ -884,7 +899,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Ihr Abonnement ist nicht mehr aktiv. Bitte kontaktieren Sie Ihren Coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("Zucker"),
-        "supabaseError": m7,
+        "supabaseError": m9,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("zugeführt"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "targetWeightLabel":
@@ -905,7 +920,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Durchschnitt"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Gewicht gelöscht"),
-        "weightEntryDate": m8,
+        "weightEntryDate": m10,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
@@ -914,13 +929,13 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Wiegungen"),
         "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
             "Keine Wiegungen in diesem Zeitraum"),
-        "weightPeriodAverage": m9,
+        "weightPeriodAverage": m11,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Gewicht konnte nicht gespeichert werden. Bitte erneut versuchen."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht gespeichert"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Wird gespeichert…"),
-        "yearsLabel": m10
+        "yearsLabel": m12
       };
 }
