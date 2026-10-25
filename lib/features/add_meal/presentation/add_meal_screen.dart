@@ -34,6 +34,7 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   late AddMealType _mealType;
   late DateTime _day;
+  bool _isIngredientSearch = false;
   late ProductsBloc _productsBloc;
   late RecentMealBloc _recentMealBloc;
   late RecipeSearchBloc _recipeSearchBloc;
@@ -63,6 +64,7 @@ class _AddMealScreenState extends State<AddMealScreen>
         ModalRoute.of(context)?.settings.arguments as AddMealScreenArguments;
     _mealType = args.mealType;
     _day = args.day;
+    _isIngredientSearch = args.mealOrRecipe == MealOrRecipeEntity.recipe;
     super.didChangeDependencies();
   }
 
@@ -145,6 +147,7 @@ class _AddMealScreenState extends State<AddMealScreen>
                             day: _day,
                             mealType: _mealType,
                             bloc: _recipeSearchBloc,
+                            showCreateButton: !_isIngredientSearch,
                           ),
                           _RecentMealsPane(
                             bloc: _recentMealBloc,

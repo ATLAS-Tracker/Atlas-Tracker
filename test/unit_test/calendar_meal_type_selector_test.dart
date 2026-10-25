@@ -29,10 +29,10 @@ void main() {
 
   testWidgets('save button enabled when portions are valid', (tester) async {
     await tester.pumpWidget(buildWidget());
-    final portionField = find.widgetWithText(
-        TextFormField, S.current.mealPortionLabel);
+    final portionField =
+        find.widgetWithText(TextFormField, S.current.mealPortionLabel);
     final eatenField =
-        find.widgetWithText(TextFormField, 'Portions eaten');
+        find.widgetWithText(TextFormField, S.current.portionEatLabel);
     await tester.enterText(portionField, '2');
     await tester.enterText(eatenField, '1');
     await tester.pumpAndSettle();
@@ -42,10 +42,10 @@ void main() {
 
   testWidgets('portionsEaten is limited to mealPortionCount', (tester) async {
     await tester.pumpWidget(buildWidget());
-    final portionField = find.widgetWithText(
-        TextFormField, S.current.mealPortionLabel);
+    final portionField =
+        find.widgetWithText(TextFormField, S.current.mealPortionLabel);
     final eatenField =
-        find.widgetWithText(TextFormField, 'Portions eaten');
+        find.widgetWithText(TextFormField, S.current.portionEatLabel);
     await tester.enterText(portionField, '2');
     await tester.enterText(eatenField, '5');
     await tester.pumpAndSettle();

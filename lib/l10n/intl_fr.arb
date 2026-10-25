@@ -587,5 +587,15 @@
   "customFoodChangePhoto": "Changer la photo",
   "customFoodPhotoError": "Impossible de charger ou d’enregistrer cette photo. Réessaie.",
   "selectedPortionCount": "{count, plural, one{{count} portion} other{{count} portions}}",
-  "selectedPortionWeight": "{portions} (de {weight})"
+  "selectedPortionWeight": "{portions} (de {weight})",
+  "createRecipeLabel": "Créer une recette",
+  "recipeNameLabel": "Nom de la recette",
+  "recipeIngredientsLabel": "Ingrédients",
+  "recipeEmptyHelp": "Ajoute les aliments qui composent ta recette.",
+  "recipeTotalsLabel": "Total de la recette",
+  "recipePortionsHelp": "Les valeurs par portion seront calculées à l’enregistrement.",
+  "addIngredientLabel": "Ajouter un ingrédient",
+  "editRecipeLabel": "Modifier la recette",
+  "recipeNameHint": "Ex. Bowl poulet & avocat",
+  "recipeCoverLabel": "La photo de ta recette"
 }

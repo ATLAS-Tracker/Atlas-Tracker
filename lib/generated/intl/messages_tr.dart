@@ -55,6 +55,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "activityExample": MessageLookupByLibrary.simpleMessage(
             "ör. koşu, bisiklet, yoga ..."),
         "activityLabel": MessageLookupByLibrary.simpleMessage("Aktivite"),
+        "addIngredientLabel":
+            MessageLookupByLibrary.simpleMessage("Malzeme ekle"),
         "addItemLabel": MessageLookupByLibrary.simpleMessage("Yeni Öğe Ekle:"),
         "addLabel": MessageLookupByLibrary.simpleMessage("Ekle"),
         "additionalInfoLabelCompendium2011": MessageLookupByLibrary.simpleMessage(
@@ -136,7 +138,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "createCustomDialogTitle":
             MessageLookupByLibrary.simpleMessage("Özel yemek öğesi oluştur?"),
         "createRecipeLabel":
-            MessageLookupByLibrary.simpleMessage("Öğün oluştur"),
+            MessageLookupByLibrary.simpleMessage("Tarif oluştur"),
         "currentGoalLabel":
             MessageLookupByLibrary.simpleMessage("Mevcut hedef"),
         "currentWeightLabel":
@@ -201,6 +203,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "editItemDialogTitle":
             MessageLookupByLibrary.simpleMessage("Öğeyi Düzenle"),
         "editMealLabel": MessageLookupByLibrary.simpleMessage("Yemeği Düzenle"),
+        "editRecipeLabel":
+            MessageLookupByLibrary.simpleMessage("Tarifi düzenle"),
         "editWeightLabel":
             MessageLookupByLibrary.simpleMessage("Kiloyu düzenle"),
         "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
@@ -757,7 +761,20 @@ class MessageLookup extends MessageLookupByLibrary {
             "Gizlilik politikasını okudum ve kabul ediyorum."),
         "recentlyAddedLabel":
             MessageLookupByLibrary.simpleMessage("Son Eklenenler"),
+        "recipeCoverLabel":
+            MessageLookupByLibrary.simpleMessage("Tarifinin fotoğrafı"),
+        "recipeEmptyHelp": MessageLookupByLibrary.simpleMessage(
+            "Tarifini oluşturan besinleri ekle."),
+        "recipeIngredientsLabel":
+            MessageLookupByLibrary.simpleMessage("Malzemeler"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Tarif"),
+        "recipeNameHint": MessageLookupByLibrary.simpleMessage(
+            "Örn. Tavuk ve avokado kasesi"),
+        "recipeNameLabel": MessageLookupByLibrary.simpleMessage("Tarif adı"),
+        "recipePortionsHelp": MessageLookupByLibrary.simpleMessage(
+            "Porsiyon başına değerler kaydederken hesaplanır."),
+        "recipeTotalsLabel":
+            MessageLookupByLibrary.simpleMessage("Tarif toplamı"),
         "recordWeightLabel":
             MessageLookupByLibrary.simpleMessage("Kilomu güncelle"),
         "remainingToLoseLabel":
