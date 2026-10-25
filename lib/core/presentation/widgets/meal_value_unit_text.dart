@@ -10,6 +10,7 @@ class MealValueUnitText extends StatelessWidget {
   final bool usesImperialUnits;
   final TextStyle? textStyle;
   final String? prefix;
+  final double? portionCount;
 
   const MealValueUnitText({
     super.key,
@@ -19,17 +20,33 @@ class MealValueUnitText extends StatelessWidget {
     required this.usesImperialUnits,
     this.textStyle,
     this.prefix = '',
+    this.portionCount,
   });
 
   @override
   Widget build(BuildContext context) {
     final mealUnit = meal.mealUnit ?? 'g';
     final targetUnit = displayUnit ?? _convertUnit(mealUnit);
-    final convertedValue = _convertValue(value, mealUnit, targetUnit);
+    // Portion totals are already converted to their physical unit by the bloc.
+    final convertedValue = portionCount != null
+        ? value
+        : _convertValue(value, mealUnit, targetUnit);
     final unitToDisplay = _localizeUnit(context, targetUnit);
 
+    final quantity = '${_formatValue(convertedValue)} $unitToDisplay';
+    final count = portionCount;
+    final portions = count == null
+        ? null
+        : S.of(context).selectedPortionCount(
+            count == count.roundToDouble() ? count.toInt() : count);
+    final label = portions == null
+        ? quantity
+        : ['g', 'ml', 'oz', 'fl oz', 'fl.oz'].contains(targetUnit)
+            ? S.of(context).selectedPortionWeight(portions, quantity)
+            : portions;
+
     return Text(
-      '$prefix${_formatValue(convertedValue)} $unitToDisplay',
+      '$prefix$label',
       style: textStyle,
       overflow: TextOverflow.ellipsis,
       maxLines: 1,

@@ -555,8 +555,8 @@
   "weightAverageLabel": "Ortalama",
   "weightNoMeasurementsLabel": "Bu dönemde tartım yok",
   "customFoodTitle": "Özel besin",
-  "customFoodPortionMode": "Porsiyon",
-  "customFoodQuantityMode": "Miktar",
+  "customFoodPortionMode": "1 porsiyon",
+  "customFoodQuantityMode": "100 g / 100 ml",
   "customFoodPortionName": "Porsiyon adı (isteğe bağlı)",
   "customFoodPortionHint": "Örn. 6 nugget",
   "customFoodPerPortion": "Porsiyon başına değerler",
@@ -572,5 +572,10 @@
       }
     }
   },
-  "customFoodNameLabel": "Besin adı"
+  "customFoodNameLabel": "Besin adı",
+  "customFoodAddPhoto": "Fotoğraf ekle",
+  "customFoodChangePhoto": "Fotoğrafı değiştir",
+  "customFoodPhotoError": "Fotoğraf yüklenemedi veya kaydedilemedi. Lütfen tekrar deneyin.",
+  "selectedPortionCount": "{count} porsiyon",
+  "selectedPortionWeight": "{portions} ({weight})"
 }

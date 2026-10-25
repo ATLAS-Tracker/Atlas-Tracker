@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
@@ -39,26 +40,30 @@ class MealDetailBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final productMissingRequiredInfo = _hasRequiredProductInfoMissing();
     return BottomSheet(
-      elevation: 10,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
       onClosing: () {},
       enableDrag: false,
       builder: (context) {
         return Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-              width: 0.5,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.06),
+              width: 1,
             ),
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(32),
-              topRight: Radius.circular(32),
+              topLeft: Radius.circular(24),
+              topRight: Radius.circular(24),
             ),
           ),
           child: Wrap(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 32.0, 16.0, 8.0),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                 child: Column(
                   children: [
                     Row(
@@ -82,7 +87,16 @@ class MealDetailBottomSheet extends StatelessWidget {
                               ),
                             ],
                             decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
+                              filled: true,
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerLow,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none),
                               labelText: S.of(context).quantityLabel,
                             ),
                           ),
@@ -100,7 +114,16 @@ class MealDetailBottomSheet extends StatelessWidget {
                                     ? UnitDropdownItem.ml.toString()
                                     : selectedUnit,
                             decoration: InputDecoration(
-                              border: const OutlineInputBorder(),
+                              filled: true,
+                              fillColor: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerLow,
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none),
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none),
                               labelText: S.of(context).unitLabel,
                             ),
                             items: (product.isPortionBased ||
@@ -127,21 +150,25 @@ class MealDetailBottomSheet extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity, // Make button full width
-                      child: ElevatedButton.icon(
+                      child: FilledButton.icon(
                         onPressed: !productMissingRequiredInfo
                             ? () {
                                 onAddButtonPressed(context);
                               }
                             : null,
-                        style: ElevatedButton.styleFrom(
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
                           foregroundColor: Theme.of(
                             context,
-                          ).colorScheme.onPrimaryContainer,
+                          ).colorScheme.onPrimary,
                           backgroundColor: Theme.of(
                             context,
-                          ).colorScheme.primaryContainer,
+                          ).colorScheme.primary,
                         ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
                         icon: const Icon(Icons.add_outlined),
                         label: Text(S.of(context).addLabel),
@@ -227,24 +254,27 @@ class MealDetailBottomSheet extends StatelessWidget {
   }
 
   DropdownMenuItem<String> _getServingDropdownItem(BuildContext context) {
-    String? servingSize = product.servingSize;
-    if (product.isPortionBased &&
-        (servingSize == null || servingSize.trim().isEmpty)) {
-      servingSize = S.of(context).servingLabel;
-    }
-    if (servingSize != null) {
-      servingSize = servingSize.replaceAll(
-        'serving',
-        S.of(context).servingLabel,
-      );
-    }
-    final servingUnit = _localizedUnit(context, product.servingUnit);
+    final portionLabel = S.of(context).servingLabel;
+    final quantity = product.servingQuantity;
+    final unit = product.servingUnit;
+    final hasPhysicalQuantity = quantity != null &&
+        quantity.isFinite &&
+        quantity > 0 &&
+        ['g', 'ml', 'oz', 'fl oz', 'fl.oz'].contains(unit);
+    final description = hasPhysicalQuantity
+        ? '${NumberFormat('0.##', Localizations.localeOf(context).toString()).format(quantity)} ${_localizedUnit(context, unit)}'
+        : product.servingSize?.trim();
+    final label = description == null ||
+            description.isEmpty ||
+            description.toLowerCase() == portionLabel.toLowerCase() ||
+            description.toLowerCase() == 'serving'
+        ? portionLabel
+        : '$portionLabel ($description)';
 
     return DropdownMenuItem(
       value: UnitDropdownItem.serving.toString(),
       child: Text(
-        servingSize ??
-            '${S.of(context).servingLabel} (${product.servingQuantity} $servingUnit)',
+        label,
         overflow: TextOverflow.ellipsis,
         maxLines: 1,
       ),

@@ -13,14 +13,15 @@ class MealInfoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return TextButton.icon(
+      icon: const Icon(Icons.info_outline_rounded, size: 20),
       onPressed: () => _launchUrl(_getInfoUrl()),
-      child: Text(
+      label: Text(
         _getInfoLabelText(context),
         style: Theme.of(context)
             .textTheme
             .titleMedium
-            ?.copyWith(decoration: TextDecoration.underline),
+            ?.copyWith(fontSize: 13, fontWeight: FontWeight.w600),
         textAlign: TextAlign.center,
       ),
     );

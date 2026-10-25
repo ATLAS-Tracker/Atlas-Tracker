@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:logging/logging.dart';
@@ -32,7 +34,7 @@ class MealDetailScreen extends StatefulWidget {
 }
 
 class _MealDetailScreenState extends State<MealDetailScreen> {
-  static const _containerSize = 350.0;
+  final _energyKey = GlobalKey();
 
   static const String _initialQuantityMetric = '100';
   static const String _initialQuantityImperial = '1';
@@ -136,14 +138,25 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                 state.totalProtein,
                 state.selectedUnit,
               ),
-              bottomSheet: MealDetailBottomSheet(
-                product: meal,
-                day: _day,
-                intakeTypeEntity: intakeTypeEntity,
-                selectedUnit: state.selectedUnit,
-                mealDetailBloc: _mealDetailBloc,
-                quantityTextController: quantityTextController,
-                onQuantityOrUnitChanged: onQuantityOrUnitChanged,
+              bottomNavigationBar: Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.viewInsetsOf(context).bottom),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: (MediaQuery.sizeOf(context).height -
+                              MediaQuery.viewInsetsOf(context).bottom) *
+                          0.5),
+                  child: SingleChildScrollView(
+                      child: MealDetailBottomSheet(
+                    product: meal,
+                    day: _day,
+                    intakeTypeEntity: intakeTypeEntity,
+                    selectedUnit: state.selectedUnit,
+                    mealDetailBloc: _mealDetailBloc,
+                    quantityTextController: quantityTextController,
+                    onQuantityOrUnitChanged: onQuantityOrUnitChanged,
+                  )),
+                ),
               ),
             );
           } else {
@@ -164,32 +177,22 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       double totalFat,
       double totalProtein,
       String selectedUnit) {
+    final colors = Theme.of(context).colorScheme;
+    final hasPhoto = meal.mainImageUrl?.trim().isNotEmpty == true;
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
         SliverAppBar(
             pinned: true,
-            expandedHeight: 200,
-            flexibleSpace: LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              final top = constraints.biggest.height;
-              final barsHeight =
-                  MediaQuery.of(context).padding.top + kToolbarHeight;
-              const offset = 10;
-              return FlexibleSpaceBar(
-                  expandedTitleScale: 1, // don't scale title
-                  background: MealTitleExpanded(
-                      meal: meal, usesImperialUnits: _usesImperialUnits),
-                  title: AnimatedOpacity(
-                      opacity: 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child:
-                          top > barsHeight - offset && top < barsHeight + offset
-                              ? Text(meal.name ?? '',
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                  overflow: TextOverflow.ellipsis)
-                              : const SizedBox()));
-            }),
+            backgroundColor: colors.surface,
+            surfaceTintColor: colors.surface,
+            title: Text(meal.name ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
             actions: [
               if (meal.mealOrRecipe == MealOrRecipeEntity.recipe)
                 IconButton(
@@ -233,122 +236,239 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                   icon: const Icon(Icons.edit_outlined),
                 ),
             ]),
-        SliverList(
-            delegate: SliverChildListDelegate([
-          const SizedBox(height: 16),
-          Center(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(80),
-              child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(
-                      NavigationOptions.imageFullScreenRoute,
-                      arguments:
-                          ImageFullScreenArguments(meal.mainImageUrl ?? ""),
-                    );
-                  },
-                  child: meal.mainImageUrl != null
-                      ? meal.mealOrRecipe == MealOrRecipeEntity.recipe
-                          ? Hero(
-                              tag: ImageFullScreen.fullScreenHeroTag,
-                              child: FutureBuilder<String>(
-                                future: PathHelper.localImagePath(
-                                    meal.mainImageUrl!),
-                                builder: (context, snapshot) {
-                                  final path = snapshot.data;
-                                  if (path == null) {
-                                    return const SizedBox.shrink();
-                                  }
-                                  return Container(
-                                    width: 250,
-                                    height: 250,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      image: DecorationImage(
-                                        image: FileImage(File(path)),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          : Hero(
-                              tag: ImageFullScreen.fullScreenHeroTag,
-                              child: CachedNetworkImage(
-                                width: 250,
-                                height: 250,
-                                cacheManager: locator<CacheManager>(),
-                                imageUrl: meal.mainImageUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, string) =>
-                                    const MealPlaceholder(),
-                                errorWidget: (context, url, error) =>
-                                    const MealPlaceholder(),
-                              ),
-                            )
-                      : Container(
-                          width: 250,
-                          height: 250,
-                          color:
-                              Theme.of(context).colorScheme.secondaryContainer,
-                          child: const Icon(
-                            Icons.restaurant_outlined,
-                            size: 80,
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          sliver: SliverToBoxAdapter(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                Container(
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                      color: colors.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                          color: colors.onSurface.withValues(alpha: 0.05))),
+                  child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 96,
+                          height: 120,
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              colors.primary.withValues(alpha: 0.10),
+                              colors.primary.withValues(alpha: 0.025)
+                            ],
+                          )),
+                          child: Center(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed(
+                                      NavigationOptions.imageFullScreenRoute,
+                                      arguments: ImageFullScreenArguments(
+                                          meal.mainImageUrl ?? ""),
+                                    );
+                                  },
+                                  child: hasPhoto
+                                      ? !meal.mainImageUrl!.startsWith('http')
+                                          ? Hero(
+                                              tag: ImageFullScreen
+                                                  .fullScreenHeroTag,
+                                              child: FutureBuilder<String>(
+                                                future:
+                                                    PathHelper.localImagePath(
+                                                        meal.mainImageUrl!),
+                                                builder: (context, snapshot) {
+                                                  final path = snapshot.data;
+                                                  if (path == null) {
+                                                    return const SizedBox
+                                                        .shrink();
+                                                  }
+                                                  return Image.file(
+                                                    File(path),
+                                                    width: 80,
+                                                    height: 96,
+                                                    fit: BoxFit.cover,
+                                                    errorBuilder: (_, __,
+                                                            ___) =>
+                                                        const MealPlaceholder(),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          : Hero(
+                                              tag: ImageFullScreen
+                                                  .fullScreenHeroTag,
+                                              child: CachedNetworkImage(
+                                                width: 80,
+                                                height: 96,
+                                                cacheManager:
+                                                    locator<CacheManager>(),
+                                                imageUrl: meal.mainImageUrl!,
+                                                fit: BoxFit.cover,
+                                                placeholder:
+                                                    (context, string) =>
+                                                        const MealPlaceholder(),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        const MealPlaceholder(),
+                                              ),
+                                            )
+                                      : Container(
+                                          width: 64,
+                                          height: 64,
+                                          color: colors.primary
+                                              .withValues(alpha: 0.08),
+                                          child: Icon(Icons.fastfood_outlined,
+                                              color: colors.primary, size: 30),
+                                        )),
+                            ),
                           ),
+                        ),
+                        Expanded(
+                            child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: MealTitleExpanded(meal: meal),
                         )),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
+                      ]),
+                ),
+                const SizedBox(height: 18),
+                AtlasBrandPanel(
+                  key: _energyKey,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(children: [
+                          Expanded(
+                              child: Text(S.of(context).energyLabel,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.74),
+                                          fontWeight: FontWeight.w700))),
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12)),
+                            child: const Icon(
+                                Icons.local_fire_department_outlined,
+                                color: Colors.white,
+                                size: 22),
+                          ),
+                        ]),
+                        const SizedBox(height: 8),
+                        Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .displaySmall
+                                ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800)),
+                        const SizedBox(height: 4),
+                        MealValueUnitText(
+                            value: double.parse(totalQuantity),
+                            meal: meal,
+                            displayUnit: selectedUnit ==
+                                    UnitDropdownItem.serving.toString()
+                                ? meal.servingUnit
+                                : selectedUnit,
+                            portionCount: selectedUnit ==
+                                    UnitDropdownItem.serving.toString()
+                                ? double.tryParse(quantityTextController.text
+                                    .replaceAll(',', '.'))
+                                : null,
+                            usesImperialUnits: _usesImperialUnits,
+                            textStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.80)),
+                            prefix: ''),
+                        const SizedBox(height: 18),
+                        Divider(
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.16)),
+                        const SizedBox(height: 18),
+                        Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                  child: MealDetailMacroNutrients(
+                                      typeString: S.of(context).carbsLabel,
+                                      value: totalCarbs,
+                                      visual: MacroVisuals.carbs)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                  child: MealDetailMacroNutrients(
+                                      typeString: S.of(context).fatLabel,
+                                      value: totalFat,
+                                      visual: MacroVisuals.fats)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                  child: MealDetailMacroNutrients(
+                                      typeString: S.of(context).proteinLabel,
+                                      value: totalProtein,
+                                      visual: MacroVisuals.proteins)),
+                            ]),
+                      ]),
+                ),
+                const SizedBox(height: 18),
+                ExpansionTile(
+                  key: PageStorageKey('meal-nutrition-${meal.code}'),
+                  initiallyExpanded: false,
+                  maintainState: true,
+                  backgroundColor: colors.surfaceContainerLowest,
+                  collapsedBackgroundColor: colors.surfaceContainerLowest,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: BorderSide(
+                          color: colors.onSurface.withValues(alpha: 0.06))),
+                  collapsedShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                      side: BorderSide(
+                          color: colors.onSurface.withValues(alpha: 0.06))),
+                  tilePadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  leading: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(14)),
+                    child: Icon(Icons.fact_check_outlined,
+                        color: colors.primary, size: 22),
+                  ),
+                  title: Text(S.of(context).nutritionInfoLabel,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w800)),
                   children: [
-                    Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
-                        style: Theme.of(context).textTheme.headlineSmall),
-                    MealValueUnitText(
-                      value: double.parse(totalQuantity),
-                      meal: meal,
-                      displayUnit:
-                          selectedUnit == UnitDropdownItem.serving.toString()
-                              ? meal.mealUnit
-                              : selectedUnit,
-                      usesImperialUnits: _usesImperialUnits,
-                      textStyle: Theme.of(context).textTheme.bodyMedium,
-                      prefix: ' / ',
-                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: MealDetailNutrimentsTable(
+                          product: meal,
+                          usesImperialUnits: _usesImperialUnits,
+                          servingQuantity: meal.servingQuantity,
+                          servingUnit: meal.servingUnit,
+                          embedded: true),
+                    )
                   ],
                 ),
-                const SizedBox(height: 8.0),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    MealDetailMacroNutrients(
-                        typeString: S.of(context).carbsLabel,
-                        value: totalCarbs),
-                    MealDetailMacroNutrients(
-                        typeString: S.of(context).fatLabel, value: totalFat),
-                    MealDetailMacroNutrients(
-                        typeString: S.of(context).proteinLabel,
-                        value: totalProtein)
-                  ],
-                ),
-                const Divider(),
-                const SizedBox(height: 16.0),
-                MealDetailNutrimentsTable(
-                    product: meal,
-                    usesImperialUnits: _usesImperialUnits,
-                    servingQuantity: meal.servingQuantity,
-                    servingUnit: meal.servingUnit),
-                const SizedBox(height: 32.0),
+                const SizedBox(height: 16),
                 MealInfoButton(url: meal.url, source: meal.source),
-                const SizedBox(),
-                const SizedBox(height: 200.0) // height added to scroll
-              ],
-            ),
-          )
-        ]))
+              ])),
+        ),
       ],
     );
   }
@@ -363,13 +483,20 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   }
 
   void _scrollToCalorieText() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _containerSize - 50,
-        duration: const Duration(seconds: 1),
-        curve: Curves.easeInOut,
-      );
+    final target = _energyKey.currentContext;
+    if (target != null) {
+      Scrollable.ensureVisible(target,
+          alignment: 0.1,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut);
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    quantityTextController.dispose();
+    super.dispose();
   }
 }
 
