@@ -44,143 +44,140 @@ class DiarySummaryCard extends StatelessWidget {
     final caloriesTracked = trackedDay?.caloriesTracked ?? 0;
     final remaining = (calorieGoal - caloriesTracked).clamp(0, double.infinity);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        AtlasBrandPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(s.dailySummaryLabel,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  )),
-              const SizedBox(height: 16),
-              Text('${remaining.toInt()} ${s.kcalLeftLabel}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  )),
-              const SizedBox(height: 4),
-              Text(
-                '${caloriesTracked.toInt()} / ${calorieGoal.toInt()} ${s.kcalLabel} ${s.consumedLabel}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.74),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 14),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  minHeight: 9,
-                  value: calorieGoal <= 0
-                      ? 0
-                      : (caloriesTracked / calorieGoal).clamp(0, 1).toDouble(),
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  valueColor: const AlwaysStoppedAnimation(Colors.white),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _DashboardMacro(
-                label: s.carbsLabel,
-                intake: trackedDay?.carbsTracked ?? 0,
-                goal: trackedDay?.carbsGoal ?? homeState?.totalCarbsGoal ?? 0,
-                visual: MacroVisuals.carbs,
-              ),
-              _DashboardMacro(
-                label: s.fatLabel,
-                intake: trackedDay?.fatTracked ?? 0,
-                goal: trackedDay?.fatGoal ?? homeState?.totalFatsGoal ?? 0,
-                visual: MacroVisuals.fats,
-              ),
-              _DashboardMacro(
-                label: s.proteinLabel,
-                intake: trackedDay?.proteinTracked ?? 0,
-                goal: trackedDay?.proteinGoal ??
-                    homeState?.totalProteinsGoal ??
-                    0,
-                visual: MacroVisuals.proteins,
-              ),
-            ],
+    return AtlasBrandPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(s.dailySummaryLabel,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              )),
+          const SizedBox(height: 16),
+          Text('${remaining.toInt()} ${s.kcalLeftLabel}',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              )),
+          const SizedBox(height: 4),
+          Text(
+            '${caloriesTracked.toInt()} / ${calorieGoal.toInt()} ${s.kcalLabel} ${s.consumedLabel}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.74),
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        const SizedBox(height: 18),
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: colors.onSurface.withValues(alpha: 0.06)),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              minHeight: 9,
+              value: calorieGoal <= 0
+                  ? 0
+                  : (caloriesTracked / calorieGoal).clamp(0, 1).toDouble(),
+              backgroundColor: Colors.white.withValues(alpha: 0.18),
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+            ),
           ),
-          child: Row(
-            children: [
-              Icon(Icons.monitor_weight_outlined, color: colors.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(s.weightLabel,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                        )),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Flexible(
-                            child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  displayedWeight == null
-                                      ? s.emptyValueLabel
-                                      : '${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(displayedWeight)} $weightUnit',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ))),
-                        const SizedBox(width: 12),
-                        Flexible(
-                            child: Tooltip(
-                                message: s.weightAverageDeltaLabel,
-                                child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      weeklyWeightDelta == null ||
-                                              displayedWeight == null
-                                          ? s.emptyValueLabel
-                                          : '${weeklyWeightDelta! > 0 ? '+' : ''}${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(usesImperialUnits ? UnitCalc.kgToLbs(weeklyWeightDelta!) : weeklyWeightDelta!)} $weightUnit',
-                                      style:
-                                          theme.textTheme.bodyMedium?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        color: weeklyWeightDelta == null ||
-                                                homeState == null
-                                            ? colors.onSurfaceVariant
-                                            : weightTrendColor(
-                                                deltaKg: weeklyWeightDelta!,
-                                                goal: homeState!.userWeightGoal,
-                                                colors: colors),
-                                      ),
-                                    )))),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              if (onEditWeight != null)
-                IconButton(
-                  tooltip: s.editWeightLabel,
-                  onPressed: onEditWeight,
-                  icon:
-                      Icon(Icons.edit_rounded, color: colors.primary, size: 20),
-                ),
-            ],
+          const SizedBox(height: 20),
+          _DashboardMacro(
+            label: s.carbsLabel,
+            intake: trackedDay?.carbsTracked ?? 0,
+            goal: trackedDay?.carbsGoal ?? homeState?.totalCarbsGoal ?? 0,
+            visual: MacroVisuals.carbs,
           ),
-        ),
-      ],
+          _DashboardMacro(
+            label: s.fatLabel,
+            intake: trackedDay?.fatTracked ?? 0,
+            goal: trackedDay?.fatGoal ?? homeState?.totalFatsGoal ?? 0,
+            visual: MacroVisuals.fats,
+          ),
+          _DashboardMacro(
+            label: s.proteinLabel,
+            intake: trackedDay?.proteinTracked ?? 0,
+            goal: trackedDay?.proteinGoal ?? homeState?.totalProteinsGoal ?? 0,
+            visual: MacroVisuals.proteins,
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.09),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.monitor_weight_outlined, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(s.weightLabel,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.74),
+                          )),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Flexible(
+                              child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    displayedWeight == null
+                                        ? s.emptyValueLabel
+                                        : '${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(displayedWeight)} $weightUnit',
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ))),
+                          const SizedBox(width: 12),
+                          Flexible(
+                              child: Tooltip(
+                                  message: s.weightAverageDeltaLabel,
+                                  child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        weeklyWeightDelta == null ||
+                                                displayedWeight == null
+                                            ? s.emptyValueLabel
+                                            : '${weeklyWeightDelta! > 0 ? '+' : ''}${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(usesImperialUnits ? UnitCalc.kgToLbs(weeklyWeightDelta!) : weeklyWeightDelta!)} $weightUnit',
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                          fontWeight: FontWeight.w800,
+                                          color: weeklyWeightDelta == null ||
+                                                  homeState == null
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.74)
+                                              : weightTrendColor(
+                                                  deltaKg: weeklyWeightDelta!,
+                                                  goal:
+                                                      homeState!.userWeightGoal,
+                                                  colors: colors),
+                                        ),
+                                      )))),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (onEditWeight != null)
+                  IconButton(
+                    tooltip: s.editWeightLabel,
+                    onPressed: onEditWeight,
+                    icon:
+                        Icon(Icons.edit_rounded, color: Colors.white, size: 20),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

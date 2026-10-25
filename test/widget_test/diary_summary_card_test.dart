@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,7 +78,11 @@ void main() {
         await tester.pumpAndSettle();
         if (populated) {
           expect(find.text('220 / 250 g'), findsOneWidget);
-          expect(find.text('78,4 kg'), findsOneWidget);
+          expect(
+              find.descendant(
+                  of: find.byType(AtlasBrandPanel),
+                  matching: find.text('78,4 kg')),
+              findsOneWidget);
         }
         for (final bar in tester.widgetList<LinearProgressIndicator>(
             find.byType(LinearProgressIndicator))) {
