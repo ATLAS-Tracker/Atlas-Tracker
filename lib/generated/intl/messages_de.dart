@@ -57,6 +57,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "activityExample": MessageLookupByLibrary.simpleMessage(
             "z. B. Laufen, Radfahren, Yoga ..."),
         "activityLabel": MessageLookupByLibrary.simpleMessage("Aktivität"),
+        "addIngredientLabel":
+            MessageLookupByLibrary.simpleMessage("Zutat hinzufügen"),
         "addItemLabel":
             MessageLookupByLibrary.simpleMessage("Neuen Eintrag hinzufügen:"),
         "addLabel": MessageLookupByLibrary.simpleMessage("Hinzufügen"),
@@ -140,7 +142,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "createCustomDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Benutzerdefinierte Mahlzeit erstellen?"),
         "createRecipeLabel":
-            MessageLookupByLibrary.simpleMessage("Mahlzeit erstellen"),
+            MessageLookupByLibrary.simpleMessage("Rezept erstellen"),
         "currentGoalLabel":
             MessageLookupByLibrary.simpleMessage("Aktuelles Ziel"),
         "currentWeightLabel":
@@ -210,6 +212,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Eintrag aktualisieren"),
         "editMealLabel":
             MessageLookupByLibrary.simpleMessage("Mahlzeit bearbeiten"),
+        "editRecipeLabel":
+            MessageLookupByLibrary.simpleMessage("Rezept bearbeiten"),
         "editWeightLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht bearbeiten"),
         "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
@@ -787,7 +791,20 @@ class MessageLookup extends MessageLookupByLibrary {
         "readLabel": MessageLookupByLibrary.simpleMessage(
             "Ich habe die Datenschutzbestimmungen gelesen und akzeptiere sie."),
         "recentlyAddedLabel": MessageLookupByLibrary.simpleMessage("Kürzlich"),
+        "recipeCoverLabel":
+            MessageLookupByLibrary.simpleMessage("Dein Rezeptfoto"),
+        "recipeEmptyHelp": MessageLookupByLibrary.simpleMessage(
+            "Füge die Lebensmittel für dein Rezept hinzu."),
+        "recipeIngredientsLabel":
+            MessageLookupByLibrary.simpleMessage("Zutaten"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Rezept"),
+        "recipeNameHint":
+            MessageLookupByLibrary.simpleMessage("Z. B. Hähnchen-Avocado-Bowl"),
+        "recipeNameLabel": MessageLookupByLibrary.simpleMessage("Rezeptname"),
+        "recipePortionsHelp": MessageLookupByLibrary.simpleMessage(
+            "Die Werte pro Portion werden beim Speichern berechnet."),
+        "recipeTotalsLabel":
+            MessageLookupByLibrary.simpleMessage("Gesamtes Rezept"),
         "recordWeightLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht aktualisieren"),
         "remainingToLoseLabel":

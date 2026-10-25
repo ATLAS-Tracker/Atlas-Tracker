@@ -56,6 +56,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "activityExample":
             MessageLookupByLibrary.simpleMessage("ex : course, vélo, yoga..."),
         "activityLabel": MessageLookupByLibrary.simpleMessage("Activité"),
+        "addIngredientLabel":
+            MessageLookupByLibrary.simpleMessage("Ajouter un ingrédient"),
         "addItemLabel":
             MessageLookupByLibrary.simpleMessage("Ajouter un nouvel élément :"),
         "addLabel": MessageLookupByLibrary.simpleMessage("Ajouter"),
@@ -144,7 +146,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "createCustomDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Créer un aliment personnalisé ?"),
         "createRecipeLabel":
-            MessageLookupByLibrary.simpleMessage("Créer un repas"),
+            MessageLookupByLibrary.simpleMessage("Créer une recette"),
         "currentGoalLabel":
             MessageLookupByLibrary.simpleMessage("Objectif actuel"),
         "currentWeightLabel":
@@ -215,6 +217,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Modifier l\'élément"),
         "editMealLabel":
             MessageLookupByLibrary.simpleMessage("Modifier le repas"),
+        "editRecipeLabel":
+            MessageLookupByLibrary.simpleMessage("Modifier la recette"),
         "editWeightLabel":
             MessageLookupByLibrary.simpleMessage("Modifier le poids"),
         "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
@@ -793,7 +797,21 @@ class MessageLookup extends MessageLookupByLibrary {
         "readLabel": MessageLookupByLibrary.simpleMessage(
             "J\'ai lu et j\'accepte la politique de confidentialité."),
         "recentlyAddedLabel": MessageLookupByLibrary.simpleMessage("Récemment"),
+        "recipeCoverLabel":
+            MessageLookupByLibrary.simpleMessage("La photo de ta recette"),
+        "recipeEmptyHelp": MessageLookupByLibrary.simpleMessage(
+            "Ajoute les aliments qui composent ta recette."),
+        "recipeIngredientsLabel":
+            MessageLookupByLibrary.simpleMessage("Ingrédients"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Recette"),
+        "recipeNameHint":
+            MessageLookupByLibrary.simpleMessage("Ex. Bowl poulet & avocat"),
+        "recipeNameLabel":
+            MessageLookupByLibrary.simpleMessage("Nom de la recette"),
+        "recipePortionsHelp": MessageLookupByLibrary.simpleMessage(
+            "Les valeurs par portion seront calculées à l’enregistrement."),
+        "recipeTotalsLabel":
+            MessageLookupByLibrary.simpleMessage("Total de la recette"),
         "recordWeightLabel":
             MessageLookupByLibrary.simpleMessage("Mettre à jour mon poids"),
         "remainingToLoseLabel":

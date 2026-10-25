@@ -1,3 +1,7 @@
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_macro_nutrients.dart';
+import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dart';
+import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.dart';
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
@@ -8,17 +12,13 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:opennutritracker/features/home/presentation/widgets/intake_vertical_list.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
-import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/features/create_meal/create_meal_modal.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 import 'package:opennutritracker/features/create_meal/pick_image_screen.dart';
-import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
-import 'package:pie_chart/pie_chart.dart';
-import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 
 class MealCreationScreen extends StatefulWidget {
@@ -29,12 +29,10 @@ class MealCreationScreen extends StatefulWidget {
 }
 
 class _MealCreationScreenState extends State<MealCreationScreen> {
-  static const double _deleteZoneHeight = 70;
   final log = Logger('MealCreationScreen');
   late final CreateMealBloc _createMealBloc;
   final _nameTextController = TextEditingController();
   String? _imagePath;
-  bool _isDragging = false;
   late String _id = "";
   late String _name = "";
   bool _isInitialized = false;
@@ -55,6 +53,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     log.info(
       "ExitCreateMealScreenEvent added: isOnCreateMealScreen set to false",
     );
+    _nameTextController.dispose();
     super.dispose();
   }
 
@@ -86,245 +85,305 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final editing =
+        ModalRoute.of(context)?.settings.arguments is CreateMealScreenArguments;
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
-      behavior: HitTestBehavior.opaque,
       child: Scaffold(
+        backgroundColor: colors.surface,
         appBar: AppBar(
-          title: Text(S.of(context).recipeLabel),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              child: BlocBuilder<CreateMealBloc, CreateMealState>(
+          backgroundColor: colors.surface,
+          surfaceTintColor: colors.surface,
+          title: Text(editing ? s.editRecipeLabel : s.createRecipeLabel,
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+        ),
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            decoration: BoxDecoration(
+                color: colors.surface,
+                border: Border(
+                    top: BorderSide(
+                        color: colors.onSurface.withValues(alpha: 0.06)))),
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: _nameTextController,
+              builder: (context, value, _) =>
+                  BlocBuilder<CreateMealBloc, CreateMealState>(
                 bloc: _createMealBloc,
-                builder: (context, state) {
-                  final isButtonEnabled =
-                      _nameTextController.text.trim().isNotEmpty &&
-                          state.intakeList.isNotEmpty;
-
-                  return FilledButton(
-                    onPressed:
-                        isButtonEnabled ? () => _onSavePressed(true) : null,
-                    child: Text(S.of(context).buttonSaveLabel),
-                  );
-                },
+                builder: (context, state) => FilledButton.icon(
+                  key: const ValueKey('save-recipe'),
+                  onPressed: value.text.trim().isNotEmpty &&
+                          state.intakeList.isNotEmpty
+                      ? _onSavePressed
+                      : null,
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(s.buttonSaveLabel),
+                  style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18))),
+                ),
               ),
             ),
-          ],
+          ),
         ),
         body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-              final scrollBottomPadding =
-                  16 + bottomInset + (_isDragging ? _deleteZoneHeight : 0);
-              return Stack(
+          top: false,
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Positioned.fill(
-                    child: SingleChildScrollView(
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        16,
-                        16,
-                        scrollBottomPadding,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: _nameTextController,
-                                  decoration: InputDecoration(
-                                    labelText: S.of(context).mealNameLabel,
-                                    border: const OutlineInputBorder(),
-                                    suffixIcon: Padding(
-                                      padding: const EdgeInsets.all(
-                                        6.0,
-                                      ),
-                                      child: PhotoPickerButton(
-                                        initialImagePath: _imagePath,
-                                        onImagePicked: (imagePath) {
-                                          setState(() {
-                                            _imagePath = imagePath;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  keyboardType: TextInputType.text,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          BlocBuilder<CreateMealBloc, CreateMealState>(
-                            bloc: _createMealBloc,
-                            builder: (context, state) {
-                              final intakeList = state.intakeList;
-
-                              if (intakeList.isEmpty) {
-                                return Text(S.of(context).noFoodAddedLabel);
-                              }
-
-                              final now = DateTime.now();
-                              final convertedIntakeList =
-                                  state.intakeList.map((ingredient) {
-                                return IntakeEntity(
-                                  id: ingredient.code ?? ingredient.name ?? "",
-                                  unit: ingredient.unit ?? "g",
-                                  amount: ingredient.amount ?? 0,
-                                  type: IntakeTypeEntity.breakfast,
-                                  meal: ingredient.meal!,
-                                  dateTime: now,
-                                  updatedAt: DateTime.now().toUtc(),
-                                );
-                              }).toList();
-
-                              return Column(
-                                children: [
-                                  IntakeVerticalList(
-                                    day: DateTime.now(),
-                                    title: "",
-                                    addMealType: AddMealType
-                                        .snackType, // TODO Pierre refactor
-                                    listIcon: Icons.functions,
-                                    intakeList: convertedIntakeList,
-                                    onDeleteIntakeCallback: _onDeleteIntakeItem,
-                                    onItemDragCallback: onIntakeItemDrag,
-                                    onItemTappedCallback: onIntakeItemTapped,
-                                    usesImperialUnits: false,
-                                    isDropZone: false,
-                                  ),
-                                  const SizedBox(height: 32),
-                                  if (state.totalCarbs +
-                                          state.totalFats +
-                                          state.totalProteins >
-                                      0)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 8.0,
-                                      ),
-                                      child: Center(
-                                        child: PieChart(
-                                          dataMap: {
-                                            'Protéine': state.totalProteins,
-                                            'Glucide': state.totalCarbs,
-                                            'Lipide': state.totalFats,
-                                          },
-                                          animationDuration: const Duration(
-                                            milliseconds: 800,
-                                          ),
-                                          chartLegendSpacing: 32,
-                                          chartRadius: MediaQuery.of(
-                                                context,
-                                              ).size.width /
-                                              2.5,
-                                          colorList: [
-                                            proteinColor.withValues(
-                                              alpha: 0.75,
-                                            ),
-                                            carbColor.withValues(alpha: 0.75),
-                                            fatColor.withValues(alpha: 0.75),
-                                          ],
-                                          initialAngleInDegree: 0,
-                                          chartType: ChartType.ring,
-                                          ringStrokeWidth: 32,
-                                          centerText: "",
-                                          legendOptions: const LegendOptions(
-                                            showLegendsInRow: false,
-                                            legendPosition:
-                                                LegendPosition.bottom,
-                                            showLegends: true,
-                                            legendShape: BoxShape.circle,
-                                            legendTextStyle: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          chartValuesOptions:
-                                              const ChartValuesOptions(
-                                            showChartValueBackground: true,
-                                            showChartValues: true,
-                                            showChartValuesInPercentage: false,
-                                            showChartValuesOutside: true,
-                                            decimalPlaces: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              );
-                            },
-                          ),
+                  PhotoPickerButton(
+                      initialImagePath: _imagePath,
+                      onImagePicked: (path) =>
+                          setState(() => _imagePath = path)),
+                  const SizedBox(height: 26),
+                  Text(s.recipeNameLabel,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    controller: _nameTextController,
+                    textCapitalization: TextCapitalization.sentences,
+                    minLines: 1,
+                    maxLines: 3,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w800, letterSpacing: -0.7),
+                    decoration: InputDecoration(
+                        hintText: s.recipeNameHint,
+                        hintStyle: theme.textTheme.headlineSmall?.copyWith(
+                            color: colors.onSurface.withValues(alpha: 0.28),
+                            fontWeight: FontWeight.w700),
+                        filled: false,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none),
+                  ),
+                  const SizedBox(height: 28),
+                  BlocBuilder<CreateMealBloc, CreateMealState>(
+                    bloc: _createMealBloc,
+                    builder: (context, state) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (editing && state.intakeList.isNotEmpty) ...[
+                          _nutritionSummary(state),
+                          const SizedBox(height: 28),
                         ],
-                      ),
+                        Row(children: [
+                          Expanded(
+                              child: Text(s.recipeIngredientsLabel,
+                                  style: theme.textTheme.titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w800))),
+                          Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 5),
+                              decoration: BoxDecoration(
+                                  color: colors.primary.withValues(alpha: 0.09),
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: Text('${state.intakeList.length}',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                      color: colors.primary,
+                                      fontWeight: FontWeight.w700))),
+                        ]),
+                        const SizedBox(height: 16),
+                        if (state.intakeList.isEmpty)
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(
+                                    color: colors.onSurface
+                                        .withValues(alpha: 0.06))),
+                            child: Column(children: [
+                              Container(
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                      color: colors.primary
+                                          .withValues(alpha: 0.07),
+                                      shape: BoxShape.circle),
+                                  child: Icon(Icons.restaurant_outlined,
+                                      color: colors.primary, size: 28)),
+                              const SizedBox(height: 14),
+                              Text(s.noFoodAddedLabel,
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.titleSmall
+                                      ?.copyWith(fontWeight: FontWeight.w700)),
+                              const SizedBox(height: 6),
+                              Text(s.recipeEmptyHelp,
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                      color: colors.onSurfaceVariant)),
+                            ]),
+                          )
+                        else
+                          Container(
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                                color: colors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(
+                                    color: colors.onSurface
+                                        .withValues(alpha: 0.06))),
+                            child: Column(children: [
+                              for (var i = 0;
+                                  i < state.intakeList.length;
+                                  i++) ...[
+                                if (i > 0)
+                                  Divider(
+                                      height: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: colors.onSurface
+                                          .withValues(alpha: 0.06)),
+                                _ingredientRow(state.intakeList[i]),
+                              ],
+                            ]),
+                          ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                            key: const ValueKey('add-recipe-ingredient'),
+                            onPressed: () => _showAddItemScreen(
+                                context, AddMealType.snackType, DateTime.now()),
+                            icon: const Icon(Icons.add_rounded),
+                            label: Text(s.addIngredientLabel),
+                            style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                    color:
+                                        colors.primary.withValues(alpha: 0.25)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)))),
+                        if (!editing && state.intakeList.isNotEmpty) ...[
+                          const SizedBox(height: 28),
+                          _nutritionSummary(state),
+                        ],
+                      ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Visibility(
-                      visible: _isDragging,
-                      child: Container(
-                        height: _deleteZoneHeight,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.error,
-                        child: DragTarget<IntakeEntity>(
-                          onAcceptWithDetails: (details) {
-                            _confirmDelete(context, details.data);
-                          },
-                          onLeave: (data) {
-                            setState(() {
-                              _isDragging = false;
-                            });
-                          },
-                          builder: (context, candidateData, rejectedData) {
-                            return const Center(
-                              child: Icon(
-                                Icons.delete_outline,
-                                size: 36,
-                                color: Colors.white,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                ]),
           ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showAddItemScreen(
-            context,
-            AddMealType.snackType,
-            DateTime.now(),
-          ),
-          tooltip: S.of(context).addLabel,
-          shape: const CircleBorder(),
-          elevation: 0,
-          focusElevation: 0,
-          hoverElevation: 0,
-          highlightElevation: 0,
-          disabledElevation: 0,
-          child: const Icon(Icons.add),
         ),
       ),
     );
   }
 
-  void onIntakeItemDrag(bool isDragging) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _isDragging = isDragging;
-      });
-    });
+  Widget _ingredientRow(IntakeForRecipeEntity ingredient) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final meal = ingredient.meal!;
+    final intake = IntakeEntity(
+        id: ingredient.code ?? ingredient.name ?? '',
+        unit: ingredient.unit ?? 'g',
+        amount: ingredient.amount ?? 0,
+        type: IntakeTypeEntity.breakfast,
+        meal: meal,
+        dateTime: DateTime.now());
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: ValueKey('recipe-ingredient-${intake.id}'),
+        onTap: () => onIntakeItemTapped(context, intake, false),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
+          child: Row(children: [
+            Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                    color: colors.primary.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(14)),
+                child: Icon(Icons.restaurant_outlined,
+                    size: 21, color: colors.primary)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  Text(meal.name ?? '',
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 4),
+                  MealValueUnitText(
+                      value: intake.amount,
+                      meal: meal,
+                      displayUnit: intake.unit,
+                      usesImperialUnits: false,
+                      textStyle: theme.textTheme.bodySmall
+                          ?.copyWith(color: colors.onSurfaceVariant)),
+                ])),
+            IconButton(
+                tooltip: S.of(context).editItemDialogTitle,
+                onPressed: () => onIntakeItemTapped(context, intake, false),
+                icon: Icon(Icons.tune_rounded,
+                    color: colors.onSurfaceVariant, size: 20)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget _nutritionSummary(CreateMealState state) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final macros = _createMealBloc.computeMacros();
+    return AtlasBrandPanel(
+      padding: const EdgeInsets.all(20),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Text(s.recipeTotalsLabel,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: Colors.white.withValues(alpha: 0.8))),
+        const SizedBox(height: 8),
+        Row(children: [
+          Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(12)),
+              child: const Icon(Icons.local_fire_department_rounded,
+                  color: breakfastColor, size: 26)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text('${macros['totalKcal']!.toInt()} ${s.kcalLabel}',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w800))),
+        ]),
+        const SizedBox(height: 18),
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+              child: MealDetailMacroNutrients(
+                  typeString: s.carbsLabel,
+                  value: state.totalCarbs,
+                  visual: MacroVisuals.carbs)),
+          const SizedBox(width: 8),
+          Expanded(
+              child: MealDetailMacroNutrients(
+                  typeString: s.fatLabel,
+                  value: state.totalFats,
+                  visual: MacroVisuals.fats)),
+          const SizedBox(width: 8),
+          Expanded(
+              child: MealDetailMacroNutrients(
+                  typeString: s.proteinLabel,
+                  value: state.totalProteins,
+                  visual: MacroVisuals.proteins)),
+        ]),
+        const SizedBox(height: 16),
+        Text(s.recipePortionsHelp,
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: Colors.white.withValues(alpha: 0.76))),
+      ]),
+    );
   }
 
   void onIntakeItemTapped(
@@ -390,26 +449,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     );
   }
 
-  void _confirmDelete(BuildContext context, IntakeEntity intake) async {
-    bool? delete = await showDialog<bool>(
-      context: context,
-      builder: (context) => const DeleteDialog(),
-    );
-
-    if (delete == true) {
-      locator<CreateMealBloc>().removeIntake(intake.id);
-    }
-    setState(() {
-      _isDragging = false;
-    });
-  }
-
-  void _onDeleteIntakeItem(
-    IntakeEntity intakeEntity,
-    TrackedDayEntity? trackedDayEntity,
-  ) {}
-
-  void _onSavePressed(bool usesImperialUnits) {
+  void _onSavePressed() {
     final recipeName = _nameTextController.text;
     showModalBottomSheet(
       context: context,

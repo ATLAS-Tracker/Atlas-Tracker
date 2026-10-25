@@ -4723,10 +4723,10 @@ class S {
     );
   }
 
-  /// `Create a meal`
+  /// `Create a recipe`
   String get createRecipeLabel {
     return Intl.message(
-      'Create a meal',
+      'Create a recipe',
       name: 'createRecipeLabel',
       desc: '',
       args: [],
@@ -5625,6 +5625,96 @@ class S {
       name: 'selectedPortionWeight',
       desc: '',
       args: [portions, weight],
+    );
+  }
+
+  /// `Recipe name`
+  String get recipeNameLabel {
+    return Intl.message(
+      'Recipe name',
+      name: 'recipeNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Ingredients`
+  String get recipeIngredientsLabel {
+    return Intl.message(
+      'Ingredients',
+      name: 'recipeIngredientsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add the foods that make up your recipe.`
+  String get recipeEmptyHelp {
+    return Intl.message(
+      'Add the foods that make up your recipe.',
+      name: 'recipeEmptyHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recipe total`
+  String get recipeTotalsLabel {
+    return Intl.message(
+      'Recipe total',
+      name: 'recipeTotalsLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Values per serving will be calculated when you save.`
+  String get recipePortionsHelp {
+    return Intl.message(
+      'Values per serving will be calculated when you save.',
+      name: 'recipePortionsHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add an ingredient`
+  String get addIngredientLabel {
+    return Intl.message(
+      'Add an ingredient',
+      name: 'addIngredientLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit recipe`
+  String get editRecipeLabel {
+    return Intl.message(
+      'Edit recipe',
+      name: 'editRecipeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `e.g. Chicken & avocado bowl`
+  String get recipeNameHint {
+    return Intl.message(
+      'e.g. Chicken & avocado bowl',
+      name: 'recipeNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your recipe photo`
+  String get recipeCoverLabel {
+    return Intl.message(
+      'Your recipe photo',
+      name: 'recipeCoverLabel',
+      desc: '',
+      args: [],
     );
   }
 }

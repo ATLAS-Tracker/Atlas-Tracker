@@ -577,5 +577,15 @@
   "customFoodChangePhoto": "Fotoğrafı değiştir",
   "customFoodPhotoError": "Fotoğraf yüklenemedi veya kaydedilemedi. Lütfen tekrar deneyin.",
   "selectedPortionCount": "{count} porsiyon",
-  "selectedPortionWeight": "{portions} ({weight})"
+  "selectedPortionWeight": "{portions} ({weight})",
+  "createRecipeLabel": "Tarif oluştur",
+  "recipeNameLabel": "Tarif adı",
+  "recipeIngredientsLabel": "Malzemeler",
+  "recipeEmptyHelp": "Tarifini oluşturan besinleri ekle.",
+  "recipeTotalsLabel": "Tarif toplamı",
+  "recipePortionsHelp": "Porsiyon başına değerler kaydederken hesaplanır.",
+  "addIngredientLabel": "Malzeme ekle",
+  "editRecipeLabel": "Tarifi düzenle",
+  "recipeNameHint": "Örn. Tavuk ve avokado kasesi",
+  "recipeCoverLabel": "Tarifinin fotoğrafı"
 }

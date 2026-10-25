@@ -571,5 +571,15 @@
   "customFoodChangePhoto": "Foto ändern",
   "customFoodPhotoError": "Das Foto konnte nicht geladen oder gespeichert werden. Bitte erneut versuchen.",
   "selectedPortionCount": "{count, plural, one{{count} Portion} other{{count} Portionen}}",
-  "selectedPortionWeight": "{portions} ({weight})"
+  "selectedPortionWeight": "{portions} ({weight})",
+  "createRecipeLabel": "Rezept erstellen",
+  "recipeNameLabel": "Rezeptname",
+  "recipeIngredientsLabel": "Zutaten",
+  "recipeEmptyHelp": "Füge die Lebensmittel für dein Rezept hinzu.",
+  "recipeTotalsLabel": "Gesamtes Rezept",
+  "recipePortionsHelp": "Die Werte pro Portion werden beim Speichern berechnet.",
+  "addIngredientLabel": "Zutat hinzufügen",
+  "editRecipeLabel": "Rezept bearbeiten",
+  "recipeNameHint": "Z. B. Hähnchen-Avocado-Bowl",
+  "recipeCoverLabel": "Dein Rezeptfoto"
 }

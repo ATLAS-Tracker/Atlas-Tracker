@@ -587,5 +587,15 @@
   "customFoodChangePhoto": "Change photo",
   "customFoodPhotoError": "Unable to load or save this photo. Please try again.",
   "selectedPortionCount": "{count, plural, one{{count} serving} other{{count} servings}}",
-  "selectedPortionWeight": "{portions} ({weight})"
+  "selectedPortionWeight": "{portions} ({weight})",
+  "createRecipeLabel": "Create a recipe",
+  "recipeNameLabel": "Recipe name",
+  "recipeIngredientsLabel": "Ingredients",
+  "recipeEmptyHelp": "Add the foods that make up your recipe.",
+  "recipeTotalsLabel": "Recipe total",
+  "recipePortionsHelp": "Values per serving will be calculated when you save.",
+  "addIngredientLabel": "Add an ingredient",
+  "editRecipeLabel": "Edit recipe",
+  "recipeNameHint": "e.g. Chicken & avocado bowl",
+  "recipeCoverLabel": "Your recipe photo"
 }

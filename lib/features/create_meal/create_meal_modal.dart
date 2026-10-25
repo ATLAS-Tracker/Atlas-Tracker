@@ -213,82 +213,125 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusScope.of(context).unfocus(),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          /// Meal type selector
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+              20, 12, 20, MediaQuery.viewInsetsOf(context).bottom + 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              IconButton(
-                onPressed: _goToPreviousMeal,
-                icon: const Icon(Icons.chevron_left),
-              ),
+              Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      borderRadius: BorderRadius.circular(4))),
+              const SizedBox(height: 20),
+              Text(widget.mealName,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 20),
+
+              /// Meal type selector
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(currentMeal.getIconData()),
-                  const SizedBox(width: 8),
-                  Text(
-                    _getMealLabel(currentMeal),
-                    style: Theme.of(context).textTheme.titleMedium,
+                  IconButton(
+                    onPressed: _goToPreviousMeal,
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(currentMeal.getIconData()),
+                        const SizedBox(width: 8),
+                        Flexible(
+                            child: Text(
+                          _getMealLabel(currentMeal),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium,
+                        )),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _goToNextMeal,
+                    icon: const Icon(Icons.chevron_right),
                   ),
                 ],
               ),
-              IconButton(
-                onPressed: _goToNextMeal,
-                icon: const Icon(Icons.chevron_right),
+              const SizedBox(height: 16),
+
+              /// Portion inputs
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: mealPortionCountController,
+                      decoration: InputDecoration(
+                        labelText: S.of(context).mealPortionLabel,
+                        filled: true,
+                        fillColor:
+                            Theme.of(context).colorScheme.surfaceContainerLow,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: portionsEatenController,
+                      decoration: InputDecoration(
+                        labelText: S.of(context).portionEatLabel,
+                        filled: true,
+                        fillColor:
+                            Theme.of(context).colorScheme.surfaceContainerLow,
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                  ),
+                ],
               ),
+
+              /// Calendar
+              DiaryTableCalendar(
+                onDateSelected: _handleDateSelected,
+                calendarDurationDays: const Duration(days: 30),
+                focusedDate: _selectedDate,
+                currentDate: DateTime.now(),
+                selectedDate: _selectedDate,
+                trackedDaysMap: const {},
+              ),
+              const SizedBox(height: 16),
+
+              /// Save button
+              SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16))),
+                    onPressed: isSaveEnabled ? _onSavePressed : null,
+                    child: Text(S.of(context).buttonSaveLabel),
+                  )),
+              const SizedBox(height: 16),
             ],
           ),
-          const SizedBox(height: 16),
-
-          /// Portion inputs
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: mealPortionCountController,
-                  decoration: InputDecoration(
-                    labelText: S.of(context).mealPortionLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: TextFormField(
-                  controller: portionsEatenController,
-                  decoration: const InputDecoration(
-                    labelText: "Portions eaten",
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-              ),
-            ],
-          ),
-
-          /// Calendar
-          DiaryTableCalendar(
-            onDateSelected: _handleDateSelected,
-            calendarDurationDays: const Duration(days: 30),
-            focusedDate: _selectedDate,
-            currentDate: DateTime.now(),
-            selectedDate: _selectedDate,
-            trackedDaysMap: const {},
-          ),
-          const SizedBox(height: 16),
-
-          /// Save button
-          FilledButton(
-            onPressed: isSaveEnabled ? _onSavePressed : null,
-            child: Text(S.of(context).buttonSaveLabel),
-          ),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }

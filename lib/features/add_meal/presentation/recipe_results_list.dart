@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,12 +17,14 @@ class RecipeResultsList extends StatefulWidget {
   final DateTime day;
   final AddMealType mealType;
   final RecipeSearchBloc bloc;
+  final bool showCreateButton;
 
   const RecipeResultsList({
     super.key,
     required this.day,
     required this.mealType,
     required this.bloc,
+    this.showCreateButton = true,
   });
 
   @override
@@ -55,47 +58,79 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
   Widget build(BuildContext context) {
     _log.fine("Recipe result list build method");
 
-    return BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
-      bloc: widget.bloc,
-      builder: (context, state) {
-        if (state is RecipeInitial) {
-          return const DefaultsResultsWidget();
-        } else if (state is RecipeLoadingState) {
-          return const Padding(
-            padding: EdgeInsets.only(top: 32),
-            child: CircularProgressIndicator(),
-          );
-        } else if (state is RecipeLoadedState) {
-          return state.recipes.isNotEmpty
-              ? Stack(
-                  children: [
-                    ListView.builder(
-                      itemCount: state.recipes.length,
-                      itemBuilder: (context, index) {
-                        final recipe = state.recipes[index];
-                        return LongPressDraggable(
-                          data: recipe,
-                          onDragStarted: () {
-                            setState(() {
-                              _isDragging = true;
-                            });
-                          },
-                          onDraggableCanceled: (_, __) {
-                            setState(() {
-                              _isDragging = false;
-                            });
-                          },
-                          onDragEnd: (_) {
-                            setState(() {
-                              _isDragging = false;
-                            });
-                          },
-                          feedback: Material(
-                            color: Colors.transparent,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 300),
-                              child: Opacity(
-                                opacity: 0.85,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.showCreateButton)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: FilledButton.icon(
+              key: const ValueKey('create-recipe'),
+              onPressed: () {
+                FocusScope.of(context).unfocus();
+                Navigator.of(context)
+                    .pushNamed(NavigationOptions.createMealRoute);
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: Text(S.of(context).createRecipeLabel),
+              style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16))),
+            ),
+          ),
+        Expanded(
+            child: BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
+          bloc: widget.bloc,
+          builder: (context, state) {
+            if (state is RecipeInitial) {
+              return const DefaultsResultsWidget();
+            } else if (state is RecipeLoadingState) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is RecipeLoadedState) {
+              return state.recipes.isNotEmpty
+                  ? Stack(
+                      children: [
+                        ListView.builder(
+                          itemCount: state.recipes.length,
+                          itemBuilder: (context, index) {
+                            final recipe = state.recipes[index];
+                            return LongPressDraggable(
+                              data: recipe,
+                              onDragStarted: () {
+                                setState(() {
+                                  _isDragging = true;
+                                });
+                              },
+                              onDraggableCanceled: (_, __) {
+                                setState(() {
+                                  _isDragging = false;
+                                });
+                              },
+                              onDragEnd: (_) {
+                                setState(() {
+                                  _isDragging = false;
+                                });
+                              },
+                              feedback: Material(
+                                color: Colors.transparent,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 300),
+                                  child: Opacity(
+                                    opacity: 0.85,
+                                    child: MealItemCard(
+                                      day: widget.day,
+                                      mealEntity: recipe,
+                                      addMealType: widget.mealType,
+                                      usesImperialUnits:
+                                          state.usesImperialUnits,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              childWhenDragging: Opacity(
+                                opacity: 0.3,
                                 child: MealItemCard(
                                   day: widget.day,
                                   mealEntity: recipe,
@@ -103,82 +138,74 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
                                   usesImperialUnits: state.usesImperialUnits,
                                 ),
                               ),
-                            ),
-                          ),
-                          childWhenDragging: Opacity(
-                            opacity: 0.3,
-                            child: MealItemCard(
-                              day: widget.day,
-                              mealEntity: recipe,
-                              addMealType: widget.mealType,
-                              usesImperialUnits: state.usesImperialUnits,
-                            ),
-                          ),
-                          child: MealItemCard(
-                            day: widget.day,
-                            mealEntity: recipe,
-                            addMealType: widget.mealType,
-                            usesImperialUnits: state.usesImperialUnits,
-                          ),
-                        );
-                      },
-                    ),
-                    if (_isDragging)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          height: 70,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .error
-                              .withValues(alpha: 0.3),
-                          child: DragTarget(
-                            onWillAcceptWithDetails: (data) => true,
-                            onAcceptWithDetails: (details) {
-                              setState(() {
-                                _isDragging = false;
-                              });
-
-                              final draggedData = details.data;
-
-                              if (draggedData is MealEntity) {
-                                _deleteImageIfLocal(draggedData.url);
-
-                                if (draggedData.code != null) {
-                                  widget.bloc.add(DeleteRecipeEvent(
-                                      recipeId: draggedData.code!));
-                                }
-                              }
-                            },
-                            onLeave: (data) {
-                              setState(() {
-                                _isDragging = false;
-                              });
-                            },
-                            builder: (context, candidateData, rejectedData) {
-                              return const Center(
-                                child: Icon(
-                                  Icons.delete_outline,
-                                  size: 36,
-                                  color: Colors.white,
-                                ),
-                              );
-                            },
-                          ),
+                              child: MealItemCard(
+                                day: widget.day,
+                                mealEntity: recipe,
+                                addMealType: widget.mealType,
+                                usesImperialUnits: state.usesImperialUnits,
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                  ],
-                )
-              : const Center(child: NoResultsWidget());
-        } else if (state is RecipeFailedState) {
-          return ErrorDialog(
-            errorText: S.of(context).errorRecipeLabel,
-            onRefreshPressed: _onRecipeRefreshButtonPressed,
-          );
-        } else {
-          return const SizedBox();
-        }
-      },
+                        if (_isDragging)
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              height: 70,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .error
+                                  .withValues(alpha: 0.3),
+                              child: DragTarget(
+                                onWillAcceptWithDetails: (data) => true,
+                                onAcceptWithDetails: (details) {
+                                  setState(() {
+                                    _isDragging = false;
+                                  });
+
+                                  final draggedData = details.data;
+
+                                  if (draggedData is MealEntity) {
+                                    _deleteImageIfLocal(draggedData.url);
+
+                                    if (draggedData.code != null) {
+                                      widget.bloc.add(DeleteRecipeEvent(
+                                          recipeId: draggedData.code!));
+                                    }
+                                  }
+                                },
+                                onLeave: (data) {
+                                  setState(() {
+                                    _isDragging = false;
+                                  });
+                                },
+                                builder:
+                                    (context, candidateData, rejectedData) {
+                                  return const Center(
+                                    child: Icon(
+                                      Icons.delete_outline,
+                                      size: 36,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                      ],
+                    )
+                  : const Center(child: NoResultsWidget());
+            } else if (state is RecipeFailedState) {
+              return ErrorDialog(
+                errorText: S.of(context).errorRecipeLabel,
+                onRefreshPressed: _onRecipeRefreshButtonPressed,
+              );
+            } else {
+              return const SizedBox();
+            }
+          },
+        )),
+      ],
     );
   }
 }
