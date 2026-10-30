@@ -1,4 +1,6 @@
 {
+  "coachTodayTitle": "Tagesübersicht",
+  "coachLoggedToday": "heute erfasst",
   "coachStudentsLabel": "Meine Schüler",
   "appTitle": "ATLAS TRACKER",
   "appVersionName": "Version {versionNumber}",

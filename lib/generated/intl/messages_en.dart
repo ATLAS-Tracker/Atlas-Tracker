@@ -120,10 +120,14 @@ class MessageLookup extends MessageLookupByLibrary {
             "Cloud synchronization problem."),
         "cmLabel": MessageLookupByLibrary.simpleMessage("cm"),
         "coachFallbackName": MessageLookupByLibrary.simpleMessage("Coach"),
+        "coachLoggedToday":
+            MessageLookupByLibrary.simpleMessage("logged today"),
         "coachObjectiveLabel":
             MessageLookupByLibrary.simpleMessage("Coach objective"),
         "coachStudentsLabel":
             MessageLookupByLibrary.simpleMessage("My students"),
+        "coachTodayTitle":
+            MessageLookupByLibrary.simpleMessage("Daily check-in"),
         "consumedLabel": MessageLookupByLibrary.simpleMessage("consumed"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Which meal type do you want to copy to?"),

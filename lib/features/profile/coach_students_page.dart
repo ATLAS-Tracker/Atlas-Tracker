@@ -5,6 +5,8 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'student_macros_page.dart';
 
 class CoachStudentsPage extends StatefulWidget {
@@ -122,7 +124,7 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return _StudentsSummary(
-                    names: [for (final st in students) st['name'].toString()],
+                    students: students,
                   );
                 }
                 final student = students[index - 1];
@@ -151,28 +153,68 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
 }
 
 class _StudentsSummary extends StatelessWidget {
-  final List<String> names;
+  final List<Map<String, dynamic>> students;
 
-  const _StudentsSummary({required this.names});
+  const _StudentsSummary({required this.students});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
+
+    final logged = students.where((st) {
+      final today = st['today'] as Map<String, double?>?;
+      return (today?['caloriesTracked'] ?? 0) > 0;
+    }).length;
+
+    final total = students.length;
+    final ratio = total == 0 ? 0.0 : logged / total;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('${names.length}',
-              style: theme.textTheme.headlineMedium
+          Text('${S.of(context).coachTodayTitle} ⚡',
+              style: theme.textTheme.headlineSmall
                   ?.copyWith(fontWeight: FontWeight.w800)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(S.of(context).myStudentsTitle,
-                style: theme.textTheme.titleSmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600)),
+          const SizedBox(height: 16),
+          AtlasBrandPanel(
+            padding: const EdgeInsets.all(18),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text('$logged/$total',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.w800)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(S.of(context).coachLoggedToday,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.74),
+                              fontWeight: FontWeight.w600)),
+                    ),
+                    Text('${(ratio * 100).round()} %',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                            color: Colors.white, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: ratio,
+                    minHeight: 6,
+                    color: Colors.white,
+                    backgroundColor: Colors.white.withValues(alpha: 0.18),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -209,16 +251,24 @@ class _StudentCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: colors.primaryContainer,
+                  Container(
+                    width: 32,
+                    height: 32,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: atlasBrandGradientColors,
+                      ),
+                    ),
                     child: Text(
                         name.trim().isEmpty
                             ? '?'
                             : name.trim()[0].toUpperCase(),
                         style: theme.textTheme.labelLarge?.copyWith(
-                            color: colors.onPrimaryContainer,
-                            fontWeight: FontWeight.w800)),
+                            color: Colors.white, fontWeight: FontWeight.w800)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(

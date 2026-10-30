@@ -115,10 +115,13 @@ class MessageLookup extends MessageLookupByLibrary {
             "Bulut senkronizasyonu sorunu."),
         "cmLabel": MessageLookupByLibrary.simpleMessage("cm"),
         "coachFallbackName": MessageLookupByLibrary.simpleMessage("Koç"),
+        "coachLoggedToday":
+            MessageLookupByLibrary.simpleMessage("bugün kayıt girdi"),
         "coachObjectiveLabel":
             MessageLookupByLibrary.simpleMessage("Koç hedefi"),
         "coachStudentsLabel":
             MessageLookupByLibrary.simpleMessage("Öğrencilerim"),
+        "coachTodayTitle": MessageLookupByLibrary.simpleMessage("Günlük takip"),
         "consumedLabel": MessageLookupByLibrary.simpleMessage("tüketildi"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Hangi yemek türüne kopyalamak istiyorsunuz?"),

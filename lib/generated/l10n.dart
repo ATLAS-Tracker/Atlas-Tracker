@@ -4833,6 +4833,26 @@ class S {
     );
   }
 
+  /// `Daily check-in`
+  String get coachTodayTitle {
+    return Intl.message(
+      'Daily check-in',
+      name: 'coachTodayTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `logged today`
+  String get coachLoggedToday {
+    return Intl.message(
+      'logged today',
+      name: 'coachLoggedToday',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `My students`
   String get coachStudentsLabel {
     return Intl.message(

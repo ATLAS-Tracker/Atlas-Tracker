@@ -489,6 +489,8 @@
   "noDataToday": "Bugün için veri yok",
   "signOutOfflineMessage": "Verilerin kaybolmaması için yalnızca internet bağlantısı olduğunda çıkış yapabilirsiniz.",
   "signOutSyncFailedMessage": "Veriler senkronize edilemedi. Lütfen daha sonra tekrar giriş yapın.",
+  "coachTodayTitle": "Günlük takip",
+  "coachLoggedToday": "bugün kayıt girdi",
   "coachStudentsLabel": "Öğrencilerim",
   "noInternetConnectionMessage": "İnternet bağlantısı yok. Özellik kullanılamıyor.",
   "setMacrosLabel": "Makro hedeflerini ayarla",

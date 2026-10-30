@@ -499,6 +499,8 @@
   "noDataToday": "No data for today",
   "signOutOfflineMessage": "You can only sign out when internet connection is available to avoid losing data.",
   "signOutSyncFailedMessage": "Failed to sync your data. Please sign in again later.",
+  "coachTodayTitle": "Daily check-in",
+  "coachLoggedToday": "logged today",
   "coachStudentsLabel": "My students",
   "noInternetConnectionMessage": "No internet connection. Feature unavailable.",
   "setMacrosLabel": "Set macros",
