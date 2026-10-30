@@ -5,6 +5,7 @@ import 'package:opennutritracker/core/presentation/widgets/home_appbar.dart';
 import 'package:opennutritracker/features/home/home_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
 import 'package:opennutritracker/features/profile/profile_page.dart';
+import 'package:opennutritracker/features/profile/coach_students_page.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/features/auth/check_subscription.dart';
@@ -25,14 +26,17 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _selectedPageIndex = 0;
-
-  late List<Widget> _bodyPages;
-  late List<PreferredSizeWidget> _appbarPages;
+  bool _isCoach = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    locator.get<GetUserUsecase>().getUserData().then((user) {
+      if (mounted && user.role == UserRoleEntity.coach) {
+        setState(() => _isCoach = true);
+      }
+    }).catchError((_) {});
   }
 
   @override
@@ -79,28 +83,27 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeDependencies() {
-    _bodyPages = [
+  Widget build(BuildContext context) {
+    // CoachStudentsPage brings its own Scaffold/AppBar.
+    final bodyPages = <Widget>[
       const HomePage(),
       const DiaryPage(),
-      const ProfilePage(),
+      _isCoach ? const CoachStudentsPage() : const ProfilePage(),
     ];
-    _appbarPages = [
+    final appbarPages = <PreferredSizeWidget?>[
       const HomeAppbar(),
       MainAppbar(
           title: S.of(context).diaryLabel,
           iconData: Icons.calendar_month_outlined),
-      MainAppbar(
-          title: S.of(context).profileLabel, iconData: Icons.account_circle)
+      _isCoach
+          ? null
+          : MainAppbar(
+              title: S.of(context).profileLabel,
+              iconData: Icons.account_circle)
     ];
-    super.didChangeDependencies();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _appbarPages[_selectedPageIndex],
-      body: _bodyPages[_selectedPageIndex],
+      appBar: appbarPages[_selectedPageIndex],
+      body: bodyPages[_selectedPageIndex],
       floatingActionButton: null,
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedPageIndex,
@@ -116,11 +119,17 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
                   ? const Icon(Icons.calendar_month)
                   : const Icon(Icons.calendar_month_outlined),
               label: S.of(context).diaryLabel),
-          NavigationDestination(
-              icon: _selectedPageIndex == 2
-                  ? const Icon(Icons.account_circle)
-                  : const Icon(Icons.account_circle_outlined),
-              label: S.of(context).profileLabel)
+          _isCoach
+              ? NavigationDestination(
+                  icon: _selectedPageIndex == 2
+                      ? const Icon(Icons.groups)
+                      : const Icon(Icons.groups_outlined),
+                  label: S.of(context).myStudentsTitle)
+              : NavigationDestination(
+                  icon: _selectedPageIndex == 2
+                      ? const Icon(Icons.account_circle)
+                      : const Icon(Icons.account_circle_outlined),
+                  label: S.of(context).profileLabel)
         ],
       ),
     );

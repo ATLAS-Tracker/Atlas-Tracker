@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
+import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
 import 'student_macros_page.dart';
 
 class CoachStudentsPage extends StatefulWidget {
@@ -49,202 +51,240 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
 
     final studentIds = students.map((e) => e['id'].toString()).toList();
 
-    final macroRows = await supabase
+    const fields = [
+      'caloriesTracked',
+      'calorieGoal',
+      'proteinTracked',
+      'fatTracked',
+      'carbsTracked',
+    ];
+    final rows = await supabase
         .from('tracked_days')
-        .select(
-          '''
-          user_id,
-          proteinTracked,
-          proteinGoal,
-          fatTracked,
-          fatGoal,
-          carbsTracked,
-          carbsGoal
-          ''',
-        )
+        .select('user_id, ${fields.join(', ')}')
         .eq('day', todayKey)
         .inFilter('user_id', studentIds);
 
-    final macrosByUser =
-        <String, ({double? proteinTracked, double? proteinGoal, double? fatTracked, double? fatGoal, double? carbsTracked, double? carbsGoal})>{};
-
-    for (final row in macroRows.cast<Map<String, dynamic>>()) {
-      final userId = row['user_id']?.toString();
-      if (userId == null) continue;
-
-      macrosByUser[userId] = (
-        proteinTracked: (row['proteinTracked'] as num?)?.toDouble(),
-        proteinGoal: (row['proteinGoal'] as num?)?.toDouble(),
-        fatTracked: (row['fatTracked'] as num?)?.toDouble(),
-        fatGoal: (row['fatGoal'] as num?)?.toDouble(),
-        carbsTracked: (row['carbsTracked'] as num?)?.toDouble(),
-        carbsGoal: (row['carbsGoal'] as num?)?.toDouble(),
-      );
-    }
+    final byUser = {
+      for (final row in rows.cast<Map<String, dynamic>>())
+        row['user_id'].toString(): {
+          for (final f in fields) f: (row[f] as num?)?.toDouble(),
+        },
+    };
 
     return students
-        .map((student) {
-          final entry = macrosByUser[student['id'].toString()];
-          return {
-            ...student,
-            'proteinTracked': entry?.proteinTracked,
-            'proteinGoal': entry?.proteinGoal,
-            'fatTracked': entry?.fatTracked,
-            'fatGoal': entry?.fatGoal,
-            'carbsTracked': entry?.carbsTracked,
-            'carbsGoal': entry?.carbsGoal,
-          };
-        })
+        .map((student) => {
+              ...student,
+              'today': byUser[student['id'].toString()],
+            })
         .toList();
   }
 
-  String _formatMacroValue(double? tracked, double? goal) {
-    final trackedStr = _formatNumber(tracked);
-    final goalStr = _formatNumber(goal);
-    return '$trackedStr / $goalStr g';
-  }
-
-  String _formatNumber(double? value) {
-    if (value == null) return '-';
-    if ((value % 1).abs() < 0.01) {
-      return value.toInt().toString();
-    }
-    return value.toStringAsFixed(1);
+  Future<void> _refresh() async {
+    final future = _fetchStudents();
+    setState(() => _studentsFuture = future);
+    await future;
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(S.of(context).myStudentsTitle),
-      ),
+      appBar: MainAppbar(title: s.myStudentsTitle, iconData: Icons.groups),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _studentsFuture,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            if (snapshot.hasError) {
-              return Center(
-                  child:
-                      Text('${S.of(context).errorPrefix} ${snapshot.error}'));
-            }
+          if (snapshot.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());
           }
-
-          final students = snapshot.data!;
-          if (students.isEmpty) {
-            return Center(child: Text(S.of(context).noStudents));
+          if (snapshot.hasError) {
+            return _CenteredMessage(
+              icon: Icons.cloud_off_outlined,
+              text: '${s.errorPrefix} ${snapshot.error}',
+              onRefresh: _refresh,
+            );
           }
 
-          return ListView.builder(
-            itemCount: students.length,
-            itemBuilder: (context, index) {
-              final student = students[index];
-              final studentId = student['id'].toString();
-              final studentName = student['name'].toString();
-              final double? proteinTracked =
-                  student['proteinTracked'] as double?;
-              final double? proteinGoal = student['proteinGoal'] as double?;
-              final double? fatTracked = student['fatTracked'] as double?;
-              final double? fatGoal = student['fatGoal'] as double?;
-              final double? carbsTracked = student['carbsTracked'] as double?;
-              final double? carbsGoal = student['carbsGoal'] as double?;
+          final students = snapshot.data ?? [];
+          if (students.isEmpty) {
+            return _CenteredMessage(
+              icon: Icons.group_outlined,
+              text: s.noStudents,
+              onRefresh: _refresh,
+            );
+          }
 
-              return Card(
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => StudentMacrosPage(
-                          studentId: studentId,
-                          studentName: studentName,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 24,
-                        backgroundColor:
-                            Theme.of(context).colorScheme.primary,
-                        child: Icon(Icons.person,
-                            color: Theme.of(context).colorScheme.onPrimary),
-                      ),
-                      title: Text(
-                        studentName,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      subtitle: Builder(
-                        builder: (context) {
-                          final macrosTexts = [
-                            (
-                              S.of(context).proteinLabel,
-                              _formatMacroValue(proteinTracked, proteinGoal),
-                            ),
-                            (
-                              S.of(context).fatLabel,
-                              _formatMacroValue(fatTracked, fatGoal),
-                            ),
-                            (
-                              S.of(context).carbsLabel,
-                              _formatMacroValue(carbsTracked, carbsGoal),
-                            ),
-                          ];
-
-                          final hasData = [
-                            proteinTracked,
-                            proteinGoal,
-                            fatTracked,
-                            fatGoal,
-                            carbsTracked,
-                            carbsGoal,
-                          ].any((value) => value != null);
-
-                          if (!hasData) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                S.of(context).noDataToday,
-                                style:
-                                    Theme.of(context).textTheme.bodySmall,
-                              ),
-                            );
-                          }
-
-                          final textStyle =
-                              Theme.of(context).textTheme.bodySmall;
-
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: macrosTexts
-                                  .map(
-                                    (entry) => Text(
-                                      '${entry.$1}: ${entry.$2}',
-                                      style: textStyle,
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          );
-                        },
+          return RefreshIndicator(
+            onRefresh: _refresh,
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              itemCount: students.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return _StudentsSummary(
+                    names: [for (final st in students) st['name'].toString()],
+                  );
+                }
+                final student = students[index - 1];
+                final studentId = student['id'].toString();
+                final studentName = student['name'].toString();
+                return _StudentCard(
+                  name: studentName,
+                  student: student,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => StudentMacrosPage(
+                        studentId: studentId,
+                        studentName: studentName,
                       ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _StudentsSummary extends StatelessWidget {
+  final List<String> names;
+
+  const _StudentsSummary({required this.names});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+      child: Row(
+        children: [
+          Text('${names.length}',
+              style: theme.textTheme.headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.w800)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(S.of(context).myStudentsTitle,
+                style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StudentCard extends StatelessWidget {
+  final String name;
+  final Map<String, dynamic> student;
+  final VoidCallback onTap;
+
+  const _StudentCard(
+      {required this.name, required this.student, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final s = S.of(context);
+    final today = student['today'] as Map<String, double?>?;
+    double v(String key) => today?[key] ?? 0;
+    return Material(
+      color: colors.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          // MacroEnergyBar carries its own vertical padding.
+          padding: EdgeInsets.fromLTRB(18, 16, 18, today == null ? 16 : 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: colors.primaryContainer,
+                    child: Text(
+                        name.trim().isEmpty
+                            ? '?'
+                            : name.trim()[0].toUpperCase(),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                            color: colors.onPrimaryContainer,
+                            fontWeight: FontWeight.w800)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                      today == null
+                          ? s.noDataToday
+                          : '${v('caloriesTracked').toInt()} / ${v('calorieGoal').toInt()} ${s.kcalLabel}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colors.onSurfaceVariant)),
+                ],
+              ),
+              if (today != null)
+                // No legend popup here: a tap opens the student.
+                IgnorePointer(
+                  child: MacroEnergyBar(
+                    calories: v('caloriesTracked'),
+                    goal: v('calorieGoal'),
+                    carbs: v('carbsTracked'),
+                    fats: v('fatTracked'),
+                    proteins: v('proteinTracked'),
+                    backgroundColor: colors.surfaceContainerHighest,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CenteredMessage extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Future<void> Function() onRefresh;
+
+  const _CenteredMessage(
+      {required this.icon, required this.text, required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    // ListView so pull-to-refresh also works on empty/error states.
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        padding: const EdgeInsets.all(32),
+        children: [
+          const SizedBox(height: 80),
+          Icon(icon, size: 56, color: colors.onSurfaceVariant),
+          const SizedBox(height: 16),
+          Text(text,
+              textAlign: TextAlign.center,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+        ],
       ),
     );
   }
