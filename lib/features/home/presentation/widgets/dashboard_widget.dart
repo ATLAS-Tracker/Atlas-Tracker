@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
@@ -46,12 +47,6 @@ class DashboardWidget extends StatelessWidget {
     required this.usesImperialUnits,
   });
 
-  double _progress(double supplied, double goal) {
-    if (supplied <= 0 || goal <= 0) return 0;
-    if (supplied >= goal) return 1;
-    return supplied / goal;
-  }
-
   double _displayWeight(double weightKg) {
     return usesImperialUnits ? UnitCalc.kgToLbs(weightKg) : weightKg;
   }
@@ -88,7 +83,6 @@ class DashboardWidget extends StatelessWidget {
     final brandSecondary = brandOnSurface.withValues(alpha: 0.74);
     final brandTertiary = brandOnSurface.withValues(alpha: 0.58);
     final kcalLeftLabel = totalKcalLeft.clamp(0, totalKcalDaily).toDouble();
-    final consumedProgress = _progress(totalKcalSupplied, totalKcalDaily);
     final weightUnit = usesImperialUnits ? s.lbsLabel : s.kgLabel;
     final targetWeightLabel = _displayWeight(targetWeight);
     final currentWeightLabel =
@@ -192,14 +186,13 @@ class DashboardWidget extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(999),
-                  child: LinearProgressIndicator(
-                    minHeight: 9,
-                    value: consumedProgress,
-                    backgroundColor: brandOnSurface.withValues(alpha: 0.18),
-                    valueColor: AlwaysStoppedAnimation<Color>(brandOnSurface),
-                  ),
+                MacroEnergyBar(
+                  calories: totalKcalSupplied,
+                  goal: totalKcalDaily,
+                  carbs: totalCarbsIntake,
+                  fats: totalFatsIntake,
+                  proteins: totalProteinsIntake,
+                  backgroundColor: brandOnSurface.withValues(alpha: 0.18),
                 ),
                 const SizedBox(height: 20),
                 _WeightButton(
@@ -453,12 +446,6 @@ class _MacroSummaryCard extends StatelessWidget {
     required this.visual,
   });
 
-  double get progress {
-    if (intake <= 0 || goal <= 0) return 0;
-    if (intake >= goal) return 1;
-    return intake / goal;
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -521,16 +508,6 @@ class _MacroSummaryCard extends StatelessWidget {
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w800,
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              minHeight: 7,
-              value: progress,
-              backgroundColor: visual.color.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(visual.color),
             ),
           ),
         ],

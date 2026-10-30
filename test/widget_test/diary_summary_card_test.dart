@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:flutter/services.dart';
@@ -76,6 +77,9 @@ void main() {
           )),
         ));
         await tester.pumpAndSettle();
+        expect(find.text('220 / 250 g'), findsNothing);
+        await tester.tap(find.text(S.current.kcalMacrosLabel));
+        await tester.pumpAndSettle();
         if (populated) {
           expect(find.text('220 / 250 g'), findsOneWidget);
           expect(
@@ -84,10 +88,25 @@ void main() {
                   matching: find.text('78,4 kg')),
               findsOneWidget);
         }
-        for (final bar in tester.widgetList<LinearProgressIndicator>(
-            find.byType(LinearProgressIndicator))) {
-          expect(bar.value, inInclusiveRange(0, 1));
+        await tester.tap(find.text(S.current.kcalMacrosLabel));
+        await tester.pumpAndSettle();
+        expect(find.text('220 / 250 g'), findsNothing);
+        expect(find.byType(LinearProgressIndicator), findsNothing);
+        expect(find.byKey(const ValueKey('macro-energy-legend')), findsNothing);
+        await tester.tap(find.byType(MacroEnergyBar));
+        await tester.pumpAndSettle();
+        expect(
+            find.byKey(const ValueKey('macro-energy-legend')), findsOneWidget);
+        expect(find.text(populated ? '37 %' : '0 %'),
+            populated ? findsOneWidget : findsNWidgets(3));
+        expect(tester.takeException(), isNull);
+        expect(find.byType(AlertDialog), findsNothing);
+        for (var i = 0; i < 3; i++) {
+          expect(find.byKey(ValueKey('legend-dot-$i')), findsOneWidget);
         }
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('macro-energy-legend')), findsNothing);
         await tester.ensureVisible(find.byTooltip(S.current.editWeightLabel));
         await tester.tap(find.byTooltip(S.current.editWeightLabel));
         expect(edited, isTrue);

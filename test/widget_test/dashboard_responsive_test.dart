@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
@@ -59,12 +60,33 @@ void main() {
         ));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
+        expect(find.byKey(const ValueKey('macro-energy-legend')), findsNothing);
+        await tester.tap(find.byType(MacroEnergyBar));
+        await tester.pumpAndSettle();
+        expect(
+            find.byKey(const ValueKey('macro-energy-legend')), findsOneWidget);
+        for (final share in ['35 %', '40 %', '25 %']) {
+          expect(find.text(share), findsOneWidget);
+        }
+        expect(find.byType(AlertDialog), findsNothing);
+        for (var i = 0; i < 3; i++) {
+          expect(find.byKey(ValueKey('legend-dot-$i')), findsOneWidget);
+        }
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('macro-energy-legend')), findsNothing);
         final number = tester.widget<Text>(find.text('220 / 250 g'));
         expect(number.maxLines, 1);
-        for (final bar in tester.widgetList<LinearProgressIndicator>(
-            find.byType(LinearProgressIndicator))) {
-          expect(bar.value, inInclusiveRange(0, 1));
-        }
+        expect(find.byType(LinearProgressIndicator), findsNothing);
+        final segments = [
+          for (var i = 0; i < 3; i++)
+            tester.getSize(find.byKey(ValueKey('energy-segment-$i'))).width,
+        ];
+        final totalWidth = segments.reduce((a, b) => a + b);
+        // The goal is exceeded: the full bar retains the energy proportions.
+        expect(segments[0] / totalWidth, closeTo(880 / 2490, 0.001));
+        expect(segments[1] / totalWidth, closeTo(990 / 2490, 0.001));
+        expect(segments[2] / totalWidth, closeTo(620 / 2490, 0.001));
       });
     }
   }

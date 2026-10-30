@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
@@ -68,35 +69,49 @@ class DiarySummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(999),
-            child: LinearProgressIndicator(
-              minHeight: 9,
-              value: calorieGoal <= 0
-                  ? 0
-                  : (caloriesTracked / calorieGoal).clamp(0, 1).toDouble(),
-              backgroundColor: Colors.white.withValues(alpha: 0.18),
-              valueColor: const AlwaysStoppedAnimation(Colors.white),
-            ),
+          MacroEnergyBar(
+            calories: caloriesTracked,
+            goal: calorieGoal,
+            carbs: trackedDay?.carbsTracked ?? 0,
+            fats: trackedDay?.fatTracked ?? 0,
+            proteins: trackedDay?.proteinTracked ?? 0,
+            backgroundColor: Colors.white.withValues(alpha: 0.18),
           ),
-          const SizedBox(height: 20),
-          _DashboardMacro(
-            label: s.carbsLabel,
-            intake: trackedDay?.carbsTracked ?? 0,
-            goal: trackedDay?.carbsGoal ?? homeState?.totalCarbsGoal ?? 0,
-            visual: MacroVisuals.carbs,
-          ),
-          _DashboardMacro(
-            label: s.fatLabel,
-            intake: trackedDay?.fatTracked ?? 0,
-            goal: trackedDay?.fatGoal ?? homeState?.totalFatsGoal ?? 0,
-            visual: MacroVisuals.fats,
-          ),
-          _DashboardMacro(
-            label: s.proteinLabel,
-            intake: trackedDay?.proteinTracked ?? 0,
-            goal: trackedDay?.proteinGoal ?? homeState?.totalProteinsGoal ?? 0,
-            visual: MacroVisuals.proteins,
+          ExpansionTile(
+            key: ValueKey(trackedDay?.day),
+            tilePadding: EdgeInsets.zero,
+            childrenPadding: const EdgeInsets.only(bottom: 12),
+            iconColor: Colors.white,
+            collapsedIconColor: Colors.white,
+            textColor: Colors.white,
+            collapsedTextColor: Colors.white,
+            shape: const Border(),
+            collapsedShape: const Border(),
+            title: Text(s.kcalMacrosLabel,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white, fontWeight: FontWeight.w700)),
+            children: [
+              _DashboardMacro(
+                label: s.carbsLabel,
+                intake: trackedDay?.carbsTracked ?? 0,
+                goal: trackedDay?.carbsGoal ?? homeState?.totalCarbsGoal ?? 0,
+                visual: MacroVisuals.carbs,
+              ),
+              _DashboardMacro(
+                label: s.fatLabel,
+                intake: trackedDay?.fatTracked ?? 0,
+                goal: trackedDay?.fatGoal ?? homeState?.totalFatsGoal ?? 0,
+                visual: MacroVisuals.fats,
+              ),
+              _DashboardMacro(
+                label: s.proteinLabel,
+                intake: trackedDay?.proteinTracked ?? 0,
+                goal: trackedDay?.proteinGoal ??
+                    homeState?.totalProteinsGoal ??
+                    0,
+                visual: MacroVisuals.proteins,
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Container(
@@ -226,16 +241,6 @@ class _DashboardMacro extends StatelessWidget {
                       '${intake.toInt()} / ${goal.toInt()} ${S.of(context).gramUnit}',
                       style: textStyle)
                 ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(999),
-                child: LinearProgressIndicator(
-                  minHeight: 7,
-                  value: goal <= 0 ? 0 : (intake / goal).clamp(0, 1).toDouble(),
-                  backgroundColor: Colors.white.withValues(alpha: 0.18),
-                  valueColor: AlwaysStoppedAnimation(visual.color),
-                ),
               ),
             ],
           )),
