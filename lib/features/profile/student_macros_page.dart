@@ -1,16 +1,26 @@
-import 'package:animated_flip_counter/animated_flip_counter.dart';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_tab_bar.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
-import 'package:opennutritracker/features/home/presentation/widgets/macro_nutriments_widget.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/student_macros_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 
 import 'set_student_macros_page.dart';
+
+final _dayKeyFormat = DateFormat('yyyy-MM-dd');
+
+String _dayKey(DateTime day) => _dayKeyFormat.format(day);
+
+DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+
+double? _num(Map<String, dynamic>? data, String key) =>
+    (data?[key] as num?)?.toDouble();
 
 class StudentMacrosPage extends StatelessWidget {
   final String studentId;
@@ -32,7 +42,7 @@ class StudentMacrosPage extends StatelessWidget {
   }
 }
 
-class _StudentMacrosView extends StatelessWidget {
+class _StudentMacrosView extends StatefulWidget {
   final String studentId;
   final String studentName;
 
@@ -42,357 +52,56 @@ class _StudentMacrosView extends StatelessWidget {
   });
 
   @override
+  State<_StudentMacrosView> createState() => _StudentMacrosViewState();
+}
+
+class _StudentMacrosViewState extends State<_StudentMacrosView> {
+  int _tab = 0;
+
+  @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(studentName)),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openSetMacrosPage(context),
-        icon: const Icon(Icons.edit_outlined),
-        label: Text(S.of(context).setMacrosLabel),
-        elevation: 0,
-        focusElevation: 0,
-        hoverElevation: 0,
-        highlightElevation: 0,
-        disabledElevation: 0,
+      appBar: AppBar(
+        title: Text(widget.studentName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: s.setMacrosLabel,
+            onPressed: () => _openSetMacrosPage(context),
+          ),
+        ],
       ),
       body: BlocBuilder<StudentMacrosBloc, StudentMacrosState>(
         builder: (context, state) {
-          if (state is StudentMacrosLoading || state is StudentMacrosInitial) {
+          if (state is StudentMacrosError) {
+            return Center(child: Text('${s.errorPrefix} ${state.message}'));
+          }
+          if (state is! StudentMacrosLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is StudentMacrosError) {
-            return Center(
-              child: Text('${S.of(context).errorPrefix} ${state.message}'),
-            );
-          }
-
-          if (state is! StudentMacrosLoaded) {
-            return const SizedBox.shrink();
-          }
-
-          final dayKey = DateFormat('yyyy-MM-dd').format(state.selectedDate);
-          final data = state.macros[dayKey];
-          final double calorieGoal =
-              (data?['calorieGoal'] as num?)?.toDouble() ?? 0;
-          final double caloriesTracked =
-              (data?['caloriesTracked'] as num?)?.toDouble() ?? 0;
-          final double steps = (data?['steps'] as num?)?.toDouble() ?? 0;
-          final double carbsGoal =
-              (data?['carbsGoal'] as num?)?.toDouble() ?? 0;
-          final double carbsTracked =
-              (data?['carbsTracked'] as num?)?.toDouble() ?? 0;
-          final double fatGoal = (data?['fatGoal'] as num?)?.toDouble() ?? 0;
-          final double fatTracked =
-              (data?['fatTracked'] as num?)?.toDouble() ?? 0;
-          final double proteinGoal =
-              (data?['proteinGoal'] as num?)?.toDouble() ?? 0;
-          final double proteinTracked =
-              (data?['proteinTracked'] as num?)?.toDouble() ?? 0;
-
-          final double kcalLeft = calorieGoal - caloriesTracked;
-          final double gaugeValue = calorieGoal == 0
-              ? 0
-              : (caloriesTracked / calorieGoal).clamp(0.0, 1.0);
-
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Card(
-                elevation: 0,
-                color: Theme.of(context).colorScheme.surface,
-                surfaceTintColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left),
-                            onPressed: () =>
-                                _goToPreviousDay(context, state.selectedDate),
-                          ),
-                          InkWell(
-                            onTap: () =>
-                                _selectDate(context, state.selectedDate),
-                            child: Text(
-                              DateFormat(
-                                'yyyy-MM-dd',
-                              ).format(state.selectedDate),
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          Builder(builder: (context) {
-                            final now = DateTime.now();
-                            final todayOnly =
-                                DateTime(now.year, now.month, now.day);
-                            final d = state.selectedDate;
-                            final selectedOnly =
-                                DateTime(d.year, d.month, d.day);
-                            final canGoNext = selectedOnly.isBefore(todayOnly);
-                            return IconButton(
-                              icon: const Icon(Icons.chevron_right),
-                              onPressed: canGoNext
-                                  ? () => _goToNextDay(
-                                        context,
-                                        state.selectedDate,
-                                      )
-                                  : null,
-                            );
-                          }),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (data == null)
-                        Text(S.of(context).noDataToday)
-                      else ...[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.keyboard_arrow_up_outlined,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                                Text(
-                                  '${caloriesTracked.toInt()}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                                Text(
-                                  S.of(context).suppliedLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            CircularPercentIndicator(
-                              radius: 90.0,
-                              lineWidth: 13.0,
-                              animation: true,
-                              percent: gaugeValue,
-                              arcType: ArcType.FULL,
-                              progressColor: Theme.of(
-                                context,
-                              ).colorScheme.primary,
-                              arcBackgroundColor: Theme.of(
-                                context,
-                              ).colorScheme.primary.withAlpha(50),
-                              center: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  AnimatedFlipCounter(
-                                    duration: const Duration(
-                                      milliseconds: 1000,
-                                    ),
-                                    value:
-                                        kcalLeft.clamp(0, calorieGoal).toInt(),
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                          letterSpacing: -1,
-                                        ),
-                                  ),
-                                  Text(
-                                    S.of(context).kcalLeftLabel,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              circularStrokeCap: CircularStrokeCap.round,
-                            ),
-                            Column(
-                              children: [
-                                Icon(
-                                  Icons.directions_walk,
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface,
-                                ),
-                                Text(
-                                  '${steps.toInt()}',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                                Text(
-                                  S.of(context).stepsLabel,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurface,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        MacroNutrientsView(
-                          totalCarbsIntake: carbsTracked,
-                          totalFatsIntake: fatTracked,
-                          totalProteinsIntake: proteinTracked,
-                          totalCarbsGoal: carbsGoal,
-                          totalFatsGoal: fatGoal,
-                          totalProteinsGoal: proteinGoal,
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          DropdownButton<MacroType>(
-                            value: state.selectedMacro,
-                            onChanged: (value) {
-                              if (value != null) {
-                                context.read<StudentMacrosBloc>().add(
-                                      ChangeMacroTypeEvent(value),
-                                    );
-                              }
-                            },
-                            items: [
-                              DropdownMenuItem(
-                                value: MacroType.calories,
-                                child: Text(S.of(context).caloriesLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.carbs,
-                                child: Text(S.of(context).carbsLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.fat,
-                                child: Text(S.of(context).fatLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.protein,
-                                child: Text(S.of(context).proteinLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.weight,
-                                child: Text(S.of(context).weightLabel),
-                              ),
-                              DropdownMenuItem(
-                                value: MacroType.steps,
-                                child: Text(S.of(context).stepsLabel),
-                              ),
-                            ],
-                          ),
-                          DropdownButton<TimeRange>(
-                            value: state.selectedRange,
-                            onChanged: (value) {
-                              if (value != null) {
-                                context.read<StudentMacrosBloc>().add(
-                                      ChangeRangeEvent(value),
-                                    );
-                              }
-                            },
-                            items: const [
-                              DropdownMenuItem(
-                                value: TimeRange.week,
-                                child: Text('1W'),
-                              ),
-                              DropdownMenuItem(
-                                value: TimeRange.month,
-                                child: Text('1M'),
-                              ),
-                              DropdownMenuItem(
-                                value: TimeRange.threeMonths,
-                                child: Text('3M'),
-                              ),
-                              DropdownMenuItem(
-                                value: TimeRange.sixMonths,
-                                child: Text('6M'),
-                              ),
-                              DropdownMenuItem(
-                                value: TimeRange.year,
-                                child: Text('1Y'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      buildChart(
-                        state.macros,
-                        state.selectedMacro,
-                        state.selectedRange,
-                      ),
-                    ],
-                  ),
-                ),
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            children: [
+              AtlasTabBar(
+                labels: [s.studentDayTab, s.studentTrendTab],
+                selectedIndex: _tab,
+                onSelected: (i) => setState(() => _tab = i),
               ),
-            ),
+              const SizedBox(height: 16),
+              if (_tab == 0)
+                _DayView(state: state)
+              else ...[
+                _WeekStats(state: state),
+                const SizedBox(height: 12),
+                const _TrendPlaceholder(),
+              ],
+            ],
           );
         },
       ),
     );
-  }
-
-  void _goToPreviousDay(BuildContext context, DateTime current) {
-    context.read<StudentMacrosBloc>().add(
-          ChangeDateEvent(current.subtract(const Duration(days: 1))),
-        );
-  }
-
-  void _goToNextDay(BuildContext context, DateTime current) {
-    final now = DateTime.now();
-    final todayOnly = DateTime(now.year, now.month, now.day);
-    final c = current;
-    final currentOnly = DateTime(c.year, c.month, c.day);
-    if (currentOnly.isBefore(todayOnly)) {
-      context.read<StudentMacrosBloc>().add(
-            ChangeDateEvent(current.add(const Duration(days: 1))),
-          );
-    }
-  }
-
-  Future<void> _selectDate(BuildContext context, DateTime initial) async {
-    final bloc = context.read<StudentMacrosBloc>();
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      bloc.add(ChangeDateEvent(picked));
-    }
   }
 
   Future<void> _openSetMacrosPage(BuildContext context) async {
@@ -400,33 +109,12 @@ class _StudentMacrosView extends StatelessWidget {
     final state = bloc.state;
     if (state is! StudentMacrosLoaded) return;
 
-    Map<String, dynamic>? latestGoals() {
-      Map<String, dynamic>? latest;
-      DateTime? latestDate;
-      for (final entry in state.macros.entries) {
-        final date = DateTime.tryParse(entry.key);
-        if (date == null) continue;
-        final value = entry.value;
-        if (latestDate == null || date.isAfter(latestDate)) {
-          if (value['carbsGoal'] != null ||
-              value['fatGoal'] != null ||
-              value['proteinGoal'] != null) {
-            latest = value;
-            latestDate = date;
-          }
-        }
-      }
-      return latest;
-    }
-
-    final dayKey = DateFormat('yyyy-MM-dd').format(state.selectedDate);
-    Map<String, dynamic>? data = state.macros[dayKey];
-    data ??= latestGoals();
+    final data = _latestGoals(state.macros, state.selectedDate);
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => SetStudentMacrosPage(
-          studentId: studentId,
+          studentId: widget.studentId,
           initialCarbs: (data?['carbsGoal'] as num?)?.toInt() ?? 0,
           initialFat: (data?['fatGoal'] as num?)?.toInt() ?? 0,
           initialProtein: (data?['proteinGoal'] as num?)?.toInt() ?? 0,
@@ -436,152 +124,854 @@ class _StudentMacrosView extends StatelessWidget {
 
     if (result != null) {
       final startDate = result['startDate'] as String?;
-      final double newCarbs = (result['carbsGoal'] as num).toDouble();
-      final double newFat = (result['fatGoal'] as num).toDouble();
-      final double newProtein = (result['proteinGoal'] as num).toDouble();
-      final double newCalories = (result['calorieGoal'] as num).toDouble();
-
       if (startDate != null) {
         bloc.add(
           UpdateDayMacrosEvent(startDate, {
-            'carbsGoal': newCarbs,
-            'fatGoal': newFat,
-            'proteinGoal': newProtein,
-            'calorieGoal': newCalories,
+            'carbsGoal': (result['carbsGoal'] as num).toDouble(),
+            'fatGoal': (result['fatGoal'] as num).toDouble(),
+            'proteinGoal': (result['proteinGoal'] as num).toDouble(),
+            'calorieGoal': (result['calorieGoal'] as num).toDouble(),
           }),
         );
       }
     }
   }
+}
 
-  Widget buildChart(
-    Map<String, Map<String, dynamic>> macros,
-    MacroType selectedMacro,
-    TimeRange range,
-  ) {
-    final axisConfig = _getAxisIntervalConfig(range);
+/// Goals in force on [day]: that day's row, else the latest earlier row with goals.
+Map<String, dynamic>? _latestGoals(
+    Map<String, Map<String, dynamic>> macros, DateTime day) {
+  final dayKey = _dayKey(day);
+  String? bestKey;
+  for (final entry in macros.entries) {
+    if (entry.key.compareTo(dayKey) > 0) continue;
+    if (entry.value['calorieGoal'] == null &&
+        entry.value['proteinGoal'] == null) {
+      continue;
+    }
+    if (bestKey == null || entry.key.compareTo(bestKey) > 0) {
+      bestKey = entry.key;
+    }
+  }
+  return bestKey == null ? null : macros[bestKey];
+}
 
-    return SizedBox(
-      height: 200,
-      child: SfCartesianChart(
-        primaryXAxis: DateTimeAxis(
-          intervalType: axisConfig.type,
-          interval: axisConfig.interval.toDouble(),
-          dateFormat: axisConfig.type == DateTimeIntervalType.months
-              ? DateFormat('MMM')
-              : DateFormat('dd/MM'),
+/// Latest weight recorded on or before [day], with its date.
+({DateTime date, double weight})? _weightOnOrBefore(
+    Map<String, Map<String, dynamic>> macros, DateTime day) {
+  final dayKey = _dayKey(day);
+  String? bestKey;
+  for (final entry in macros.entries) {
+    if (entry.key.compareTo(dayKey) > 0 || entry.value['weight'] == null) {
+      continue;
+    }
+    if (bestKey == null || entry.key.compareTo(bestKey) > 0) {
+      bestKey = entry.key;
+    }
+  }
+  if (bestKey == null) return null;
+  return (
+    date: DateTime.parse(bestKey),
+    weight: _num(macros[bestKey], 'weight')!,
+  );
+}
+
+/// Rough walking energy cost: ~0.5 kcal per kg of body weight per 1000 steps
+/// (≈ 0.035 kcal/step at 70 kg). Falls back to 70 kg without a weigh-in.
+double stepsToKcal(int steps, double? weightKg) =>
+    steps * (weightKg ?? 70) * 0.0005;
+
+class _DayView extends StatelessWidget {
+  final StudentMacrosLoaded state;
+
+  const _DayView({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final day = _dateOnly(state.selectedDate);
+    final data = state.macros[_dayKey(day)];
+    final goals = _latestGoals(state.macros, day);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _DayNavigator(selectedDate: day),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: _DayWeightCard(weight: _num(data, 'weight')),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AspectRatio(
+                aspectRatio: 1,
+                child: StudentEnergyCard(
+                  consumed: _num(data, 'caloriesTracked') ?? 0,
+                  goal: _num(data, 'calorieGoal') ??
+                      _num(goals, 'calorieGoal') ??
+                      0,
+                ),
+              ),
+            ),
+          ],
         ),
-        series: <ScatterSeries<_MacroPoint, DateTime>>[
-          ScatterSeries<_MacroPoint, DateTime>(
-            dataSource: _getMacroPoints(macros, selectedMacro, range),
-            xValueMapper: (p, _) => p.date,
-            yValueMapper: (p, _) => p.value,
-            animationDuration: 0,
-            emptyPointSettings: const EmptyPointSettings(
-              mode: EmptyPointMode.gap,
-            ),
-            markerSettings: const MarkerSettings(
-              isVisible: true,
-              width: 8,
-              height: 8,
-            ),
-            dataLabelSettings: DataLabelSettings(
-              isVisible: true,
-              labelAlignment: ChartDataLabelAlignment.top,
-              builder: (dynamic data, _, __, ___, ____) {
-                final point = data as _MacroPoint;
-                final value = point.value?.toStringAsFixed(1) ?? '';
-                return Text(value, style: const TextStyle(fontSize: 10));
-              },
+        const SizedBox(height: 12),
+        _DayMacrosCard(data: data, goals: goals),
+        const SizedBox(height: 12),
+        _DayBalanceCard(
+          consumed: _num(data, 'caloriesTracked') ?? 0,
+          activityKcal: _num(data, 'caloriesBurned') ?? 0,
+          steps: (_num(data, 'steps') ?? 0).round(),
+          weightKg: _weightOnOrBefore(state.macros, day)?.weight,
+          goal: _num(data, 'calorieGoal') ?? _num(goals, 'calorieGoal') ?? 0,
+        ),
+      ],
+    );
+  }
+}
+
+class _WeekStats extends StatelessWidget {
+  final StudentMacrosLoaded state;
+
+  const _WeekStats({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final macros = state.macros;
+    final day = _dateOnly(DateTime.now());
+    final goals = _latestGoals(macros, day);
+
+    // Last 7 days ending today.
+    final week = [
+      for (var i = 0; i < 7; i++)
+        macros[_dayKey(day.subtract(Duration(days: i)))]
+    ];
+    final loggedDays =
+        week.where((d) => (_num(d, 'caloriesTracked') ?? 0) > 0).toList();
+    final avgKcal = loggedDays.isEmpty
+        ? null
+        : loggedDays
+                .map((d) => _num(d, 'caloriesTracked')!)
+                .reduce((a, b) => a + b) /
+            loggedDays.length;
+
+    final weightNow = _weightOnOrBefore(macros, day);
+    final weightBefore =
+        _weightOnOrBefore(macros, day.subtract(const Duration(days: 7)));
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: _StatTile(
+            icon: Icons.monitor_weight_outlined,
+            label: S.of(context).weightLabel,
+            value: weightNow == null
+                ? '-'
+                : '${weightNow.weight.toStringAsFixed(1)} ${S.of(context).kgLabel}',
+            detail: weightNow == null || weightBefore == null
+                ? null
+                : _signed(weightNow.weight - weightBefore.weight, 1),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatTile(
+            icon: Icons.event_available_outlined,
+            label: S.of(context).studentConsistencyLabel,
+            value: S.of(context).studentDaysLogged(loggedDays.length),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _StatTile(
+            icon: Icons.local_fire_department_outlined,
+            label: S.of(context).studentAverage7Label,
+            value: avgKcal == null
+                ? '-'
+                : '${avgKcal.round()} ${S.of(context).kcalLabel}',
+            detail: avgKcal == null || (_num(goals, 'calorieGoal') ?? 0) <= 0
+                ? null
+                : '${_signed((avgKcal / _num(goals, 'calorieGoal')! - 1) * 100, 0)} %',
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _signed(double value, int decimals) {
+    final text = value.abs().toStringAsFixed(decimals);
+    if (double.parse(text) == 0) return text;
+    return value > 0 ? '+$text' : '-$text';
+  }
+}
+
+class _DayNavigator extends StatelessWidget {
+  final DateTime selectedDate;
+
+  const _DayNavigator({required this.selectedDate});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final bloc = context.read<StudentMacrosBloc>();
+    final today = _dateOnly(DateTime.now());
+    final diff = today.difference(selectedDate).inDays;
+    final label = switch (diff) {
+      0 => s.todayLabel,
+      1 => s.yesterdayLabel,
+      _ => toBeginningOfSentenceCase(
+          DateFormat.MMMMEEEEd(Localizations.localeOf(context).toString())
+              .format(selectedDate)),
+    };
+
+    return Row(
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => bloc.add(
+              ChangeDateEvent(selectedDate.subtract(const Duration(days: 1)))),
+        ),
+        Expanded(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) bloc.add(ChangeDateEvent(picked));
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(label,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700)),
             ),
           ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: diff > 0
+              ? () => bloc.add(
+                  ChangeDateEvent(selectedDate.add(const Duration(days: 1))))
+              : null,
+        ),
+      ],
+    );
+  }
+}
+
+class _StatTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? detail;
+
+  const _StatTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.detail,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return _Surface(
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: atlasBrandGradientColors.first),
+          const SizedBox(height: 10),
+          Text(label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelMedium
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w800)),
+          ),
+          if (detail != null)
+            Text(detail!,
+                style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w700)),
         ],
       ),
     );
   }
+}
 
-  ({DateTimeIntervalType type, int interval}) _getAxisIntervalConfig(
-    TimeRange range,
-  ) {
-    switch (range) {
-      case TimeRange.week:
-        return (type: DateTimeIntervalType.days, interval: 1);
-      case TimeRange.month:
-        return (type: DateTimeIntervalType.days, interval: 3);
-      case TimeRange.threeMonths:
-        return (type: DateTimeIntervalType.days, interval: 7);
-      case TimeRange.sixMonths:
-        return (type: DateTimeIntervalType.days, interval: 14);
-      case TimeRange.year:
-        return (type: DateTimeIntervalType.months, interval: 1);
-    }
-  }
+/// Metric card: icon badge + title row, then content. With [fill] (square
+/// cards) the content is pinned to the bottom of the available height.
+class _InfoCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+  final bool fill;
 
-  List<_MacroPoint> _getMacroPoints(
-    Map<String, Map<String, dynamic>> macros,
-    MacroType type,
-    TimeRange range,
-  ) {
-    final now = DateTime.now();
-    final start = _rangeStart(range, now);
-    final List<_MacroPoint> points = [];
+  const _InfoCard({
+    required this.title,
+    required this.icon,
+    required this.child,
+    this.fill = true,
+  });
 
-    for (var day = start;
-        !day.isAfter(now);
-        day = day.add(const Duration(days: 1))) {
-      final normalizedDay = DateTime(day.year, day.month, day.day);
-      final key = DateFormat('yyyy-MM-dd').format(normalizedDay);
-      final data = macros[key];
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
 
-      double? value;
-      if (data != null) {
-        switch (type) {
-          case MacroType.calories:
-            value = (data['caloriesTracked'] as num?)?.toDouble();
-            break;
-          case MacroType.carbs:
-            value = (data['carbsTracked'] as num?)?.toDouble();
-            break;
-          case MacroType.fat:
-            value = (data['fatTracked'] as num?)?.toDouble();
-            break;
-          case MacroType.protein:
-            value = (data['proteinTracked'] as num?)?.toDouble();
-            break;
-          case MacroType.weight:
-            value = (data['weight'] as num?)?.toDouble();
-            break;
-          case MacroType.steps:
-            value = (data['steps'] as num?)?.toDouble();
-            break;
-        }
-      }
-
-      points.add(_MacroPoint(normalizedDay, value));
-    }
-
-    return points;
-  }
-
-  DateTime _rangeStart(TimeRange range, DateTime now) {
-    switch (range) {
-      case TimeRange.week:
-        return now.subtract(const Duration(days: 7));
-      case TimeRange.month:
-        return now.subtract(const Duration(days: 30));
-      case TimeRange.threeMonths:
-        return now.subtract(const Duration(days: 90));
-      case TimeRange.sixMonths:
-        return now.subtract(const Duration(days: 180));
-      case TimeRange.year:
-        return now.subtract(const Duration(days: 365));
-    }
+    return Container(
+      padding: const EdgeInsets.all(16),
+      // Same light card as Home and the weight screen.
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colors.primary.withValues(
+              alpha: colors.brightness == Brightness.dark ? 0.16 : 0.10),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.primary.withValues(alpha: 0.035),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, size: 16, color: colors.primary),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          SizedBox(height: fill ? 10 : 16),
+          if (fill)
+            Expanded(
+              child: Align(alignment: Alignment.bottomLeft, child: child),
+            )
+          else
+            child,
+        ],
+      ),
+    );
   }
 }
 
-class _MacroPoint {
-  final DateTime date;
-  final double? value;
+class _DayWeightCard extends StatelessWidget {
+  final double? weight;
 
-  _MacroPoint(this.date, this.value);
+  const _DayWeightCard({required this.weight});
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return _InfoCard(
+      title: s.weightLabel,
+      icon: Icons.monitor_weight_outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(TextSpan(children: [
+              TextSpan(
+                  text: weight?.toStringAsFixed(1) ?? '—',
+                  style: theme.textTheme.displayMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -2,
+                      color: weight == null
+                          ? colors.onSurfaceVariant.withValues(alpha: 0.5)
+                          : colors.onSurface)),
+              if (weight != null)
+                TextSpan(
+                    text: ' ${s.kgLabel}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                        color: colors.primary, fontWeight: FontWeight.w800)),
+            ])),
+          ),
+          if (weight == null)
+            Text(s.noWeighInLabel,
+                style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cross-fades between [first] and [second] without changing layout size.
+class _FadeToggle extends StatelessWidget {
+  final bool showSecond;
+  final Widget first;
+  final Widget second;
+  final AlignmentGeometry alignment;
+
+  const _FadeToggle({
+    required this.showSecond,
+    required this.first,
+    required this.second,
+    this.alignment = Alignment.center,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const duration = Duration(milliseconds: 250);
+    return Stack(
+      alignment: alignment,
+      children: [
+        AnimatedOpacity(
+            opacity: showSecond ? 0 : 1,
+            duration: duration,
+            curve: Curves.easeInOut,
+            child: first),
+        AnimatedOpacity(
+            opacity: showSecond ? 1 : 0,
+            duration: duration,
+            curve: Curves.easeInOut,
+            child: second),
+      ],
+    );
+  }
+}
+
+String _percent(double value, double goal) =>
+    '${goal > 0 ? (value / goal * 100).round() : 0} %';
+
+/// Energy ring of the coach's day view; tap toggles kcal and %.
+class StudentEnergyCard extends StatefulWidget {
+  final double consumed;
+  final double goal;
+
+  const StudentEnergyCard(
+      {super.key, required this.consumed, required this.goal});
+
+  @override
+  State<StudentEnergyCard> createState() => StudentEnergyCardState();
+}
+
+class StudentEnergyCardState extends State<StudentEnergyCard> {
+  bool _showPercent = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final consumed = widget.consumed;
+    final goal = widget.goal;
+    final progress = goal > 0 ? consumed / goal : 0.0;
+    final numberStyle = theme.textTheme.headlineMedium
+        ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -1);
+
+    // Tap toggles the ring's centre between kcal and % of the goal.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _showPercent = !_showPercent),
+      child: _InfoCard(
+        title: toBeginningOfSentenceCase(s.energyLabel),
+        icon: Icons.local_fire_department_outlined,
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress.clamp(0.0, 1.0)),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, child) => CustomPaint(
+                painter: _RingPainter(
+                  progress: value,
+                  color: colors.primary,
+                  track: colors.primary.withValues(alpha: 0.12),
+                ),
+                child: child,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: _FadeToggle(
+                    showSecond: _showPercent,
+                    first: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('${consumed.round()}', style: numberStyle),
+                        Text(s.kcalLabel,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                                color: colors.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                                height: 1)),
+                      ],
+                    ),
+                    second: Text(_percent(consumed, goal), style: numberStyle),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  final Color track;
+
+  _RingPainter({
+    required this.progress,
+    required this.color,
+    required this.track,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const stroke = 10.0;
+    final arcRect = (Offset.zero & size).deflate(stroke / 2);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = stroke;
+    canvas.drawArc(arcRect, 0, 2 * math.pi, false, paint..color = track);
+    if (progress <= 0) return;
+    canvas.drawArc(arcRect, -math.pi / 2, 2 * math.pi * progress, false,
+        paint..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_RingPainter old) =>
+      old.progress != progress || old.color != color || old.track != track;
+}
+
+class _DayMacrosCard extends StatefulWidget {
+  final Map<String, dynamic>? data;
+  final Map<String, dynamic>? goals;
+
+  const _DayMacrosCard({required this.data, required this.goals});
+
+  @override
+  State<_DayMacrosCard> createState() => _DayMacrosCardState();
+}
+
+class _DayMacrosCardState extends State<_DayMacrosCard> {
+  bool _showPercent = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final data = widget.data;
+    double goal(String key) => _num(data, key) ?? _num(widget.goals, key) ?? 0;
+    final rows = [
+      (s.carbsLabel, MacroVisuals.carbs, 'carbsTracked', 'carbsGoal'),
+      (s.fatLabel, MacroVisuals.fats, 'fatTracked', 'fatGoal'),
+      (s.proteinLabel, MacroVisuals.proteins, 'proteinTracked', 'proteinGoal'),
+    ];
+
+    // Tap toggles every row between grams and % of the goal.
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => setState(() => _showPercent = !_showPercent),
+      child: _InfoCard(
+        title: s.dayMacrosTitle,
+        icon: Icons.pie_chart_outline_rounded,
+        fill: false,
+        child: Column(
+          children: [
+            for (var i = 0; i < rows.length; i++) ...[
+              if (i > 0) const SizedBox(height: 14),
+              _MacroProgressRow(
+                label: rows[i].$1,
+                visual: rows[i].$2,
+                tracked: _num(data, rows[i].$3) ?? 0,
+                goal: goal(rows[i].$4),
+                showPercent: _showPercent,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MacroProgressRow extends StatelessWidget {
+  final String label;
+  final MacroVisual visual;
+  final double tracked;
+  final double goal;
+  final bool showPercent;
+
+  const _MacroProgressRow({
+    required this.label,
+    required this.visual,
+    required this.tracked,
+    required this.goal,
+    required this.showPercent,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final gram = S.of(context).gramUnit;
+    final valueStyle =
+        theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800);
+
+    return Row(
+      children: [
+        Container(
+          width: 32,
+          height: 32,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: visual.color.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+          ),
+          child: MacroIcon(visual: visual, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(label,
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                  _FadeToggle(
+                    showSecond: showPercent,
+                    alignment: Alignment.centerRight,
+                    first: Text.rich(TextSpan(children: [
+                      TextSpan(text: '${tracked.round()}', style: valueStyle),
+                      TextSpan(
+                          text: ' / ${goal.round()} $gram',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontWeight: FontWeight.w600)),
+                    ])),
+                    second: Text(_percent(tracked, goal), style: valueStyle),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(
+                      begin: 0,
+                      end: goal > 0 ? (tracked / goal).clamp(0.0, 1.0) : 0),
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, _) => LinearProgressIndicator(
+                    value: value,
+                    minHeight: 6,
+                    color: visual.color,
+                    backgroundColor: visual.color.withValues(alpha: 0.14),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DayBalanceCard extends StatelessWidget {
+  final double consumed;
+  final double activityKcal;
+  final int steps;
+  final double? weightKg;
+  final double goal;
+
+  const _DayBalanceCard({
+    required this.consumed,
+    required this.activityKcal,
+    required this.steps,
+    required this.weightKg,
+    required this.goal,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final stepKcal = stepsToKcal(steps, weightKg);
+    final burned = activityKcal + stepKcal;
+    final net = consumed - burned;
+    final gap = net - goal;
+    final accent = colors.primary;
+
+    Widget metric(String label, double value, {bool strong = false}) {
+      return Expanded(
+        child: Column(
+          children: [
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text('${value.round()}',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: strong ? accent : colors.onSurface)),
+            ),
+            const SizedBox(height: 2),
+            Text(label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600)),
+          ],
+        ),
+      );
+    }
+
+    Widget operator(String symbol) => Text(symbol,
+        style: theme.textTheme.titleMedium?.copyWith(
+            color: colors.onSurfaceVariant, fontWeight: FontWeight.w700));
+
+    return _InfoCard(
+      title: s.dayBalanceTitle,
+      icon: Icons.balance_outlined,
+      fill: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              metric(toBeginningOfSentenceCase(s.consumedLabel), consumed),
+              operator('−'),
+              metric(s.burnedLabel, burned),
+              operator('='),
+              metric(s.netLabel, net, strong: true),
+            ],
+          ),
+          if (steps > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+                '${NumberFormat.decimalPattern(Localizations.localeOf(context).toString()).format(steps)} ${s.stepsLabel} ≈ ${stepKcal.round()} ${s.kcalLabel}',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(color: colors.onSurfaceVariant)),
+          ],
+          if (goal > 0) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                        '${gap <= 0 ? s.deficitLabel : s.surplusLabel} ${s.vsGoalLabel}',
+                        style: theme.textTheme.bodyMedium
+                            ?.copyWith(fontWeight: FontWeight.w600)),
+                  ),
+                  Text(
+                      '${gap > 0 ? '+' : gap < 0 ? '−' : ''}${gap.abs().round()} ${s.kcalLabel}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: accent, fontWeight: FontWeight.w800)),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TrendPlaceholder extends StatelessWidget {
+  const _TrendPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return _Surface(
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      child: Column(
+        children: [
+          Icon(Icons.insights_outlined,
+              size: 48, color: colors.onSurfaceVariant),
+          const SizedBox(height: 12),
+          Text(S.of(context).comingSoonLabel,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rounded surface card matching the coach students list.
+class _Surface extends StatelessWidget {
+  final Widget child;
+  final EdgeInsetsGeometry padding;
+
+  const _Surface({
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(20),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(padding: padding, child: child),
+    );
+  }
 }

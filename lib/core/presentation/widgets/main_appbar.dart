@@ -9,7 +9,9 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Same height as HomeAppbar so the settings icon lines up across tabs.
     return AppBar(
+      toolbarHeight: 72,
       leading: Icon(iconData),
       title: Text(title),
       actions: [
@@ -23,5 +25,5 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(72);
 }

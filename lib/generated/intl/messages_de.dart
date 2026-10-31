@@ -41,14 +41,16 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m8(count) =>
       "${Intl.plural(count, one: '${count} weiteres Lebensmittel anzeigen', other: '${count} weitere Lebensmittel anzeigen')}";
 
-  static String m9(message) => "Supabase-Fehler: ${message}";
+  static String m9(count) => "${count}/7 Tage";
 
-  static String m10(date) => "Wiegen am ${date}";
+  static String m10(message) => "Supabase-Fehler: ${message}";
 
-  static String m11(value, unit) =>
+  static String m11(date) => "Wiegen am ${date}";
+
+  static String m12(value, unit) =>
       "Durchschnitt im Zeitraum: ${value} ${unit}";
 
-  static String m12(age) => "${age} Jahre";
+  static String m13(age) => "${age} Jahre";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -126,6 +128,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Meine Schüler"),
         "coachTodayTitle":
             MessageLookupByLibrary.simpleMessage("Tagesübersicht"),
+        "comingSoonLabel":
+            MessageLookupByLibrary.simpleMessage("Demnächst verfügbar"),
         "consumedLabel": MessageLookupByLibrary.simpleMessage("verbraucht"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Zu welcher Mahlzeit hinzufügen?"),
@@ -186,6 +190,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Tagesübersicht"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
             "Unterstützen der Entwicklung durch Bereitstellung anonymer Nutzungsdaten"),
+        "dayBalanceTitle": MessageLookupByLibrary.simpleMessage("Tagesbilanz"),
+        "dayMacrosTitle": MessageLookupByLibrary.simpleMessage("Makros"),
+        "deficitLabel": MessageLookupByLibrary.simpleMessage("Defizit"),
         "deleteAllLabel": MessageLookupByLibrary.simpleMessage("Alle löschen"),
         "deleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
             "Möchten Sie den ausgewählten Eintrag löschen?"),
@@ -214,6 +221,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "dinnerLabel": MessageLookupByLibrary.simpleMessage("Abendessen"),
         "editItemDialogTitle":
             MessageLookupByLibrary.simpleMessage("Eintrag aktualisieren"),
+        "editLabel": MessageLookupByLibrary.simpleMessage("Bearbeiten"),
         "editMealLabel":
             MessageLookupByLibrary.simpleMessage("Mahlzeit bearbeiten"),
         "editRecipeLabel":
@@ -394,6 +402,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Produkt fehlen die erforderlichen Angaben zu Kalorien oder Makronährstoffen"),
         "myStudentsTitle":
             MessageLookupByLibrary.simpleMessage("Meine Schüler"),
+        "netLabel": MessageLookupByLibrary.simpleMessage("Netto"),
         "noActivityRecentlyAddedLabel": MessageLookupByLibrary.simpleMessage(
             "Keine kürzlich hinzugefügten Aktivitäten"),
         "noDataToday":
@@ -407,6 +416,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "noResultsFound":
             MessageLookupByLibrary.simpleMessage("Keine Ergebnisse gefunden"),
         "noStudents": MessageLookupByLibrary.simpleMessage("Keine Schüler"),
+        "noWeighInLabel": MessageLookupByLibrary.simpleMessage("Keine Messung"),
         "notAvailableLabel": MessageLookupByLibrary.simpleMessage("N/A"),
         "nothingAddedLabel":
             MessageLookupByLibrary.simpleMessage("Nichts hinzugefügt"),
@@ -906,6 +916,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Systemstandard"),
         "settingsUnitsLabel": MessageLookupByLibrary.simpleMessage("Einheiten"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Volumen"),
+        "sevenDaysShortLabel": MessageLookupByLibrary.simpleMessage("7 T"),
         "showFewerFoods":
             MessageLookupByLibrary.simpleMessage("Weniger anzeigen"),
         "showMoreFoods": m8,
@@ -917,19 +928,33 @@ class MessageLookup extends MessageLookupByLibrary {
             "z. B. Apfel, Eiscreme, Schokolade ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Snack"),
         "stepsLabel": MessageLookupByLibrary.simpleMessage("Schritte"),
+        "studentAverage7Label":
+            MessageLookupByLibrary.simpleMessage("Ø 7 Tage"),
+        "studentConsistencyLabel":
+            MessageLookupByLibrary.simpleMessage("Regelmäßigkeit"),
+        "studentCurrentGoalLabel":
+            MessageLookupByLibrary.simpleMessage("Aktuelles Ziel"),
+        "studentDayTab": MessageLookupByLibrary.simpleMessage("Tag"),
+        "studentDaysLogged": m9,
+        "studentNoEntryLabel":
+            MessageLookupByLibrary.simpleMessage("Keine Einträge"),
+        "studentTrendTab": MessageLookupByLibrary.simpleMessage("Trend"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Ihr Abonnement ist nicht mehr aktiv. Bitte kontaktieren Sie Ihren Coach."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("Zucker"),
-        "supabaseError": m9,
+        "supabaseError": m10,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("zugeführt"),
+        "surplusLabel": MessageLookupByLibrary.simpleMessage("Überschuss"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "targetWeightLabel":
             MessageLookupByLibrary.simpleMessage("Zielgewicht"),
+        "todayLabel": MessageLookupByLibrary.simpleMessage("Heute"),
         "unitLabel": MessageLookupByLibrary.simpleMessage("Einheit"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Benutzer nicht verbunden."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("Produktseite anzeigen"),
+        "vsGoalLabel": MessageLookupByLibrary.simpleMessage("ggü. Ziel"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("Website"),
         "weekLabel": MessageLookupByLibrary.simpleMessage("Woche"),
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("Wo."),
@@ -941,7 +966,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Durchschnitt"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Gewicht gelöscht"),
-        "weightEntryDate": m10,
+        "weightEntryDate": m11,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
@@ -950,13 +975,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Wiegungen"),
         "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
             "Keine Wiegungen in diesem Zeitraum"),
-        "weightPeriodAverage": m11,
+        "weightPeriodAverage": m12,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Gewicht konnte nicht gespeichert werden. Bitte erneut versuchen."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht gespeichert"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Wird gespeichert…"),
-        "yearsLabel": m12
+        "yearsLabel": m13,
+        "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Gestern")
       };
 }

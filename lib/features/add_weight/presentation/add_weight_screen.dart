@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_tab_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
@@ -263,9 +264,14 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                   ),
                   padding: const EdgeInsets.fromLTRB(22, 10, 22, 28),
                   children: [
-                    _WeightTabBar(
-                      selectedTab: _selectedTab,
-                      onTabSelected: (tab) {
+                    AtlasTabBar(
+                      labels: [
+                        S.of(context).overviewLabel,
+                        S.of(context).historyLabel,
+                      ],
+                      selectedIndex: _selectedTab.index,
+                      onSelected: (index) {
+                        final tab = _WeightScreenTab.values[index];
                         if (tab == _selectedTab) return;
                         setState(() => _selectedTab = tab);
                       },
@@ -338,115 +344,6 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
       _savedWeightKg = null;
       _summaryFuture = _getWeightsSummary();
     });
-  }
-}
-
-class _WeightTabBar extends StatelessWidget {
-  final _WeightScreenTab selectedTab;
-  final ValueChanged<_WeightScreenTab> onTabSelected;
-
-  const _WeightTabBar({
-    required this.selectedTab,
-    required this.onTabSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      height: 58,
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _TabLabel(
-              label: S.of(context).overviewLabel,
-              selected: selectedTab == _WeightScreenTab.overview,
-              onTap: () => onTabSelected(_WeightScreenTab.overview),
-            ),
-          ),
-          Expanded(
-            child: _TabLabel(
-              label: S.of(context).historyLabel,
-              selected: selectedTab == _WeightScreenTab.history,
-              onTap: () => onTabSelected(_WeightScreenTab.history),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TabLabel extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _TabLabel({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(18),
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: Text(
-                    label,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      color: selected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  width: selected ? 86 : 0,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

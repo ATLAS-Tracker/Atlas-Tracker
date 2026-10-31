@@ -4833,6 +4833,196 @@ class S {
     );
   }
 
+  /// `Day`
+  String get studentDayTab {
+    return Intl.message(
+      'Day',
+      name: 'studentDayTab',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trend`
+  String get studentTrendTab {
+    return Intl.message(
+      'Trend',
+      name: 'studentTrendTab',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Today`
+  String get todayLabel {
+    return Intl.message(
+      'Today',
+      name: 'todayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Yesterday`
+  String get yesterdayLabel {
+    return Intl.message(
+      'Yesterday',
+      name: 'yesterdayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No entries`
+  String get studentNoEntryLabel {
+    return Intl.message(
+      'No entries',
+      name: 'studentNoEntryLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Consistency`
+  String get studentConsistencyLabel {
+    return Intl.message(
+      'Consistency',
+      name: 'studentConsistencyLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `7-day avg`
+  String get studentAverage7Label {
+    return Intl.message(
+      '7-day avg',
+      name: 'studentAverage7Label',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count}/7 days`
+  String studentDaysLogged(Object count) {
+    return Intl.message(
+      '$count/7 days',
+      name: 'studentDaysLogged',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Current goal`
+  String get studentCurrentGoalLabel {
+    return Intl.message(
+      'Current goal',
+      name: 'studentCurrentGoalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit`
+  String get editLabel {
+    return Intl.message(
+      'Edit',
+      name: 'editLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Coming soon`
+  String get comingSoonLabel {
+    return Intl.message(
+      'Coming soon',
+      name: 'comingSoonLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `7d`
+  String get sevenDaysShortLabel {
+    return Intl.message(
+      '7d',
+      name: 'sevenDaysShortLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No weigh-in`
+  String get noWeighInLabel {
+    return Intl.message(
+      'No weigh-in',
+      name: 'noWeighInLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Macros`
+  String get dayMacrosTitle {
+    return Intl.message(
+      'Macros',
+      name: 'dayMacrosTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Daily balance`
+  String get dayBalanceTitle {
+    return Intl.message(
+      'Daily balance',
+      name: 'dayBalanceTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Net`
+  String get netLabel {
+    return Intl.message(
+      'Net',
+      name: 'netLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Deficit`
+  String get deficitLabel {
+    return Intl.message(
+      'Deficit',
+      name: 'deficitLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Surplus`
+  String get surplusLabel {
+    return Intl.message(
+      'Surplus',
+      name: 'surplusLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `vs goal`
+  String get vsGoalLabel {
+    return Intl.message(
+      'vs goal',
+      name: 'vsGoalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Daily check-in`
   String get coachTodayTitle {
     return Intl.message(

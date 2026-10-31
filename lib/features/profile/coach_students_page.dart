@@ -291,6 +291,8 @@ class _StudentCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                             color: colors.onSurfaceVariant)),
                   ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
                 ],
               ),
               if (today != null)
