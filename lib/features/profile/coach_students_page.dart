@@ -279,13 +279,18 @@ class _StudentCard extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                      today == null
-                          ? s.noDataToday
-                          : '${v('caloriesTracked').toInt()} / ${v('calorieGoal').toInt()} ${s.kcalLabel}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colors.onSurfaceVariant)),
+                  Flexible(
+                    child: Text(
+                        today == null
+                            ? s.noDataToday
+                            : '${v('caloriesTracked').toInt()} / ${v('calorieGoal').toInt()} ${s.kcalLabel}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colors.onSurfaceVariant)),
+                  ),
                 ],
               ),
               if (today != null)
