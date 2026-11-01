@@ -125,7 +125,10 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     DiarySummaryCard(
-                      trackedDay: selectedTrackedDay,
+                      // Same load as the meal lists below, so the bar and the
+                      // meals refresh together after adding a food.
+                      trackedDay:
+                          loadedDay?.trackedDayEntity ?? selectedTrackedDay,
                       selectedDayWeight: loadedDay?.userWeightEntity,
                       weeklyWeightDelta: loadedDay?.weeklyWeightDelta,
                       homeState:

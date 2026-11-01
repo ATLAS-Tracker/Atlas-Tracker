@@ -207,7 +207,7 @@ class MealDetailBottomSheet extends StatelessWidget {
     }
   }
 
-  void onAddButtonPressed(BuildContext context) {
+  Future<void> onAddButtonPressed(BuildContext context) async {
     late final CreateMealBloc createMealBloc = locator<CreateMealBloc>();
 
     if (createMealBloc.state.isOnCreateMealScreen) {
@@ -227,7 +227,8 @@ class MealDetailBottomSheet extends StatelessWidget {
           : mealDetailBloc
               .state.totalQuantityConverted; // converted g/ml or imperial
 
-      mealDetailBloc.addIntake(
+      // Await the write so the refresh below reads the updated day.
+      await mealDetailBloc.addIntake(
         context,
         mealDetailBloc.state.selectedUnit,
         amountToPersist,
@@ -236,8 +237,6 @@ class MealDetailBottomSheet extends StatelessWidget {
         day,
       );
 
-      // ici
-
       // Refresh Home Page
       locator<HomeBloc>().add(const LoadItemsEvent());
 
@@ -245,6 +244,8 @@ class MealDetailBottomSheet extends StatelessWidget {
       locator<DiaryBloc>().add(const LoadDiaryYearEvent());
       locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
     }
+
+    if (!context.mounted) return;
 
     // Show snackbar and return to dashboard
     ScaffoldMessenger.of(

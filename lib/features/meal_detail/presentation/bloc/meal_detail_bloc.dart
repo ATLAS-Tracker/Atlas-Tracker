@@ -104,7 +104,7 @@ class MealDetailBloc extends Bloc<MealDetailEvent, MealDetailState> {
       updatedAt: DateTime.now().toUtc(),
     );
     await _addIntakeUseCase.addIntake(intakeEntity);
-    _updateTrackedDay(intakeEntity, day);
+    await _updateTrackedDay(intakeEntity, day);
   }
 
   Future<void> _updateTrackedDay(
@@ -129,8 +129,9 @@ class MealDetailBloc extends Bloc<MealDetailEvent, MealDetailState> {
       );
     }
 
-    _addTrackedDayUsecase.addDayCaloriesTracked(day, intakeEntity.totalKcal);
-    _addTrackedDayUsecase.addDayMacrosTracked(
+    await _addTrackedDayUsecase.addDayCaloriesTracked(
+        day, intakeEntity.totalKcal);
+    await _addTrackedDayUsecase.addDayMacrosTracked(
       day,
       carbsTracked: intakeEntity.totalCarbsGram,
       fatTracked: intakeEntity.totalFatsGram,

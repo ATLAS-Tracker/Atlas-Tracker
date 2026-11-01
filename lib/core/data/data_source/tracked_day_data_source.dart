@@ -12,7 +12,8 @@ class TrackedDayDataSource {
 
   Future<void> saveTrackedDay(TrackedDayDBO trackedDayDBO) async {
     log.fine('Updating tracked day in db');
-    _hive.trackedDayBox.put(trackedDayDBO.day.toParsedDay(), trackedDayDBO);
+    await _hive.trackedDayBox
+        .put(trackedDayDBO.day.toParsedDay(), trackedDayDBO);
   }
 
   Future<void> saveAllTrackedDays(List<TrackedDayDBO> trackedDayDBOList) async {
