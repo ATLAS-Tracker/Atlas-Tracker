@@ -10,8 +10,11 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/student_macros_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 
 import 'set_student_macros_page.dart';
+
+part 'student_trend_view.dart';
 
 final _dayKeyFormat = DateFormat('yyyy-MM-dd');
 
@@ -92,11 +95,8 @@ class _StudentMacrosViewState extends State<_StudentMacrosView> {
               const SizedBox(height: 16),
               if (_tab == 0)
                 _DayView(state: state)
-              else ...[
-                _WeekStats(state: state),
-                const SizedBox(height: 12),
-                const _TrendPlaceholder(),
-              ],
+              else
+                _TrendView(state: state),
             ],
           );
         },
@@ -234,82 +234,6 @@ class _DayView extends StatelessWidget {
   }
 }
 
-class _WeekStats extends StatelessWidget {
-  final StudentMacrosLoaded state;
-
-  const _WeekStats({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final macros = state.macros;
-    final day = _dateOnly(DateTime.now());
-    final goals = _latestGoals(macros, day);
-
-    // Last 7 days ending today.
-    final week = [
-      for (var i = 0; i < 7; i++)
-        macros[_dayKey(day.subtract(Duration(days: i)))]
-    ];
-    final loggedDays =
-        week.where((d) => (_num(d, 'caloriesTracked') ?? 0) > 0).toList();
-    final avgKcal = loggedDays.isEmpty
-        ? null
-        : loggedDays
-                .map((d) => _num(d, 'caloriesTracked')!)
-                .reduce((a, b) => a + b) /
-            loggedDays.length;
-
-    final weightNow = _weightOnOrBefore(macros, day);
-    final weightBefore =
-        _weightOnOrBefore(macros, day.subtract(const Duration(days: 7)));
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _StatTile(
-            icon: Icons.monitor_weight_outlined,
-            label: S.of(context).weightLabel,
-            value: weightNow == null
-                ? '-'
-                : '${weightNow.weight.toStringAsFixed(1)} ${S.of(context).kgLabel}',
-            detail: weightNow == null || weightBefore == null
-                ? null
-                : _signed(weightNow.weight - weightBefore.weight, 1),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.event_available_outlined,
-            label: S.of(context).studentConsistencyLabel,
-            value: S.of(context).studentDaysLogged(loggedDays.length),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _StatTile(
-            icon: Icons.local_fire_department_outlined,
-            label: S.of(context).studentAverage7Label,
-            value: avgKcal == null
-                ? '-'
-                : '${avgKcal.round()} ${S.of(context).kcalLabel}',
-            detail: avgKcal == null || (_num(goals, 'calorieGoal') ?? 0) <= 0
-                ? null
-                : '${_signed((avgKcal / _num(goals, 'calorieGoal')! - 1) * 100, 0)} %',
-          ),
-        ),
-      ],
-    );
-  }
-
-  static String _signed(double value, int decimals) {
-    final text = value.abs().toStringAsFixed(decimals);
-    if (double.parse(text) == 0) return text;
-    return value > 0 ? '+$text' : '-$text';
-  }
-}
-
 class _DayNavigator extends StatelessWidget {
   final DateTime selectedDate;
 
@@ -370,55 +294,6 @@ class _DayNavigator extends StatelessWidget {
   }
 }
 
-class _StatTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final String? detail;
-
-  const _StatTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.detail,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    return _Surface(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: atlasBrandGradientColors.first),
-          const SizedBox(height: 10),
-          Text(label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelMedium
-                  ?.copyWith(color: colors.onSurfaceVariant)),
-          const SizedBox(height: 2),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(value,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w800)),
-          ),
-          if (detail != null)
-            Text(detail!,
-                style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w700)),
-        ],
-      ),
-    );
-  }
-}
-
 /// Metric card: icon badge + title row, then content. With [fill] (square
 /// cards) the content is pinned to the bottom of the available height.
 class _InfoCard extends StatelessWidget {
@@ -441,22 +316,7 @@ class _InfoCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      // Same light card as Home and the weight screen.
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: colors.primary.withValues(
-              alpha: colors.brightness == Brightness.dark ? 0.16 : 0.10),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colors.primary.withValues(alpha: 0.035),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      decoration: _cardDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -493,6 +353,23 @@ class _InfoCard extends StatelessWidget {
     );
   }
 }
+
+// Same light card as Home and the weight screen.
+BoxDecoration _cardDecoration(ColorScheme colors) => BoxDecoration(
+      color: colors.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: colors.primary.withValues(
+            alpha: colors.brightness == Brightness.dark ? 0.16 : 0.10),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: colors.primary.withValues(alpha: 0.035),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    );
 
 class _DayWeightCard extends StatelessWidget {
   final double? weight;
@@ -928,50 +805,6 @@ class _DayBalanceCard extends StatelessWidget {
           ],
         ],
       ),
-    );
-  }
-}
-
-class _TrendPlaceholder extends StatelessWidget {
-  const _TrendPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return _Surface(
-      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
-      child: Column(
-        children: [
-          Icon(Icons.insights_outlined,
-              size: 48, color: colors.onSurfaceVariant),
-          const SizedBox(height: 12),
-          Text(S.of(context).comingSoonLabel,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: colors.onSurfaceVariant)),
-        ],
-      ),
-    );
-  }
-}
-
-/// Rounded surface card matching the coach students list.
-class _Surface extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-
-  const _Surface({
-    required this.child,
-    this.padding = const EdgeInsets.all(16),
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(20),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(padding: padding, child: child),
     );
   }
 }

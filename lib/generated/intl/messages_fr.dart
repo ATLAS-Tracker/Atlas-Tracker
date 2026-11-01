@@ -45,11 +45,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m10(message) => "Erreur Supabase : ${message}";
 
-  static String m11(date) => "Pesée du ${date}";
+  static String m11(count, total) => "${count}/${total} jours";
 
-  static String m12(value, unit) => "Moyenne de la période : ${value} ${unit}";
+  static String m12(value) => "${value} vs objectif";
 
-  static String m13(age) => "${age} ans";
+  static String m13(date) => "Pesée du ${date}";
+
+  static String m14(value, unit) => "Moyenne de la période : ${value} ${unit}";
+
+  static String m15(age) => "${age} ans";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -963,6 +967,27 @@ class MessageLookup extends MessageLookupByLibrary {
         "targetWeightLabel":
             MessageLookupByLibrary.simpleMessage("Poids cible"),
         "todayLabel": MessageLookupByLibrary.simpleMessage("Aujourd\'hui"),
+        "trendAvgCaloriesLabel":
+            MessageLookupByLibrary.simpleMessage("Moy. calories"),
+        "trendDaysTracked": m11,
+        "trendEvolutionTitle":
+            MessageLookupByLibrary.simpleMessage("Évolution"),
+        "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Objectif"),
+        "trendMacrosSubtitle":
+            MessageLookupByLibrary.simpleMessage("Apports moyens par jour"),
+        "trendMacrosTitle":
+            MessageLookupByLibrary.simpleMessage("Moyenne des macros"),
+        "trendNoDataLabel": MessageLookupByLibrary.simpleMessage(
+            "Pas encore de données sur cette période"),
+        "trendNotEnoughDataLabel":
+            MessageLookupByLibrary.simpleMessage("Données insuffisantes"),
+        "trendPeriod14d": MessageLookupByLibrary.simpleMessage("14 j"),
+        "trendPeriod1m": MessageLookupByLibrary.simpleMessage("1 mois"),
+        "trendPeriod3m": MessageLookupByLibrary.simpleMessage("3 mois"),
+        "trendPeriod7d": MessageLookupByLibrary.simpleMessage("7 j"),
+        "trendSingleWeighInLabel": MessageLookupByLibrary.simpleMessage(
+            "Une seule pesée sur la période"),
+        "trendVsGoal": m12,
         "unitLabel": MessageLookupByLibrary.simpleMessage("Unité"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Utilisateur non connecté."),
@@ -979,7 +1004,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Moyenne"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Poids supprimé"),
-        "weightEntryDate": m11,
+        "weightEntryDate": m13,
         "weightGoalShortLabel":
             MessageLookupByLibrary.simpleMessage("Objectif"),
         "weightHistoryLabel":
@@ -989,14 +1014,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Pesées"),
         "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
             "Aucune pesée sur cette période"),
-        "weightPeriodAverage": m12,
+        "weightPeriodAverage": m14,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Impossible d’enregistrer le poids. Réessayez."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Poids enregistré"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Enregistrement…"),
-        "yearsLabel": m13,
+        "yearsLabel": m15,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Hier")
       };
 }

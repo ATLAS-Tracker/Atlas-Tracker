@@ -44,11 +44,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m10(message) => "Supabase hatası: ${message}";
 
-  static String m11(date) => "${date} tarihli tartım";
+  static String m11(count, total) => "${count}/${total} gün";
 
-  static String m12(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+  static String m12(value) => "hedefe göre ${value}";
 
-  static String m13(age) => "${age} yıl";
+  static String m13(date) => "${date} tarihli tartım";
+
+  static String m14(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+
+  static String m15(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -916,6 +920,26 @@ class MessageLookup extends MessageLookupByLibrary {
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
         "todayLabel": MessageLookupByLibrary.simpleMessage("Bugün"),
+        "trendAvgCaloriesLabel":
+            MessageLookupByLibrary.simpleMessage("Ort. kalori"),
+        "trendDaysTracked": m11,
+        "trendEvolutionTitle": MessageLookupByLibrary.simpleMessage("Gelişim"),
+        "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
+        "trendMacrosSubtitle":
+            MessageLookupByLibrary.simpleMessage("Günlük ortalama alım"),
+        "trendMacrosTitle":
+            MessageLookupByLibrary.simpleMessage("Ortalama makrolar"),
+        "trendNoDataLabel":
+            MessageLookupByLibrary.simpleMessage("Bu dönemde henüz veri yok"),
+        "trendNotEnoughDataLabel":
+            MessageLookupByLibrary.simpleMessage("Yetersiz veri"),
+        "trendPeriod14d": MessageLookupByLibrary.simpleMessage("14 g"),
+        "trendPeriod1m": MessageLookupByLibrary.simpleMessage("1 ay"),
+        "trendPeriod3m": MessageLookupByLibrary.simpleMessage("3 ay"),
+        "trendPeriod7d": MessageLookupByLibrary.simpleMessage("7 g"),
+        "trendSingleWeighInLabel":
+            MessageLookupByLibrary.simpleMessage("Dönemde tek tartım"),
+        "trendVsGoal": m12,
         "unitLabel": MessageLookupByLibrary.simpleMessage("Birim"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Kullanıcı bağlı değil."),
@@ -932,7 +956,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Ortalama"),
         "weightDeletedSnackbar":
             MessageLookupByLibrary.simpleMessage("Kilo silindi"),
-        "weightEntryDate": m11,
+        "weightEntryDate": m13,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
@@ -941,14 +965,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Tartımlar"),
         "weightNoMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Bu dönemde tartım yok"),
-        "weightPeriodAverage": m12,
+        "weightPeriodAverage": m14,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Kilonuz kaydedilemedi. Lütfen tekrar deneyin."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Kilo kaydedildi"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Kaydediliyor…"),
-        "yearsLabel": m13,
+        "yearsLabel": m15,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Dün")
       };
 }

@@ -4853,6 +4853,146 @@ class S {
     );
   }
 
+  /// `7 d`
+  String get trendPeriod7d {
+    return Intl.message(
+      '7 d',
+      name: 'trendPeriod7d',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `14 d`
+  String get trendPeriod14d {
+    return Intl.message(
+      '14 d',
+      name: 'trendPeriod14d',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `1 mo`
+  String get trendPeriod1m {
+    return Intl.message(
+      '1 mo',
+      name: 'trendPeriod1m',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `3 mo`
+  String get trendPeriod3m {
+    return Intl.message(
+      '3 mo',
+      name: 'trendPeriod3m',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Avg. calories`
+  String get trendAvgCaloriesLabel {
+    return Intl.message(
+      'Avg. calories',
+      name: 'trendAvgCaloriesLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count}/{total} days`
+  String trendDaysTracked(Object count, Object total) {
+    return Intl.message(
+      '$count/$total days',
+      name: 'trendDaysTracked',
+      desc: '',
+      args: [count, total],
+    );
+  }
+
+  /// `Progress`
+  String get trendEvolutionTitle {
+    return Intl.message(
+      'Progress',
+      name: 'trendEvolutionTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average macros`
+  String get trendMacrosTitle {
+    return Intl.message(
+      'Average macros',
+      name: 'trendMacrosTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average daily intake`
+  String get trendMacrosSubtitle {
+    return Intl.message(
+      'Average daily intake',
+      name: 'trendMacrosSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not enough data`
+  String get trendNotEnoughDataLabel {
+    return Intl.message(
+      'Not enough data',
+      name: 'trendNotEnoughDataLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No data yet for this period`
+  String get trendNoDataLabel {
+    return Intl.message(
+      'No data yet for this period',
+      name: 'trendNoDataLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only one weigh-in in this period`
+  String get trendSingleWeighInLabel {
+    return Intl.message(
+      'Only one weigh-in in this period',
+      name: 'trendSingleWeighInLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Goal`
+  String get trendGoalLabel {
+    return Intl.message(
+      'Goal',
+      name: 'trendGoalLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{value} vs goal`
+  String trendVsGoal(Object value) {
+    return Intl.message(
+      '$value vs goal',
+      name: 'trendVsGoal',
+      desc: '',
+      args: [value],
+    );
+  }
+
   /// `Today`
   String get todayLabel {
     return Intl.message(
