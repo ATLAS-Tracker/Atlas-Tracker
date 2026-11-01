@@ -17,15 +17,11 @@ import 'package:opennutritracker/features/settings/presentation/bloc/export_impo
 import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
 import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
 import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
 import 'package:opennutritracker/services/firebase_messaging_service.dart';
 import 'package:opennutritracker/services/local_notifications_service.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/add_user_usecase.dart';
 import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_gender_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_pal_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
 //import 'package:url_launcher/url_launcher.dart';
 import 'auth_safe_sign_out.dart';
@@ -124,112 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  UserGenderEntity parseGender(String? v) {
-    switch ((v ?? '').toLowerCase()) {
-      case 'female':
-        return UserGenderEntity.female;
-      case 'male':
-        return UserGenderEntity.male;
-      default:
-        return UserGenderEntity.male; // défaut raisonnable
-    }
-  }
-
-  UserWeightGoalEntity parseGoal(String? v) {
-    switch ((v ?? '').toLowerCase()) {
-      case 'loseweight':
-        return UserWeightGoalEntity.loseWeight;
-      case 'gainweight':
-        return UserWeightGoalEntity.gainWeight;
-      case 'maintainweight':
-        return UserWeightGoalEntity.maintainWeight;
-      default:
-        return UserWeightGoalEntity.maintainWeight;
-    }
-  }
-
-  UserPALEntity parsePal(String? v) {
-    switch ((v ?? '').toLowerCase()) {
-      case 'sedentary':
-        return UserPALEntity.sedentary;
-      case 'lightlyactive':
-        return UserPALEntity.lowActive;
-      case 'active':
-        return UserPALEntity.active;
-      case 'veryactive':
-        return UserPALEntity.veryActive;
-      default:
-        return UserPALEntity.active;
-    }
-  }
-
-  double parseNumToDouble(dynamic v, {double fallback = 0}) {
-    if (v == null) return fallback;
-    if (v is num) return v.toDouble();
-    if (v is String) return double.tryParse(v) ?? fallback;
-    return fallback;
-  }
-
-  DateTime parseBirthday(dynamic v) {
-    if (v == null) return DateTime(2000, 1, 1);
-    // Supabase renvoie généralement une string ISO pour DATE/TIMESTAMPTZ
-    if (v is String) {
-      final parsed = DateTime.tryParse(v);
-      return parsed ?? DateTime(2000, 1, 1);
-    }
-    if (v is DateTime) return v;
-    return DateTime(2000, 1, 1);
-  }
-
-  Future<bool> _syncUserProfile(String userId) async {
-    final addUser = locator<AddUserUsecase>();
-    try {
-      final rows = await supabase
-          .from('users')
-          .select(
-            'display_name, role, height_cm, weight_kg, gender, goal, birthday, pal',
-          )
-          .eq('id', userId);
-
-      if (rows.isEmpty) {
-        Logger('LoginScreen').warning('No users found with ID $userId');
-        return false;
-      }
-
-      final row = rows.first;
-      final roleStr = (row['role'] as String?) ?? 'student';
-      final displayName = (row['display_name'] as String?)?.trim();
-      final heightCm = parseNumToDouble(row['height_cm'], fallback: 180);
-      final weightKg = parseNumToDouble(row['weight_kg'], fallback: 80);
-      final gender = parseGender(row['gender'] as String?);
-      final goal = parseGoal(row['goal'] as String?);
-      final pal = parsePal(row['pal'] as String?);
-      final birthday = parseBirthday(row['birthday']);
-      final role =
-          roleStr == 'coach' ? UserRoleEntity.coach : UserRoleEntity.student;
-
-      final user = UserEntity(
-        name: displayName ?? '',
-        birthday: birthday,
-        heightCM: heightCm,
-        weightKG: weightKg,
-        gender: gender,
-        goal: goal,
-        pal: pal,
-        role: role,
-        profileImagePath: null,
-      );
-
-      await addUser.addUser(user);
-      return true;
-    } catch (e, stackTrace) {
-      Logger(
-        'LoginScreen',
-      ).warning('Error when getting profile from Supabase', e, stackTrace);
-      return false;
-    }
-  }
-
   /// Attempt to authenticate with e-mail / password.
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
@@ -305,14 +195,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final getUser = locator<GetUserUsecase>();
         final hasProfile = await getUser.hasUserData();
-        final userId = res.user?.id;
-
-        if (!hasProfile) {
-          bool isUserProfileSync = await _syncUserProfile(userId!);
-          if (!isUserProfileSync && mounted) {
-            await safeSignOut(context);
-            return;
-          }
+        final isUserProfileSync = await syncProfileFromSupabase(supabase);
+        if (!hasProfile && !isUserProfileSync && mounted) {
+          await safeSignOut(context);
+          return;
         }
 
         // Récupérer les objectifs si student

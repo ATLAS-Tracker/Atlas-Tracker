@@ -32,6 +32,7 @@ import 'package:opennutritracker/features/auth/reset_password_screen.dart';
 import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
 import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -69,6 +70,7 @@ Future<void> main() async {
     await _restoreSupabaseArchiveAtStartup(log);
     await locator<JournalRemoteSyncService>().syncAtStartup();
     await locator<StartupRemoteSyncService>().syncAtStartup();
+    await syncProfileFromSupabase(Supabase.instance.client);
   }
 
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
