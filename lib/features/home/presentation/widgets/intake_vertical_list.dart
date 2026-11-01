@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/copy_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_all_dialog.dart';
@@ -13,6 +14,8 @@ import 'package:opennutritracker/core/utils/vertical_list_popup_menu_selections.
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_screen.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
+import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
+import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
@@ -682,6 +685,34 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
           case VerticalListPopupMenuSelections.onDelete:
             await _deleteAllIntakes();
             break;
+          case VerticalListPopupMenuSelections.onCreateRecipe:
+            locator<CreateMealBloc>()
+                .add(SetIntakeListFromRecipeEvent(widget.intakeList
+                    .map((intake) => IntakeForRecipeEntity(
+                          code: intake.id,
+                          // Recipe macros are per 100 base units, so
+                          // servings are converted to grams first.
+                          unit: 'g',
+                          amount: intake.effectiveAmountInBaseUnits,
+                          meal: intake.meal,
+                        ))
+                    .toList()));
+            final sourceIntakes = List<IntakeEntity>.of(widget.intakeList);
+            final onDelete = widget.onDeleteIntakeCallback;
+            final trackedDay = widget.trackedDayEntity;
+            Navigator.of(context).pushNamed(
+              NavigationOptions.createMealRoute,
+              arguments: CreateRecipeFromMealArguments(
+                widget.addMealType.getIntakeType(),
+                widget.day,
+                () {
+                  for (final intake in sourceIntakes) {
+                    onDelete(intake, trackedDay);
+                  }
+                },
+              ),
+            );
+            break;
         }
       },
       itemBuilder: (BuildContext context) =>
@@ -691,6 +722,10 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
             value: VerticalListPopupMenuSelections.onCopy,
             child: Text(S.of(context).dialogCopyLabel),
           ),
+        PopupMenuItem<VerticalListPopupMenuSelections>(
+          value: VerticalListPopupMenuSelections.onCreateRecipe,
+          child: Text(S.of(context).createRecipeLabel),
+        ),
         PopupMenuItem<VerticalListPopupMenuSelections>(
           value: VerticalListPopupMenuSelections.onDelete,
           child: Text(S.of(context).deleteAllLabel),

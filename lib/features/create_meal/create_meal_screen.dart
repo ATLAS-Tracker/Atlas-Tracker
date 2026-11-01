@@ -451,6 +451,19 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
 
   void _onSavePressed() {
     final recipeName = _nameTextController.text;
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is CreateRecipeFromMealArguments) {
+      args.deleteSourceIntakes();
+      saveRecipe(
+        context,
+        mealName: recipeName,
+        imagePath: _imagePath,
+        idOfRecipeToModify: null,
+        type: args.type,
+        day: args.day,
+      );
+      return;
+    }
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -478,4 +491,13 @@ class CreateMealScreenArguments {
   final RecipeEntity recipe;
   final String? imagePath;
   CreateMealScreenArguments(this.id, this.name, this.recipe, this.imagePath);
+}
+
+/// Opened from a logged meal: saving replaces that meal's foods by one serving
+/// of the new recipe, without asking for meal type or date.
+class CreateRecipeFromMealArguments {
+  final IntakeTypeEntity type;
+  final DateTime day;
+  final VoidCallback deleteSourceIntakes;
+  CreateRecipeFromMealArguments(this.type, this.day, this.deleteSourceIntakes);
 }

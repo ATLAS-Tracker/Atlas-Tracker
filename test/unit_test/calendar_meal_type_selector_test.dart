@@ -27,29 +27,10 @@ void main() {
     );
   }
 
-  testWidgets('save button enabled when portions are valid', (tester) async {
+  testWidgets('save button enabled without portion inputs', (tester) async {
     await tester.pumpWidget(buildWidget());
-    final portionField =
-        find.widgetWithText(TextFormField, S.current.mealPortionLabel);
-    final eatenField =
-        find.widgetWithText(TextFormField, S.current.portionEatLabel);
-    await tester.enterText(portionField, '2');
-    await tester.enterText(eatenField, '1');
-    await tester.pumpAndSettle();
+    expect(find.byType(TextFormField), findsNothing);
     final button = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(button.onPressed, isNotNull);
-  });
-
-  testWidgets('portionsEaten is limited to mealPortionCount', (tester) async {
-    await tester.pumpWidget(buildWidget());
-    final portionField =
-        find.widgetWithText(TextFormField, S.current.mealPortionLabel);
-    final eatenField =
-        find.widgetWithText(TextFormField, S.current.portionEatLabel);
-    await tester.enterText(portionField, '2');
-    await tester.enterText(eatenField, '5');
-    await tester.pumpAndSettle();
-    final field = tester.widget<TextFormField>(eatenField);
-    expect(field.controller?.text, '2');
   });
 }

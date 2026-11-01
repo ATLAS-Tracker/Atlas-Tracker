@@ -113,10 +113,10 @@ class CreateMealBloc extends Bloc<CreateMealEvent, CreateMealState> {
 
       if (meal != null) {
         final nutriments = meal.nutriments;
-        totalProteins += (nutriments.proteinsPerQuantity ?? 0) * amount / 100;
-        totalCarbs += (nutriments.carbohydratesPerQuantity ?? 0) * amount / 100;
-        totalFats += (nutriments.fatPerQuantity ?? 0) * amount / 100;
-        totalKcal += (nutriments.energyKcalPerQuantity ?? 0) * amount / 100;
+        totalProteins += (nutriments.proteinsPerUnit ?? 0) * amount;
+        totalCarbs += (nutriments.carbohydratesPerUnit ?? 0) * amount;
+        totalFats += (nutriments.fatPerUnit ?? 0) * amount;
+        totalKcal += (nutriments.energyPerUnit ?? 0) * amount;
       }
     }
 

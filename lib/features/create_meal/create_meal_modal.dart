@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:opennutritracker/core/domain/usecase/delete_recipe_usecase.dart';
 import 'package:opennutritracker/features/diary/presentation/widgets/diary_table_calendar.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -45,62 +44,10 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
 
   final List<IntakeTypeEntity> _mealTypes = IntakeTypeEntity.values;
 
-  late final TextEditingController mealPortionCountController;
-  late final TextEditingController portionsEatenController;
-
-  bool isSaveEnabled = false;
-
   @override
   void initState() {
     super.initState();
     _selectedDate = DateTime.now();
-
-    mealPortionCountController = TextEditingController();
-    portionsEatenController = TextEditingController();
-
-    mealPortionCountController.addListener(_validateInputs);
-    portionsEatenController.addListener(_onPortionsEatenChanged);
-  }
-
-  @override
-  void dispose() {
-    mealPortionCountController.dispose();
-    portionsEatenController.dispose();
-    super.dispose();
-  }
-
-  void _validatePortions() {
-    final total = int.tryParse(mealPortionCountController.text) ?? 0;
-    final eaten = int.tryParse(portionsEatenController.text) ?? 0;
-
-    if (eaten > total && total > 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        portionsEatenController.text = total.toString();
-        portionsEatenController.selection = TextSelection.fromPosition(
-          TextPosition(offset: portionsEatenController.text.length),
-        );
-      });
-    }
-  }
-
-  void _onPortionsEatenChanged() {
-    _validatePortions();
-    _validateInputs();
-  }
-
-  bool _areInputsValid() {
-    final mealPortion = int.tryParse(mealPortionCountController.text) ?? 0;
-    final eaten = int.tryParse(portionsEatenController.text) ?? 0;
-    return mealPortion > 0 && eaten > 0;
-  }
-
-  void _validateInputs() {
-    final isValid = _areInputsValid();
-    if (isSaveEnabled != isValid) {
-      setState(() {
-        isSaveEnabled = isValid;
-      });
-    }
   }
 
   void _handleDateSelected(DateTime day, Map<String, TrackedDayEntity> _) {
@@ -136,75 +83,14 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
     }
   }
 
-  void _onSavePressed() {
-    final mealPortionCount = mealPortionCountController.text;
-    final portionsEaten = portionsEatenController.text;
-    final int mealPortionCountInt = int.tryParse(mealPortionCount) ?? 1;
-
-    final macros = locator<CreateMealBloc>().computeMacros();
-
-    final nutriment = MealNutrimentsEntity(
-      energyKcalPerQuantity: macros['totalKcal']! / mealPortionCountInt,
-      carbohydratesPerQuantity: macros['totalCarbs']! / mealPortionCountInt,
-      fatPerQuantity: macros['totalFats']! / mealPortionCountInt,
-      proteinsPerQuantity: macros['totalProteins']! / mealPortionCountInt,
-      sugarsPerQuantity: null,
-      saturatedFatPerQuantity: null,
-      fiberPerQuantity: null,
-      mealOrRecipe: MealOrRecipeEntity.recipe,
-    );
-
-    final meal = MealEntity(
-      code: IdGenerator.getUniqueID(),
-      name: widget.mealName,
-      brands: "",
-      url: widget.imagePath,
-      thumbnailImageUrl: widget.imagePath,
-      mainImageUrl: widget.imagePath,
-      mealQuantity: mealPortionCount,
-      mealUnit: S.of(context).servingLabel,
-      servingQuantity: 1,
-      servingUnit: S.of(context).servingLabel,
-      servingSize: S.of(context).servingLabel,
-      nutriments: nutriment,
-      source: MealSourceEntity.custom,
-    );
-
-    // In case we want to modify recipe we need to delete the previous version before adding the new one
-    if (widget.idOfRecipeToModify != null) {
-      locator<DeleteRecipeUsecase>().deleteRecipe(widget.idOfRecipeToModify!);
-    }
-
-    locator<MealDetailBloc>().addIntake(
-      context,
-      'serving',
-      portionsEaten,
-      _mealTypes[_currentMealIndex],
-      meal,
-      _selectedDate,
-    );
-
-    // Add the recipe to the DB to keep tracking of the mealEntity composing the recipe
-    final recipe = RecipeEntity(
-      meal: meal,
-      ingredients: locator<CreateMealBloc>().getListOfIntakeForRecipeEntity(),
-    );
-    locator<AddRecipeUsecase>().addRecipe(recipe);
-
-    // Clean the list of intake
-    locator<CreateMealBloc>().clearIntakeList();
-
-    locator<HomeBloc>().add(const LoadItemsEvent());
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
-    locator<RecipeSearchBloc>().add(
-      const LoadRecipeSearchEvent(searchString: ""),
-    );
-
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(NavigationOptions.mainRoute, (route) => false);
-  }
+  void _onSavePressed() => saveRecipe(
+        context,
+        mealName: widget.mealName,
+        imagePath: widget.imagePath,
+        idOfRecipeToModify: widget.idOfRecipeToModify,
+        type: _mealTypes[_currentMealIndex],
+        day: _selectedDate,
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -267,45 +153,6 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
               ),
               const SizedBox(height: 16),
 
-              /// Portion inputs
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: mealPortionCountController,
-                      decoration: InputDecoration(
-                        labelText: S.of(context).mealPortionLabel,
-                        filled: true,
-                        fillColor:
-                            Theme.of(context).colorScheme.surfaceContainerLow,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextFormField(
-                      controller: portionsEatenController,
-                      decoration: InputDecoration(
-                        labelText: S.of(context).portionEatLabel,
-                        filled: true,
-                        fillColor:
-                            Theme.of(context).colorScheme.surfaceContainerLow,
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none),
-                      ),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    ),
-                  ),
-                ],
-              ),
-
               /// Calendar
               DiaryTableCalendar(
                 onDateSelected: _handleDateSelected,
@@ -325,7 +172,7 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16))),
-                    onPressed: isSaveEnabled ? _onSavePressed : null,
+                    onPressed: _onSavePressed,
                     child: Text(S.of(context).buttonSaveLabel),
                   )),
               const SizedBox(height: 16),
@@ -335,4 +182,79 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
       ),
     );
   }
+}
+
+/// Saves the ingredients currently held by [CreateMealBloc] as a one-serving
+/// recipe and logs one serving of it to [type] on [day].
+void saveRecipe(
+  BuildContext context, {
+  required String mealName,
+  required String? imagePath,
+  required String? idOfRecipeToModify,
+  required IntakeTypeEntity type,
+  required DateTime day,
+}) {
+  final macros = locator<CreateMealBloc>().computeMacros();
+
+  final nutriment = MealNutrimentsEntity(
+    energyKcalPerQuantity: macros['totalKcal']!,
+    carbohydratesPerQuantity: macros['totalCarbs']!,
+    fatPerQuantity: macros['totalFats']!,
+    proteinsPerQuantity: macros['totalProteins']!,
+    sugarsPerQuantity: null,
+    saturatedFatPerQuantity: null,
+    fiberPerQuantity: null,
+    mealOrRecipe: MealOrRecipeEntity.recipe,
+  );
+
+  final meal = MealEntity(
+    code: IdGenerator.getUniqueID(),
+    name: mealName,
+    brands: "",
+    url: imagePath,
+    thumbnailImageUrl: imagePath,
+    mainImageUrl: imagePath,
+    mealQuantity: '1',
+    mealUnit: S.of(context).servingLabel,
+    servingQuantity: 1,
+    servingUnit: S.of(context).servingLabel,
+    servingSize: S.of(context).servingLabel,
+    nutriments: nutriment,
+    source: MealSourceEntity.custom,
+  );
+
+  // In case we want to modify recipe we need to delete the previous version before adding the new one
+  if (idOfRecipeToModify != null) {
+    locator<DeleteRecipeUsecase>().deleteRecipe(idOfRecipeToModify);
+  }
+
+  locator<MealDetailBloc>().addIntake(
+    context,
+    'serving',
+    '1',
+    type,
+    meal,
+    day,
+  );
+
+  // Add the recipe to the DB to keep tracking of the mealEntity composing the recipe
+  final recipe = RecipeEntity(
+    meal: meal,
+    ingredients: locator<CreateMealBloc>().getListOfIntakeForRecipeEntity(),
+  );
+  locator<AddRecipeUsecase>().addRecipe(recipe);
+
+  // Clean the list of intake
+  locator<CreateMealBloc>().clearIntakeList();
+
+  locator<HomeBloc>().add(const LoadItemsEvent());
+  locator<DiaryBloc>().add(const LoadDiaryYearEvent());
+  locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+  locator<RecipeSearchBloc>().add(
+    const LoadRecipeSearchEvent(searchString: ""),
+  );
+
+  Navigator.of(
+    context,
+  ).pushNamedAndRemoveUntil(NavigationOptions.mainRoute, (route) => false);
 }
