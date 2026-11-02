@@ -77,5 +77,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(S.current.studentConsistencyLabel), findsOneWidget);
     expect(tester.takeException(), isNull);
+    // Les valeurs du résumé sont toutes collées au bord droit.
+    final consistency = find.text(S.current.trendDaysTracked(1, 7));
+    final avgKcal = find.textContaining(S.current.kcalLabel).first;
+    expect(tester.getTopRight(consistency).dx,
+        closeTo(tester.getTopRight(avgKcal).dx, 0.5));
   });
 }

@@ -350,20 +350,21 @@ class _InfoCard extends StatelessWidget {
 /// Card/section icon: small tinted rounded square.
 class _IconBadge extends StatelessWidget {
   final IconData icon;
+  final Color? color;
 
-  const _IconBadge(this.icon);
+  const _IconBadge(this.icon, {this.color});
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final tint = color ?? Theme.of(context).colorScheme.primary;
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.12),
+        color: tint.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(9),
       ),
-      child: Icon(icon, size: 16, color: colors.primary),
+      child: Icon(icon, size: 16, color: tint),
     );
   }
 }

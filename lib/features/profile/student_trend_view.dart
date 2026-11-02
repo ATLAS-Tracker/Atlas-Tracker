@@ -239,6 +239,7 @@ class _TrendStats extends StatelessWidget {
         children: [
           _TrendStatRow(
             icon: Icons.monitor_weight_outlined,
+            color: proteinColor,
             label: s.weightLabel,
             value: weightValue,
             trailing: weightTrend,
@@ -251,6 +252,8 @@ class _TrendStats extends StatelessWidget {
           const Divider(height: 1),
           _TrendStatRow(
             icon: Icons.event_available_outlined,
+            color: lunchColor,
+            progress: logged / total,
             label: s.studentConsistencyLabel,
             value: s.trendDaysTracked(logged, total),
             detail: '${(logged / total * 100).round()} %',
@@ -258,6 +261,7 @@ class _TrendStats extends StatelessWidget {
           const Divider(height: 1),
           _TrendStatRow(
             icon: Icons.local_fire_department_outlined,
+            color: breakfastColor,
             label: s.trendAvgCaloriesLabel,
             value: avgKcal == null
                 ? '—'
@@ -283,9 +287,15 @@ class _TrendStatRow extends StatelessWidget {
   final String value;
   final String? detail;
   final IconData? trailing;
+  final Color color;
+
+  /// Mini-jauge sous la valeur (régularité).
+  final double? progress;
 
   const _TrendStatRow({
     required this.icon,
+    required this.color,
+    this.progress,
     required this.label,
     required this.value,
     this.detail,
@@ -301,7 +311,7 @@ class _TrendStatRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          _IconBadge(icon),
+          _IconBadge(icon, color: color),
           const SizedBox(width: 12),
           Expanded(
             child: Text(label,
@@ -310,13 +320,13 @@ class _TrendStatRow extends StatelessWidget {
                     fontWeight: FontWeight.w600)),
           ),
           const SizedBox(width: 12),
-          Flexible(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Row(mainAxisSize: MainAxisSize.min, children: [
                   if (trailing != null) ...[
-                    Icon(trailing, size: 18, color: colors.onSurfaceVariant),
+                    Icon(trailing, size: 18, color: color),
                     const SizedBox(width: 4),
                   ],
                   Flexible(
@@ -330,8 +340,22 @@ class _TrendStatRow extends StatelessWidget {
                   Text(detail!,
                       textAlign: TextAlign.end,
                       style: theme.textTheme.labelSmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontWeight: FontWeight.w600)),
+                          color: color, fontWeight: FontWeight.w700)),
+                if (progress != null) ...[
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 96,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(999),
+                      child: LinearProgressIndicator(
+                        value: progress!.clamp(0.0, 1.0),
+                        minHeight: 5,
+                        color: color,
+                        backgroundColor: color.withValues(alpha: 0.14),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
