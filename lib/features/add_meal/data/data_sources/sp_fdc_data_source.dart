@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
-import 'package:opennutritracker/core/utils/supported_language.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_const.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_fdc_food_dto.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -16,17 +13,14 @@ class SpFdcDataSource {
     try {
       log.fine('Fetching Supabase FDC results');
       final supaBaseClient = locator<SupabaseClient>();
-      final language = SupportedLanguage.fromCode(Platform.localeName);
-      final queryDescriptionColumn =
-          SPConst.getFdcFoodDescriptionColumnName(language);
+      // The production table only has French descriptions.
+      const queryDescriptionColumn = SPConst.fdcFoodDescriptionFr;
 
       // search_fdc_food (supabase/fdc_food_search.sql) ignores accents and
       // tolerates typos, unlike the plain full-text search.
       final query = supaBaseClient
-          .rpc(SPConst.fdcFoodSearchFunctionName, params: {
-            'search': searchString,
-            'lang': language.name,
-          })
+          .rpc(SPConst.fdcFoodSearchFunctionName,
+              params: {'search': searchString})
           .select(
               '''${SPConst.fdcFoodId}, $queryDescriptionColumn, fdc_portions (  ${SPConst.fdcPortionsMeasureUnitId}, ${SPConst.fdcPortionsAmount}, ${SPConst.fdcPortionsGramWeight} ), fdc_nutrients ( ${SPConst.fdcNutrientId}, ${SPConst.fdcNutrientsAmount} )''');
 

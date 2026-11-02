@@ -64,22 +64,24 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
   @override
   void didChangeDependencies() {
-    final args =
-        ModalRoute.of(context)?.settings.arguments as MealDetailScreenArguments;
-    meal = args.mealEntity;
-    _day = args.day;
-    intakeTypeEntity = args.intakeTypeEntity;
-    _usesImperialUnits = args.usesImperialUnits;
-
-    if (args.postNavigationAction != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          args.postNavigationAction!(context);
-        }
-      });
-    }
-
+    // Runs again on every keyboard/menu open: read the arguments only once, or
+    // the full product loaded below gets replaced by the search result again.
     if (_initialUnit == "") {
+      final args = ModalRoute.of(context)?.settings.arguments
+          as MealDetailScreenArguments;
+      meal = args.mealEntity;
+      _day = args.day;
+      intakeTypeEntity = args.intakeTypeEntity;
+      _usesImperialUnits = args.usesImperialUnits;
+
+      if (args.postNavigationAction != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            args.postNavigationAction!(context);
+          }
+        });
+      }
+
       _applyInitialUnitAndQuantity();
       _loadFullOffProduct();
     }
@@ -439,7 +441,8 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  /// Serving first, else package quantity in g/ml, else 100 g. Only metric
+  /// Serving first, else 100 g/ml (OFF package sizes like a 1 kg jar are not
+  /// a portion), else the quantity of custom foods. Only metric
   /// units are offered (the app targets France).
   void _applyInitialUnitAndQuantity() {
     if (meal.hasServingValues) {
@@ -451,7 +454,9 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
         UnitDropdownItem.flOz => UnitDropdownItem.ml.toString(),
         final unit => unit.toString(),
       };
-      _initialQuantity = meal.mealQuantity ?? _initialQuantityMetric;
+      _initialQuantity = meal.source == MealSourceEntity.off
+          ? _initialQuantityMetric
+          : meal.mealQuantity ?? _initialQuantityMetric;
     }
     quantityTextController.text = _initialQuantity;
     _mealDetailBloc.add(UpdateKcalEvent(

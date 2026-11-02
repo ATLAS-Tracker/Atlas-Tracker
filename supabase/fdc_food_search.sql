@@ -20,7 +20,8 @@ $$;
 -- Ranked: label starting with the search, then word similarity, then shortest.
 -- ponytail: sequential scan, add a GIN trigram index on the folded label if
 -- fdc_food grows past a few tens of thousands of rows.
-create or replace function public.search_fdc_food(search text, lang text default 'fr')
+-- French only: the production fdc_food table has no other description column.
+create or replace function public.search_fdc_food(search text)
 returns setof public.fdc_food
 language sql
 stable
@@ -32,12 +33,8 @@ as $$
       select public.immutable_unaccent(lower(replace(trim(search), 'œ', 'oe'))) as term
     ) q,
     lateral (
-      select public.immutable_unaccent(lower(replace(coalesce(
-        case lang
-          when 'fr' then f.description_fr
-          when 'de' then f.description_de
-          else f.description_en
-        end, ''), 'œ', 'oe'))) as label
+      select public.immutable_unaccent(
+        lower(replace(coalesce(f.description_fr, ''), 'œ', 'oe'))) as label
     ) l
   where l.label like '%' || q.term || '%'
      or q.term <% l.label
@@ -46,4 +43,4 @@ as $$
     length(l.label)
 $$;
 
-grant execute on function public.search_fdc_food(text, text) to anon, authenticated;
+grant execute on function public.search_fdc_food(text) to anon, authenticated;

@@ -55,8 +55,10 @@ See [Data Protection](https://www.iubenda.com/privacy-policy/53501884)
 - ~~Add Imperial unit support~~
 - Add support for Material You themes
 
-### Urgent
-- Run `supabase/fdc_food_search.sql` in the Supabase SQL editor: the app now calls the `search_fdc_food` RPC, without it generic foods (pomme, pain…) return no results
+### Urgent (Supabase prod, checked 2026-11-02)
+- Security: `fdc_food`, `fdc_portions`, `fdc_nutrients` have RLS disabled and `anon` holds INSERT/UPDATE/DELETE/TRUNCATE, so anyone with the app's public key can edit or wipe the food database. Fix: `enable row level security` on the 3 tables + one `select` policy for `anon, authenticated` (the app only reads them), and revoke write grants from `anon`/`authenticated`
+- Missing tables: `user_intakes` and `user_recipes` don't exist in prod (`supabase/journal_remote_sync.sql` never applied), so the journal/recipe sync of this branch fails silently. Apply the script before releasing (after fixing the delete/overwrite sync bugs below)
+- `fdc_food` in prod only has `fdc_id` + `description_fr` (no `description_en`/`description_de`/`picture_url`): `SPConst`/`SpFdcFoodDTO` still reference them; English/German locales are unsupported for generic foods
 
 ### Bugs (review of `refactor/ui`)
 Critical:

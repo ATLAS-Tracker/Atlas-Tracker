@@ -164,8 +164,7 @@ class MealEntity extends Equatable {
 
     return MealEntity(
         code: fdcId,
-        name: foodItem.getLocaleDescription(
-            SupportedLanguage.fromCode(Platform.localeName)),
+        name: foodItem.descriptionFr,
         brands: null,
         thumbnailImageUrl: foodItem.pictureUrl,
         mainImageUrl: foodItem.pictureUrl,
