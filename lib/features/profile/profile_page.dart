@@ -8,7 +8,6 @@ import 'package:opennutritracker/core/domain/entity/user_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_gender_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_pal_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
@@ -19,8 +18,6 @@ import 'package:opennutritracker/features/profile/presentation/widgets/set_pal_c
 import 'package:opennutritracker/features/profile/presentation/widgets/set_weight_dialog.dart';
 import 'package:opennutritracker/features/profile/presentation/widgets/profile_photo_picker.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'coach_students_page.dart';
 import 'presentation/widgets/manage_account_dialog.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -91,7 +88,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _getLoadedContent(BuildContext context, UserBMIEntity bmiEntity,
       UserEntity user, bool usesImperialUnits) {
-    final isCoach = user.role == UserRoleEntity.coach;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
@@ -127,7 +123,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   BlocBuilder<HomeBloc, HomeState>(
                     bloc: locator<HomeBloc>(),
                     builder: (context, state) {
-                      final coach = !isCoach && state is HomeLoadedState
+                      final coach = state is HomeLoadedState
                           ? state.coachName?.trim()
                           : null;
                       return Text(
@@ -146,7 +142,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(height: 18),
-        if (!isCoach)
           _ProfileTile(
             accent: lunchColor,
             title: Text(
@@ -161,7 +156,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             onTap: () => _showSetPALCategoryDialog(context, user),
           ),
-        if (!isCoach)
           _ProfileTile(
             accent: dinnerColor,
             title: Text(
@@ -176,7 +170,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             onTap: () => _showSetGoalDialog(context, user),
           ),
-        if (!isCoach)
           LayoutBuilder(builder: (context, constraints) {
             final columns = constraints.maxWidth < 260 ||
                     MediaQuery.textScalerOf(context).scale(1) > 1.3
@@ -266,43 +259,6 @@ class _ProfilePageState extends State<ProfilePage> {
             );
           }),
         const SizedBox(height: 10),
-        if (isCoach)
-          _ProfileTile(
-            leading: const SizedBox(
-              height: double.infinity,
-              child: Icon(Icons.group_outlined),
-            ),
-            title: Text(S.of(context).coachStudentsLabel),
-            onTap: () async {
-              // 1. Effectuez l'opération asynchrone
-              final connectivityResult =
-                  await locator<Connectivity>().checkConnectivity();
-
-              // 2. APRÈS l'await, vérifiez si le widget est toujours monté
-              if (!mounted) return;
-
-              // 3. Maintenant, vous pouvez utiliser le context en toute sécurité
-              final isConnected = connectivityResult != ConnectivityResult.none;
-
-              if (isConnected) {
-                Navigator.push(
-                  // ignore: use_build_context_synchronously
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CoachStudentsPage(),
-                  ),
-                );
-              } else {
-                // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    // ignore: use_build_context_synchronously
-                    content: Text(S.of(context).noInternetConnectionMessage),
-                  ),
-                );
-              }
-            },
-          ),
         _ProfileTile(
           leading: const SizedBox(
             height: double.infinity,

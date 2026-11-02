@@ -88,21 +88,15 @@ void main() {
         ));
         await tester.pumpAndSettle();
         expect(find.text(user.name), findsOneWidget);
-        expect(find.textContaining('Coach Alex'),
-            role == UserRoleEntity.student ? findsOneWidget : findsNothing);
+        expect(find.textContaining('Coach Alex'), findsOneWidget);
         expect(find.byIcon(Icons.north_east_rounded), findsNothing);
-        if (role == UserRoleEntity.student) {
-          expect(find.byIcon(Icons.group_outlined), findsNothing);
-          await tester.ensureVisible(find.text(S.current.activityLabel));
-          await tester.tap(find.text(S.current.activityLabel));
-          await tester.pumpAndSettle();
-          expect(find.byType(SetPALCategoryDialog), findsOneWidget);
-          Navigator.of(tester.element(find.byType(SetPALCategoryDialog))).pop();
-          await tester.pumpAndSettle();
-        } else {
-          expect(find.byIcon(Icons.group_outlined), findsOneWidget);
-          expect(find.byIcon(Icons.directions_walk_outlined), findsNothing);
-        }
+        expect(find.byIcon(Icons.group_outlined), findsNothing);
+        await tester.ensureVisible(find.text(S.current.activityLabel));
+        await tester.tap(find.text(S.current.activityLabel));
+        await tester.pumpAndSettle();
+        expect(find.byType(SetPALCategoryDialog), findsOneWidget);
+        Navigator.of(tester.element(find.byType(SetPALCategoryDialog))).pop();
+        await tester.pumpAndSettle();
         await tester.scrollUntilVisible(
             find.text(S.current.manageAccountTitle), 300);
         expect(find.text(S.current.manageAccountTitle), findsOneWidget);
