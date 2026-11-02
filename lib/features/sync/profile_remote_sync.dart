@@ -49,6 +49,31 @@ Future<bool> syncProfileFromSupabase(SupabaseClient client) async {
   }
 }
 
+/// Writes the fields edited on the profile page back to Supabase, otherwise
+/// [syncProfileFromSupabase] reverts them at the next startup.
+// ponytail: offline edits are lost at next startup, queue them if that matters.
+Future<void> pushProfileToSupabase(
+    SupabaseClient client, UserEntity user) async {
+  final userId = client.auth.currentUser?.id;
+  if (userId == null) return;
+  try {
+    await client.from('users').update(remoteProfileRow(user)).eq('id', userId);
+  } catch (e, s) {
+    Logger('ProfileRemoteSync').warning('Profile push failed', e, s);
+  }
+}
+
+/// Inverse of [mergeRemoteProfile] for the editable fields.
+Map<String, dynamic> remoteProfileRow(UserEntity user) => {
+      'height_cm': user.heightCM,
+      'weight_kg': user.weightKG,
+      'gender': user.gender.name,
+      'goal': user.goal.name,
+      'pal':
+          user.pal == UserPALEntity.lowActive ? 'lightlyActive' : user.pal.name,
+      'birthday': user.birthday.toIso8601String().substring(0, 10),
+    };
+
 UserEntity mergeRemoteProfile(UserEntity local, Map<String, dynamic> row) {
   return local.copyWith(
     name: (row['display_name'] as String?)?.trim(),

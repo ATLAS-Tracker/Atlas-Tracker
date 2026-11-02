@@ -39,4 +39,22 @@ void main() {
     expect(merged.birthday, DateTime(1999, 4, 24));
     expect(merged.pal, UserPALEntity.veryActive);
   });
+
+  test('pushed row reads back as the same profile', () {
+    for (final pal in UserPALEntity.values) {
+      final edited = local.copyWith(
+          goal: UserWeightGoalEntity.loseWeight,
+          gender: UserGenderEntity.female,
+          pal: pal,
+          weightKG: 72.5,
+          birthday: DateTime(1999, 4, 24));
+      final back = mergeRemoteProfile(local, remoteProfileRow(edited));
+      expect(back.goal, edited.goal);
+      expect(back.gender, edited.gender);
+      expect(back.pal, edited.pal);
+      expect(back.weightKG, edited.weightKG);
+      expect(back.heightCM, edited.heightCM);
+      expect(back.birthday, edited.birthday);
+    }
+  });
 }

@@ -13,6 +13,8 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
+import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'profile_event.dart';
 
@@ -72,6 +74,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     // Refresh Diary Page
     locator<DiaryBloc>().add(const LoadDiaryYearEvent());
     locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+
+    await pushProfileToSupabase(locator<SupabaseClient>(), userEntity);
   }
 
   Future<void> _updateTrackedDayCalorieGoal(
