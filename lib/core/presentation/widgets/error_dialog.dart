@@ -10,7 +10,8 @@ class ErrorDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    // Scrollable so it fits above the keyboard in the search results pane.
+    return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 64),
       child: Column(
         children: [
