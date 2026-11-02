@@ -15,6 +15,7 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_
 import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
 import 'package:opennutritracker/features/edit_meal/presentation/edit_meal_screen.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_detail_bloc.dart';
+import 'package:opennutritracker/features/scanner/domain/usecase/search_product_by_barcode_usecase.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_bottom_sheet.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_macro_nutrients.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_nutriments_table.dart';
@@ -37,7 +38,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   final _energyKey = GlobalKey();
 
   static const String _initialQuantityMetric = '100';
-  static const String _initialQuantityImperial = '1';
 
   final log = Logger('ItemDetailScreen');
 
@@ -53,6 +53,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
   String _initialUnit = "";
   String _initialQuantity = "";
+  bool _userChangedQuantityOrUnit = false;
 
   @override
   void initState() {
@@ -78,44 +79,9 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       });
     }
 
-    // Set initial unit
     if (_initialUnit == "") {
-      if (meal.hasServingValues) {
-        _initialUnit = UnitDropdownItem.serving.toString();
-      } else if (meal.mealUnit != null) {
-        _initialUnit = UnitDropdownItem.g.fromString(meal.mealUnit!).toString();
-      } else if (meal.isLiquid) {
-        _initialUnit = _usesImperialUnits
-            ? UnitDropdownItem.flOz.toString()
-            : UnitDropdownItem.ml.toString();
-      } else if (meal.isSolid) {
-        _initialUnit = _usesImperialUnits
-            ? UnitDropdownItem.oz.toString()
-            : UnitDropdownItem.g.toString();
-      } else {
-        _initialUnit = UnitDropdownItem.g.toString();
-      }
-      _mealDetailBloc
-          .add(UpdateKcalEvent(meal: meal, selectedUnit: _initialUnit));
-    }
-
-    // Set initial quantity
-    if (_initialQuantity == "") {
-      if (meal.hasServingValues) {
-        _initialQuantity = "1";
-        quantityTextController.text = "1";
-      } else if (meal.mealQuantity != null) {
-        _initialQuantity = meal.mealQuantity!;
-        quantityTextController.text = meal.mealQuantity!;
-      } else if (_usesImperialUnits) {
-        _initialQuantity = _initialQuantityImperial;
-        quantityTextController.text = _initialQuantityImperial;
-      } else {
-        _initialQuantity = _initialQuantityMetric;
-        quantityTextController.text = _initialQuantityMetric;
-      }
-      _mealDetailBloc.add(UpdateKcalEvent(
-          meal: meal, totalQuantity: quantityTextController.text));
+      _applyInitialUnitAndQuantity();
+      _loadFullOffProduct();
     }
 
     super.didChangeDependencies();
@@ -473,10 +439,52 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
+  /// Serving first, else package quantity in g/ml, else 100 g. Only metric
+  /// units are offered (the app targets France).
+  void _applyInitialUnitAndQuantity() {
+    if (meal.hasServingValues) {
+      _initialUnit = UnitDropdownItem.serving.toString();
+      _initialQuantity = "1";
+    } else {
+      _initialUnit = switch (UnitDropdownItem.g.fromString(meal.mealUnit ?? '')) {
+        UnitDropdownItem.oz => UnitDropdownItem.g.toString(),
+        UnitDropdownItem.flOz => UnitDropdownItem.ml.toString(),
+        final unit => unit.toString(),
+      };
+      _initialQuantity = meal.mealQuantity ?? _initialQuantityMetric;
+    }
+    quantityTextController.text = _initialQuantity;
+    _mealDetailBloc.add(UpdateKcalEvent(
+        meal: meal,
+        totalQuantity: _initialQuantity,
+        selectedUnit: _initialUnit));
+  }
+
+  /// Search results lack the serving size (1 Prince = 20 g): fetch the full
+  /// product in the background. The screen is usable meanwhile.
+  Future<void> _loadFullOffProduct() async {
+    final code = meal.code;
+    if (meal.source != MealSourceEntity.off ||
+        meal.hasServingValues ||
+        code == null) {
+      return;
+    }
+    try {
+      final fullProduct =
+          await locator<SearchProductByBarcodeUseCase>().searchProductByBarcode(code);
+      if (!mounted || !fullProduct.hasNutriments) return;
+      setState(() => meal = fullProduct);
+      if (!_userChangedQuantityOrUnit) _applyInitialUnitAndQuantity();
+    } catch (e) {
+      log.fine('Full OFF product not loaded, keeping search data: $e');
+    }
+  }
+
   void onQuantityOrUnitChanged(String? quantityString, String? unit) {
     if (quantityString == null || unit == null) {
       return;
     }
+    _userChangedQuantityOrUnit = true;
     _mealDetailBloc.add(UpdateKcalEvent(
         meal: meal, totalQuantity: quantityString, selectedUnit: unit));
     _scrollToCalorieText();

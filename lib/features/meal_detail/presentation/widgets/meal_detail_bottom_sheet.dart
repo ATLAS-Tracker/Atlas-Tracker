@@ -294,14 +294,6 @@ class MealDetailBottomSheet extends StatelessWidget {
           maxLines: 1,
         ),
       ),
-      DropdownMenuItem(
-        value: UnitDropdownItem.oz.toString(),
-        child: Text(
-          S.of(context).ozUnit,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-      ),
     ];
   }
 
@@ -313,14 +305,6 @@ class MealDetailBottomSheet extends StatelessWidget {
         value: UnitDropdownItem.ml.toString(),
         child: Text(
           S.of(context).milliliterUnit,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-      ),
-      DropdownMenuItem(
-        value: UnitDropdownItem.flOz.toString(),
-        child: Text(
-          S.of(context).flOzUnit,
           overflow: TextOverflow.ellipsis,
           maxLines: 1,
         ),

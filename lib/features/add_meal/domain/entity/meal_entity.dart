@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
+import 'package:opennutritracker/core/utils/off_const.dart';
 import 'package:opennutritracker/core/utils/supported_language.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_food_dto.dart';
@@ -107,7 +108,11 @@ class MealEntity extends Equatable {
         brands: offProduct.brands,
         thumbnailImageUrl: offProduct.image_front_thumb_url,
         mainImageUrl: offProduct.image_front_url,
-        url: offProduct.url,
+        // Search results carry no url, the product page is derived from the code.
+        url: offProduct.url ??
+            (offProduct.code == null
+                ? null
+                : '${OFFConst.offWebsiteUrl}product/${offProduct.code}'),
         mealQuantity: offProduct.product_quantity?.toString(),
         mealUnit: _tryGetUnit(offProduct.quantity),
         servingQuantity: _tryQuantityCast(offProduct.serving_quantity),

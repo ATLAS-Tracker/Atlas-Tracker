@@ -55,6 +55,9 @@ See [Data Protection](https://www.iubenda.com/privacy-policy/53501884)
 - ~~Add Imperial unit support~~
 - Add support for Material You themes
 
+### Urgent
+- Run `supabase/fdc_food_search.sql` in the Supabase SQL editor: the app now calls the `search_fdc_food` RPC, without it generic foods (pomme, pain…) return no results
+
 ### Bugs (review of `refactor/ui`)
 Critical:
 - Coach startup sync pulls students' `tracked_days` / `user_weight` into the coach's own journal: missing `.eq('user_id', uid)` (`startup_remote_sync_service.dart` `_fetchRemoteTrackedDays` / `_fetchRemoteUserWeights`)
