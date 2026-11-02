@@ -18,6 +18,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   final GetConfigUsecase _getConfigUsecase;
 
   static const int _pageSize = 10;
+  static const _searchDebounce = Duration(milliseconds: 400);
 
   String _searchString = "";
   final List<MealEntity> _allResults = [];
@@ -26,12 +27,19 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   bool _isFetchingPage = false;
   int _visibleCount = 0;
   bool _usesImperialUnits = false;
+  String _pendingSearch = "";
+  // Bumped on every fetch so responses of superseded requests are dropped.
+  int _requestId = 0;
 
   ProductsBloc(this._searchProductUseCase, this._getConfigUsecase)
       : super(ProductsInitial()) {
     on<LoadProductsEvent>((event, emit) async {
-      final shouldReload =
-          event.searchString != _searchString || state is! ProductsLoadedState;
+      // Search is fired on every keystroke: only keep the last one.
+      _pendingSearch = event.searchString;
+      await Future.delayed(_searchDebounce);
+      if (_pendingSearch != event.searchString) return;
+      final shouldReload = event.searchString != _searchString ||
+          state is ProductsFailedState;
       if (!shouldReload) return;
       _searchString = event.searchString;
       await _fetchPage(reset: true, emit: emit);
@@ -42,6 +50,8 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
       }
       _resetPagination();
       _searchString = "";
+      _pendingSearch = "";
+      _requestId++;
       _usesImperialUnits = false;
       _isFetchingPage = false;
       emit(ProductsInitial());
@@ -74,13 +84,14 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
     required Emitter<ProductsState> emit,
     bool increaseVisibleCount = false,
   }) async {
-    if (_isFetchingPage) {
+    if (_isFetchingPage && !reset) {
       return;
     }
     if (!reset && !_hasMoreRemote && !increaseVisibleCount) {
       return;
     }
 
+    final requestId = ++_requestId;
     _isFetchingPage = true;
     try {
       final requestSearch = _searchString;
@@ -100,7 +111,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
         pageSize: _pageSize,
       );
 
-      if (requestSearch != _searchString) {
+      if (requestId != _requestId || requestSearch != _searchString) {
         return;
       }
 
@@ -120,13 +131,14 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
       _emitLoadedState(emit);
     } catch (error, stackTrace) {
       log.severe('Failed to load products', error, stackTrace);
+      if (requestId != _requestId) return;
       if (reset) {
         emit(ProductsFailedState());
       } else {
         _emitLoadedState(emit);
       }
     } finally {
-      _isFetchingPage = false;
+      if (requestId == _requestId) _isFetchingPage = false;
     }
   }
 

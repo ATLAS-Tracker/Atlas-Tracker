@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:logging/logging.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_const.dart';
 import 'package:opennutritracker/features/add_meal/data/repository/products_repository.dart';
@@ -16,7 +17,8 @@ class SearchProductsUseCase {
   final ProductsRepository _productsRepository;
 
   SearchProductsUseCase(this._productsRepository);
-  static const Duration _offTimeout = Duration(seconds: 20);
+  static final _log = Logger('SearchProductsUseCase');
+  static const Duration _offTimeout = Duration(seconds: 10);
 
   Future<List<MealEntity>> searchOFFProductsByString(String searchString,
       {int page = 1, int pageSize = 20}) async {
@@ -48,53 +50,36 @@ class SearchProductsUseCase {
     return foods;
   }
 
+  /// Searches OFF (branded products) and Supabase (generic foods). A failing
+  /// source only drops its own results; throws only when both fail.
   Future<SearchProductsPage> searchProductsPage({
     required String searchString,
     required int page,
     required int pageSize,
   }) async {
-    final offFuture = _productsRepository
-        .getOFFProductsByString(
-          searchString,
-          page: page + 1,
-          pageSize: pageSize,
-        )
-        .timeout(_offTimeout, onTimeout: () => const <MealEntity>[])
-        .catchError((error, stackTrace) {
-          if (error is TimeoutException) {
-            return const <MealEntity>[];
-          }
-          Error.throwWithStackTrace(error, stackTrace);
+    var failures = 0;
+    Future<List<MealEntity>> orEmpty(Future<List<MealEntity>> request) =>
+        request.catchError((Object error) {
+          failures++;
+          _log.warning('Product search source failed', error);
+          return const <MealEntity>[];
         });
 
-    final fdcFuture = _productsRepository.getFDCFoodsByString(
-      searchString,
-      pageNumber: page + 1,
-      pageSize: pageSize,
-    );
-
-    final supabaseFuture =
-        _productsRepository.getSupabaseFDCFoodsByString(
-      searchString,
-      page: page,
-      pageSize: pageSize,
-    );
-
     final results = await Future.wait<List<MealEntity>>([
-      offFuture,
-      fdcFuture,
-      supabaseFuture,
+      orEmpty(_productsRepository
+          .getOFFProductsByString(searchString,
+              page: page + 1, pageSize: pageSize)
+          .timeout(_offTimeout)),
+      orEmpty(_productsRepository.getSupabaseFDCFoodsByString(searchString,
+          page: page, pageSize: pageSize)),
     ]);
+    if (failures == results.length) {
+      throw StateError('All product search sources failed');
+    }
 
-    final offResults = results[0];
-    final fdcResults = results[1];
-    final supabaseResults = results[2];
-
-    final combined = [...offResults, ...fdcResults, ...supabaseResults];
-    final hasMore = offResults.length == pageSize ||
-        fdcResults.length == pageSize ||
-        supabaseResults.length == pageSize;
-
-    return SearchProductsPage(results: combined, hasMore: hasMore);
+    return SearchProductsPage(
+      results: results.expand((r) => r).toList(),
+      hasMore: results.any((r) => r.length == pageSize),
+    );
   }
 }

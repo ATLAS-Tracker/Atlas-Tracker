@@ -15,13 +15,13 @@ class ProductsRepository {
 
   Future<List<MealEntity>> getOFFProductsByString(String searchString,
       {int page = 1, int pageSize = 20}) async {
-    final offWordResponse = await _offDataSource.fetchSearchWordResults(
+    final offProducts = await _offDataSource.fetchSearchWordResults(
       searchString,
       page: page,
       pageSize: pageSize,
     );
 
-    final products = offWordResponse.products
+    final products = offProducts
         .map((offProduct) => MealEntity.fromOFFProduct(offProduct))
         .where((mealEntity) => mealEntity.hasNutriments)
         .toList();

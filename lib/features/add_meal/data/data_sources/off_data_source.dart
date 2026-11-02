@@ -6,7 +6,7 @@ import 'package:opennutritracker/core/utils/app_const.dart';
 import 'package:opennutritracker/core/utils/off_const.dart';
 import 'package:opennutritracker/core/utils/ont_http_client.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/off/off_product_response_dto.dart';
-import 'package:opennutritracker/features/add_meal/data/dto/off/off_word_response_dto.dart';
+import 'package:opennutritracker/features/add_meal/data/dto/off/off_product_dto.dart';
 import 'package:opennutritracker/features/scanner/data/product_not_found_exception.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
@@ -14,7 +14,7 @@ class OFFDataSource {
   static const _timeoutDuration = Duration(seconds: 20); // TODO lower timeout
   final log = Logger('OFFDataSource');
 
-  Future<OFFWordResponseDTO> fetchSearchWordResults(String searchString,
+  Future<List<OFFProductDTO>> fetchSearchWordResults(String searchString,
       {int page = 1, int pageSize = 20}) async {
     try {
       final searchUrlString =
@@ -27,11 +27,19 @@ class OFFDataSource {
           .timeout(_timeoutDuration);
       log.fine('Fetching OFF results from: $searchUrlString');
       if (response.statusCode == OFFConst.offHttpSuccessCode) {
-        final wordResponse = OFFWordResponseDTO.fromJson(
-          jsonDecode(response.body),
-        );
+        // No charset in the response header, http would fall back to latin1.
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        final hits = (body['hits'] as List)
+            .cast<Map<String, dynamic>>()
+            .where((hit) => hit['nutriments'] != null)
+            .map((hit) {
+          // search-a-licious returns brands as a list, the DTO as a string.
+          final brands = hit['brands'];
+          if (brands is List) hit['brands'] = brands.join(', ');
+          return OFFProductDTO.fromJson(hit);
+        }).toList();
         log.fine('Successful response from OFF');
-        return wordResponse;
+        return hits;
       } else {
         log.warning('Failed OFF call: ${response.statusCode}');
         return Future.error(response.statusCode);

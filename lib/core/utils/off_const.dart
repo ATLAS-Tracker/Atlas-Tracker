@@ -1,14 +1,21 @@
 class OFFConst {
   static const offWebsiteUrl = "https://world.openfoodfacts.org/";
   static const _offBaseUrl = "world.openfoodfacts.org";
-  static const _offSearchTag = "/cgi/search.pl";
+  // search-a-licious: the legacy /cgi/search.pl is rate limited and mostly
+  // answers 503.
+  static const _offSearchBaseUrl = "search.openfoodfacts.org";
+  static const _offSearchTag = "/search";
   static const _offProductSearchTag = "/api/v2/product";
 
   static const offHttpSuccessCode = 200;
   static const offHttpDownCodes = [502, 503, 500];
   static const offProductNotFoundCode = 404;
 
-  static const _offProductSearchTermsTag = "search_terms";
+  static const _offSearchQueryTag = "q";
+  static const _offSearchLangsTag = "langs";
+  static const _offSearchCountryFilter = 'countries_tags:"en:france"';
+  // Lucene operators in user input would break or alter the query.
+  static final _offSearchSyntaxChars = RegExp(r'[+\-!(){}\[\]^"~*?:\\/&|]');
   static const _offFieldsTag = "fields";
   static const _offJsonTag = "json";
   static const _offJsonValue = "true";
@@ -58,15 +65,16 @@ class OFFConst {
 
   static Uri getOffWordSearchUrl(String searchString,
       {int page = 1, int pageSize = 20}) {
+    final terms = searchString.replaceAll(_offSearchSyntaxChars, ' ').trim();
     final queryParameters = {
-      _offProductSearchTermsTag: searchString,
+      _offSearchQueryTag: '$terms $_offSearchCountryFilter',
+      _offSearchLangsTag: 'fr',
       _offFieldsTag: _getReturnFields(),
-      _offJsonTag: _offJsonValue,
       _offPageTag: page.toString(),
       _offPageSizeTag: pageSize.toString(),
     };
 
-    return Uri.https(_offBaseUrl, _offSearchTag, queryParameters);
+    return Uri.https(_offSearchBaseUrl, _offSearchTag, queryParameters);
   }
 
   static Uri getOffBarcodeSearchUri(String barcode) {
