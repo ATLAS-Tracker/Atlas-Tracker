@@ -31,11 +31,16 @@ class OFFDataSource {
         final body = jsonDecode(utf8.decode(response.bodyBytes));
         final hits = (body['hits'] as List)
             .cast<Map<String, dynamic>>()
-            .where((hit) => hit['nutriments'] != null)
+            .where((hit) =>
+                hit['nutriments'] != null &&
+                [hit['product_name'], hit['product_name_fr']]
+                    .any((name) => name is String && name.trim().isNotEmpty))
             .map((hit) {
           // search-a-licious returns brands as a list, the DTO as a string.
           final brands = hit['brands'];
           if (brands is List) hit['brands'] = brands.join(', ');
+          // It doesn't index product_quantity either, rebuild it from "400 g".
+          hit['product_quantity'] ??= _packageQuantity(hit['quantity']);
           return OFFProductDTO.fromJson(hit);
         }).toList();
         log.fine('Successful response from OFF');
@@ -49,6 +54,18 @@ class OFFDataSource {
       FirebaseCrashlytics.instance.recordError(exception, stacktrace);
       return Future.error(exception);
     }
+  }
+
+  static final _quantityPattern =
+      RegExp(r'^\s*(\d+(?:[.,]\d+)?)\s*(kg|g|cl|ml|l)\b', caseSensitive: false);
+  static const _toBaseUnit = {'kg': 1000, 'g': 1, 'l': 1000, 'cl': 10, 'ml': 1};
+
+  /// "400 g" -> 400, "1,5 L" -> 1500 (g or ml). Null for "6 x 125 g" etc.
+  static num? _packageQuantity(Object? quantity) {
+    final match = _quantityPattern.firstMatch(quantity is String ? quantity : '');
+    if (match == null) return null;
+    final value = double.parse(match[1]!.replaceAll(',', '.'));
+    return value * _toBaseUnit[match[2]!.toLowerCase()]!;
   }
 
   Future<OFFProductResponseDTO> fetchBarcodeResults(String barcode) async {

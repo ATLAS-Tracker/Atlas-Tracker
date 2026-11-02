@@ -16,16 +16,19 @@ class SpFdcDataSource {
     try {
       log.fine('Fetching Supabase FDC results');
       final supaBaseClient = locator<SupabaseClient>();
-      final queryDescriptionColumn = SPConst.getFdcFoodDescriptionColumnName(
-        SupportedLanguage.fromCode(Platform.localeName),
-      );
+      final language = SupportedLanguage.fromCode(Platform.localeName);
+      final queryDescriptionColumn =
+          SPConst.getFdcFoodDescriptionColumnName(language);
 
+      // search_fdc_food (supabase/fdc_food_search.sql) ignores accents and
+      // tolerates typos, unlike the plain full-text search.
       final query = supaBaseClient
-          .from(SPConst.fdcFoodTableName)
+          .rpc(SPConst.fdcFoodSearchFunctionName, params: {
+            'search': searchString,
+            'lang': language.name,
+          })
           .select(
-              '''${SPConst.fdcFoodId}, $queryDescriptionColumn, fdc_portions (  ${SPConst.fdcPortionsMeasureUnitId}, ${SPConst.fdcPortionsAmount}, ${SPConst.fdcPortionsGramWeight} ), fdc_nutrients ( ${SPConst.fdcNutrientId}, ${SPConst.fdcNutrientsAmount} )''')
-          .textSearch(queryDescriptionColumn, searchString,
-              type: TextSearchType.websearch);
+              '''${SPConst.fdcFoodId}, $queryDescriptionColumn, fdc_portions (  ${SPConst.fdcPortionsMeasureUnitId}, ${SPConst.fdcPortionsAmount}, ${SPConst.fdcPortionsGramWeight} ), fdc_nutrients ( ${SPConst.fdcNutrientId}, ${SPConst.fdcNutrientsAmount} )''');
 
       if (limit <= 0) {
         return [];

@@ -182,23 +182,45 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   String _mealKey(MealEntity meal) =>
       '${meal.source.name}:${meal.code ?? meal.name ?? ''}';
 
-  List<MealEntity> _sortResults(List<MealEntity> results) {
-    int score(MealEntity meal) {
-      final name = (meal.name ?? '').toLowerCase();
-      final query = _searchString.toLowerCase();
-      if (name == query) return 0;
-      if (name.startsWith(query)) return 1;
-      if (name.contains(query)) return 2;
-      return 3;
+  /// Name matches first (exact, prefix, contains), generic foods before
+  /// branded products, and otherwise the sources' own order (OFF: popularity).
+  void _sortResults(List<MealEntity> results) {
+    final query = _fold(_searchString);
+    int rank(MealEntity meal) {
+      final name = _fold(meal.name ?? '');
+      final match = name == query
+          ? 0
+          : name.startsWith(query)
+              ? 1
+              : name.contains(query)
+                  ? 2
+                  : 3;
+      return match * 2 + (meal.source == MealSourceEntity.off ? 1 : 0);
     }
 
-    results.sort((a, b) {
-      final sa = score(a);
-      final sb = score(b);
-      if (sa != sb) return sa - sb;
-      return (a.name ?? '').compareTo(b.name ?? '');
-    });
-
-    return results;
+    // List.sort is not stable: keep the arrival index as tie-break.
+    final ranked = [for (final (i, meal) in results.indexed) (rank(meal), i, meal)];
+    ranked.sort((a, b) => a.$1 != b.$1 ? a.$1 - b.$1 : a.$2 - b.$2);
+    results
+      ..clear()
+      ..addAll(ranked.map((r) => r.$3));
   }
+
+  /// Lowercase without French accents, so "pate" ranks "Pâte" as a match.
+  static String _fold(String text) {
+    var folded = text.toLowerCase().trim().replaceAll('œ', 'oe');
+    for (final (accented, plain) in _accents) {
+      folded = folded.replaceAll(RegExp('[$accented]'), plain);
+    }
+    return folded;
+  }
+
+  static const _accents = [
+    ('àâä', 'a'),
+    ('éèêë', 'e'),
+    ('îï', 'i'),
+    ('ôö', 'o'),
+    ('ùûü', 'u'),
+    ('ç', 'c'),
+  ];
 }

@@ -178,9 +178,9 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 
   void _onSearchSubmit(String inputText) {
-    // The search is case-sensitive, so it is necessary to replace "oe"
-    // with "œ" to find the corresponding foods.
-    inputText = inputText.replaceAll("oe", "œ");
+    // The local recipe/recent search is literal, so "oe" must become "œ" to
+    // match. Product search engines handle it and would lose "boeuf" results.
+    final localInput = inputText.replaceAll("oe", "œ");
     switch (_tabController.index) {
       case 0:
         final trimmedInput = inputText.trim();
@@ -192,10 +192,10 @@ class _AddMealScreenState extends State<AddMealScreen>
         _productsBloc.add(LoadProductsEvent(searchString: trimmedInput));
         break;
       case 1:
-        _recipeSearchBloc.add(LoadRecipeSearchEvent(searchString: inputText));
+        _recipeSearchBloc.add(LoadRecipeSearchEvent(searchString: localInput));
         break;
       case 2:
-        _recentMealBloc.add(LoadRecentMealEvent(searchString: inputText));
+        _recentMealBloc.add(LoadRecentMealEvent(searchString: localInput));
         break;
     }
   }

@@ -14,6 +14,11 @@ class OFFConst {
   static const _offSearchQueryTag = "q";
   static const _offSearchLangsTag = "langs";
   static const _offSearchCountryFilter = 'countries_tags:"en:france"';
+  // Drops sparse entries (no photo, no category...) that clutter results.
+  static const _offSearchCompletenessFilter = 'completeness:[0.4 TO *]';
+  static const _offSearchSortTag = "sort_by";
+  // Most scanned first: the real LU "Prince" before obscure lookalikes.
+  static const _offSearchSortByPopularity = "-unique_scans_n";
   // Lucene operators in user input would break or alter the query.
   static final _offSearchSyntaxChars = RegExp(r'[+\-!(){}\[\]^"~*?:\\/&|]');
   static const _offFieldsTag = "fields";
@@ -67,11 +72,13 @@ class OFFConst {
       {int page = 1, int pageSize = 20}) {
     final terms = searchString.replaceAll(_offSearchSyntaxChars, ' ').trim();
     final queryParameters = {
-      _offSearchQueryTag: '$terms $_offSearchCountryFilter',
+      _offSearchQueryTag:
+          '$terms $_offSearchCountryFilter $_offSearchCompletenessFilter',
       _offSearchLangsTag: 'fr',
       _offFieldsTag: _getReturnFields(),
       _offPageTag: page.toString(),
       _offPageSizeTag: pageSize.toString(),
+      _offSearchSortTag: _offSearchSortByPopularity,
     };
 
     return Uri.https(_offSearchBaseUrl, _offSearchTag, queryParameters);

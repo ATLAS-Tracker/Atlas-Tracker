@@ -7,6 +7,7 @@ class SPConst {
   static const fdcFoodTableName = 'fdc_food';
   static const fdcPortionsName = 'fdc_portions';
   static const fdcNutrientsName = 'fdc_nutrients';
+  static const fdcFoodSearchFunctionName = 'search_fdc_food';
 
   // Column names
   static const fdcFoodId = 'fdc_id';
