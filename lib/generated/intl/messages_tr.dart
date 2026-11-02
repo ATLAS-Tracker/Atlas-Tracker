@@ -870,8 +870,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingAboutLabel": MessageLookupByLibrary.simpleMessage("Hakkında"),
         "settingFeedbackLabel":
             MessageLookupByLibrary.simpleMessage("Geri Bildirim"),
-        "settingsCalculationsLabel":
-            MessageLookupByLibrary.simpleMessage("Hesaplamalar"),
         "settingsDistanceLabel": MessageLookupByLibrary.simpleMessage("Mesafe"),
         "settingsImperialLabel":
             MessageLookupByLibrary.simpleMessage("İmperial (lbs, ft, oz)"),

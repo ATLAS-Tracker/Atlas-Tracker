@@ -913,8 +913,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingAboutLabel": MessageLookupByLibrary.simpleMessage("À propos"),
         "settingFeedbackLabel":
             MessageLookupByLibrary.simpleMessage("Commentaires"),
-        "settingsCalculationsLabel":
-            MessageLookupByLibrary.simpleMessage("Calculs"),
         "settingsDistanceLabel":
             MessageLookupByLibrary.simpleMessage("Distance"),
         "settingsImperialLabel":

@@ -451,16 +451,6 @@ class S {
     );
   }
 
-  /// `Calculations`
-  String get settingsCalculationsLabel {
-    return Intl.message(
-      'Calculations',
-      name: 'settingsCalculationsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Theme`
   String get settingsThemeLabel {
     return Intl.message(
