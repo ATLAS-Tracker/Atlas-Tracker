@@ -213,6 +213,8 @@ class _TrendStats extends StatelessWidget {
     final total = data.days.length;
     final avgKcal = _avg(data.days.map((d) => d.kcal));
     final kcalFormat = NumberFormat.decimalPattern(locale);
+    final oneDecimal =
+        NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1);
 
     final String weightValue;
     final IconData? weightTrend;
@@ -230,47 +232,42 @@ class _TrendStats extends StatelessWidget {
               : Icons.trending_down_rounded;
     }
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      decoration: atlasCardDecoration(Theme.of(context).colorScheme),
+      child: Column(
         children: [
-          Expanded(
-            child: _TrendStatCard(
-              icon: Icons.monitor_weight_outlined,
-              label: s.weightLabel,
-              value: weightValue,
-              trailing: weightTrend,
-              detail: weighIns.isEmpty
-                  ? s.trendNotEnoughDataLabel
-                  : weighIns.length == 1
-                      ? '${s.trendNotEnoughDataLabel} · ${weighIns.last.weight!.toStringAsFixed(1)} ${s.kgLabel}'
-                      : '${NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1).format(weighIns.last.weight)} ${s.kgLabel}',
-            ),
+          _TrendStatRow(
+            icon: Icons.monitor_weight_outlined,
+            label: s.weightLabel,
+            value: weightValue,
+            trailing: weightTrend,
+            detail: weighIns.isEmpty
+                ? s.trendNotEnoughDataLabel
+                : weighIns.length == 1
+                    ? '${s.trendNotEnoughDataLabel} · ${oneDecimal.format(weighIns.last.weight)} ${s.kgLabel}'
+                    : '${oneDecimal.format(weighIns.last.weight)} ${s.kgLabel}',
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _TrendStatCard(
-              icon: Icons.event_available_outlined,
-              label: s.studentConsistencyLabel,
-              value: s.trendDaysTracked(logged, total),
-              detail: '${(logged / total * 100).round()} %',
-            ),
+          const Divider(height: 1),
+          _TrendStatRow(
+            icon: Icons.event_available_outlined,
+            label: s.studentConsistencyLabel,
+            value: s.trendDaysTracked(logged, total),
+            detail: '${(logged / total * 100).round()} %',
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: _TrendStatCard(
-              icon: Icons.local_fire_department_outlined,
-              label: s.trendAvgCaloriesLabel,
-              value: avgKcal == null
-                  ? '—'
-                  : '${kcalFormat.format(avgKcal.round())} ${s.kcalLabel}',
-              detail: avgKcal == null
-                  ? s.trendNotEnoughDataLabel
-                  : data.calorieGoal > 0
-                      ? s.trendVsGoal(
-                          '${_signedNum(avgKcal - data.calorieGoal, 0, locale)} ${s.kcalLabel}')
-                      : null,
-            ),
+          const Divider(height: 1),
+          _TrendStatRow(
+            icon: Icons.local_fire_department_outlined,
+            label: s.trendAvgCaloriesLabel,
+            value: avgKcal == null
+                ? '—'
+                : '${kcalFormat.format(avgKcal.round())} ${s.kcalLabel}',
+            detail: avgKcal == null
+                ? s.trendNotEnoughDataLabel
+                : data.calorieGoal > 0
+                    ? s.trendVsGoal(
+                        '${_signedNum(avgKcal - data.calorieGoal, 0, locale)} ${s.kcalLabel}')
+                    : null,
           ),
         ],
       ),
@@ -278,14 +275,16 @@ class _TrendStats extends StatelessWidget {
   }
 }
 
-class _TrendStatCard extends StatelessWidget {
+/// One line of the trend summary: badge + label on the left, value and its
+/// detail aligned on the right, so every value has the same size.
+class _TrendStatRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
   final String? detail;
   final IconData? trailing;
 
-  const _TrendStatCard({
+  const _TrendStatRow({
     required this.icon,
     required this.label,
     required this.value,
@@ -297,65 +296,44 @@ class _TrendStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final valueStyle =
-        theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800);
-    final detailStyle = theme.textTheme.labelSmall
-        ?.copyWith(color: colors.onSurfaceVariant, fontWeight: FontWeight.w600);
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: _cardDecoration(colors),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Icon(icon, size: 16, color: colors.primary),
-              ),
-              const Spacer(),
-              if (trailing != null)
-                Icon(trailing, size: 18, color: colors.onSurfaceVariant),
-            ],
+          _IconBadge(icon),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                    fontWeight: FontWeight.w600)),
           ),
-          const SizedBox(height: 10),
-          Text(label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelMedium?.copyWith(
-                  color: colors.onSurfaceVariant, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 2),
-          // Invisible line keeps full height when a long value (e.g.
-          // "21/30 jours") gets scaled down by the FittedBox.
-          Stack(
-            alignment: Alignment.centerLeft,
-            children: [
-              Text(' ', style: valueStyle),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(value, style: valueStyle),
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Always reserve two lines so card height doesn't change with the
-          // period (a detail wrapping on 3 mois used to grow every card).
-          Stack(
-            children: [
-              Text('\n', maxLines: 2, style: detailStyle),
-              if (detail != null)
-                Text(detail!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: detailStyle),
-            ],
+          const SizedBox(width: 12),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  if (trailing != null) ...[
+                    Icon(trailing, size: 18, color: colors.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                  ],
+                  Flexible(
+                    child: Text(value,
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                  ),
+                ]),
+                if (detail != null)
+                  Text(detail!,
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                          color: colors.onSurfaceVariant,
+                          fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
         ],
       ),
@@ -727,8 +705,8 @@ class _TrendMacrosCardState extends State<_TrendMacrosCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Transform.translate(
-              offset: const Offset(0, -10),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
               child: Text(s.trendMacrosSubtitle,
                   style: theme.textTheme.labelMedium
                       ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),

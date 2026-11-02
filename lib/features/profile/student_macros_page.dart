@@ -97,16 +97,27 @@ class _StudentMacrosViewState extends State<_StudentMacrosView> {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
               children: [
-                AtlasTabBar(
-                  labels: [s.studentDayTab, s.studentTrendTab],
-                  selectedIndex: _tab,
-                  onSelected: (i) => setState(() => _tab = i),
+                // Largeur max 560 sur tablette, comme « Définir les macros ».
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AtlasTabBar(
+                          labels: [s.studentDayTab, s.studentTrendTab],
+                          selectedIndex: _tab,
+                          onSelected: (i) => setState(() => _tab = i),
+                        ),
+                        const SizedBox(height: 16),
+                        if (_tab == 0)
+                          _DayView(state: state)
+                        else
+                          _TrendView(state: state),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                if (_tab == 0)
-                  _DayView(state: state)
-                else
-                  _TrendView(state: state),
               ],
             ),
           );
@@ -238,8 +249,9 @@ class _DayNavigator extends StatelessWidget {
 
     return Row(
       children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
+        IconButton.filledTonal(
+          tooltip: MaterialLocalizations.of(context).previousPageTooltip,
+          icon: const Icon(Icons.chevron_left_rounded),
           onPressed: () => bloc.add(
               ChangeDateEvent(selectedDate.subtract(const Duration(days: 1)))),
         ),
@@ -264,8 +276,9 @@ class _DayNavigator extends StatelessWidget {
             ),
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.chevron_right),
+        IconButton.filledTonal(
+          tooltip: MaterialLocalizations.of(context).nextPageTooltip,
+          icon: const Icon(Icons.chevron_right_rounded),
           onPressed: diff > 0
               ? () => bloc.add(
                   ChangeDateEvent(selectedDate.add(const Duration(days: 1))))
@@ -300,21 +313,13 @@ class _InfoCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: _cardDecoration(colors),
+      decoration: atlasCardDecoration(colors),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  color: colors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                child: Icon(icon, size: 16, color: colors.primary),
-              ),
+              _IconBadge(icon),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(title,
@@ -323,7 +328,10 @@ class _InfoCard extends StatelessWidget {
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w800)),
               ),
-              if (trailing != null) trailing!,
+              if (trailing != null)
+                Flexible(
+                  child: FittedBox(fit: BoxFit.scaleDown, child: trailing),
+                ),
             ],
           ),
           SizedBox(height: fill ? 10 : 16),
@@ -339,22 +347,26 @@ class _InfoCard extends StatelessWidget {
   }
 }
 
-// Same light card as Home and the weight screen.
-BoxDecoration _cardDecoration(ColorScheme colors) => BoxDecoration(
-      color: colors.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(24),
-      border: Border.all(
-        color: colors.primary.withValues(
-            alpha: colors.brightness == Brightness.dark ? 0.16 : 0.10),
+/// Card/section icon: small tinted rounded square.
+class _IconBadge extends StatelessWidget {
+  final IconData icon;
+
+  const _IconBadge(this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(9),
       ),
-      boxShadow: [
-        BoxShadow(
-          color: colors.primary.withValues(alpha: 0.035),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
-        ),
-      ],
+      child: Icon(icon, size: 16, color: colors.primary),
     );
+  }
+}
 
 class _DayWeightCard extends StatelessWidget {
   final double? weight;
@@ -375,14 +387,15 @@ class _DayWeightCard extends StatelessWidget {
     return _InfoCard(
       title: s.weightLabel,
       icon: Icons.monitor_weight_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text.rich(TextSpan(children: [
+      // Tout le bloc rétrécit d'un coup sur petit écran / grand texte.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.bottomLeft,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text.rich(TextSpan(children: [
               TextSpan(
                   text: weight == null ? '—' : oneDecimal.format(weight),
                   style: theme.textTheme.headlineLarge?.copyWith(
@@ -397,18 +410,16 @@ class _DayWeightCard extends StatelessWidget {
                         color: colors.onSurfaceVariant,
                         fontWeight: FontWeight.w600)),
             ])),
-          ),
-          if (weight != null && target > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-                s.trendVsGoal(
-                    '${_signedNum(weight! - target, 1, locale)} ${s.kgLabel}'),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.primary, fontWeight: FontWeight.w700)),
+            if (weight != null && target > 0) ...[
+              const SizedBox(height: 4),
+              Text(
+                  s.trendVsGoal(
+                      '${_signedNum(weight! - target, 1, locale)} ${s.kgLabel}'),
+                  style: theme.textTheme.labelMedium?.copyWith(
+                      color: colors.primary, fontWeight: FontWeight.w700)),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

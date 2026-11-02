@@ -50,3 +50,20 @@ class MacroVisuals {
     icon: Icons.egg_alt_outlined,
   );
 }
+
+/// Light card shared by Home, the weight screen and the coach pages.
+BoxDecoration atlasCardDecoration(ColorScheme colors) => BoxDecoration(
+      color: colors.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(24),
+      border: Border.all(
+        color: colors.primary.withValues(
+            alpha: colors.brightness == Brightness.dark ? 0.16 : 0.10),
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: colors.primary.withValues(alpha: 0.035),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    );

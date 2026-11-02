@@ -270,32 +270,22 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Row(children: [
-            Icon(Icons.flag_rounded, size: 20, color: colors.primary),
-            const SizedBox(width: 8),
-            Text(s.goalLabel,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w700)),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: colors.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(s.comingSoonLabel,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                        color: colors.onTertiaryContainer,
-                        fontWeight: FontWeight.w700)),
-              ),
+        _sectionTitle(
+          Icons.flag_rounded,
+          s.goalLabel,
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: colors.tertiaryContainer,
+              borderRadius: BorderRadius.circular(999),
             ),
-          ]),
+            child: Text(s.comingSoonLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                    color: colors.onTertiaryContainer,
+                    fontWeight: FontWeight.w700)),
+          ),
         ),
         _panel(
           child: Column(
@@ -411,18 +401,32 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     );
   }
 
-  Widget _sectionTitle(IconData icon, String title) {
+  Widget _sectionTitle(IconData icon, String title, {Widget? trailing}) {
     final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 12),
       child: Row(children: [
-        Icon(icon, size: 20, color: theme.colorScheme.primary),
+        // Même badge que les cartes de la page élève.
+        Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: colors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Icon(icon, size: 16, color: colors.primary),
+        ),
         const SizedBox(width: 8),
-        Expanded(
+        Flexible(
           child: Text(title,
               style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700)),
+                  ?.copyWith(fontWeight: FontWeight.w800)),
         ),
+        if (trailing != null) ...[
+          const SizedBox(width: 10),
+          Flexible(child: trailing),
+        ],
       ]),
     );
   }
@@ -431,12 +435,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: padding ?? const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(22),
-        border:
-            Border.all(color: colors.outlineVariant.withValues(alpha: 0.45)),
-      ),
+      decoration: atlasCardDecoration(colors),
       child: child,
     );
   }
@@ -539,14 +538,14 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
       child: Row(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 36,
+            height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: visual.color.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
+              color: visual.color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
             ),
-            child: MacroIcon(visual: visual, size: 24),
+            child: MacroIcon(visual: visual, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
