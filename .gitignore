@@ -64,3 +64,6 @@ supabase/functions/coach-set-new-objective/service-account.json
 ios/Runner/GoogleService-Info.plist
 lib/core/utils/env.g.dart
 test.txt
+
+# graphify knowledge graph (generated)
+graphify-out/
