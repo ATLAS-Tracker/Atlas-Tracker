@@ -1443,26 +1443,6 @@ class S {
     );
   }
 
-  /// `burned`
-  String get burnedLabel {
-    return Intl.message(
-      'burned',
-      name: 'burnedLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `steps`
-  String get stepsLabel {
-    return Intl.message(
-      'steps',
-      name: 'stepsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `kcal left`
   String get kcalLeftLabel {
     return Intl.message(
@@ -5113,56 +5093,6 @@ class S {
     );
   }
 
-  /// `Daily balance`
-  String get dayBalanceTitle {
-    return Intl.message(
-      'Daily balance',
-      name: 'dayBalanceTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Net`
-  String get netLabel {
-    return Intl.message(
-      'Net',
-      name: 'netLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Deficit`
-  String get deficitLabel {
-    return Intl.message(
-      'Deficit',
-      name: 'deficitLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Surplus`
-  String get surplusLabel {
-    return Intl.message(
-      'Surplus',
-      name: 'surplusLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `vs goal`
-  String get vsGoalLabel {
-    return Intl.message(
-      'vs goal',
-      name: 'vsGoalLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Daily check-in`
   String get coachTodayTitle {
     return Intl.message(
@@ -6063,6 +5993,66 @@ class S {
     return Intl.message(
       'Your recipe photo',
       name: 'recipeCoverLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Daily targets`
+  String get dailyMacroGoalsTitle {
+    return Intl.message(
+      'Daily targets',
+      name: 'dailyMacroGoalsTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calories calculated from macronutrients.`
+  String get macroCaloriesExplanation {
+    return Intl.message(
+      'Calories calculated from macronutrients.',
+      name: 'macroCaloriesExplanation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Macro distribution`
+  String get macroDistributionTitle {
+    return Intl.message(
+      'Macro distribution',
+      name: 'macroDistributionTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Targets`
+  String get macroGoalsTabLabel {
+    return Intl.message(
+      'Targets',
+      name: 'macroGoalsTabLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The history of target changes will appear here.`
+  String get macroGoalHistoryEmpty {
+    return Intl.message(
+      'The history of target changes will appear here.',
+      name: 'macroGoalHistoryEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bulking, cutting or maintenance: macros will adapt to the target weight.`
+  String get bodyGoalPreviewDescription {
+    return Intl.message(
+      'Bulking, cutting or maintenance: macros will adapt to the target weight.',
+      name: 'bodyGoalPreviewDescription',
       desc: '',
       args: [],
     );

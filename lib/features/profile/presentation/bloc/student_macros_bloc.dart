@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -25,19 +27,29 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     LoadStudentMacrosEvent event,
     Emitter<StudentMacrosState> emit,
   ) async {
-    emit(StudentMacrosLoading());
+    final previous = state;
+    // Rafraîchissement : garde l'écran et la date affichés.
+    if (previous is! StudentMacrosLoaded) emit(StudentMacrosLoading());
     try {
-      final macros = await _fetchMacros(event.studentId);
+      final (macros, targetWeight) = await (
+        _fetchMacros(event.studentId),
+        _fetchTargetWeight(event.studentId),
+      ).wait;
       emit(
         StudentMacrosLoaded(
           macros: macros,
-          selectedDate: DateTime.now(),
+          targetWeight: targetWeight,
+          selectedDate: previous is StudentMacrosLoaded
+              ? previous.selectedDate
+              : DateTime.now(),
           selectedMacro: MacroType.calories,
           selectedRange: TimeRange.week,
         ),
       );
     } catch (e) {
       emit(StudentMacrosError(e.toString()));
+    } finally {
+      event.done?.complete();
     }
   }
 
@@ -91,6 +103,16 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     }
   }
 
+  /// Poids cible du profil élève (users.weight_kg, comme sur l'accueil).
+  Future<double?> _fetchTargetWeight(String studentId) async {
+    final row = await _supabase
+        .from('users')
+        .select('weight_kg')
+        .eq('id', studentId)
+        .maybeSingle();
+    return (row?['weight_kg'] as num?)?.toDouble();
+  }
+
   Future<Map<String, Map<String, dynamic>>> _fetchMacros(
     String studentId,
   ) async {
@@ -117,14 +139,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
         .lte('date', endDate)
         .order('date');
 
-    final stepsResponse = await _supabase
-        .from('daily_steps')
-        .select('date, steps')
-        .eq('user_id', studentId)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date');
-
     final Map<String, Map<String, dynamic>> result = {
       for (final Map<String, dynamic> item in macroResponse)
         item['day'] as String: item,
@@ -134,12 +148,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
       final dateStr = item['date'] as String;
       result.putIfAbsent(dateStr, () => {});
       result[dateStr]!['weight'] = item['weight'];
-    }
-
-    for (final Map<String, dynamic> item in stepsResponse) {
-      final dateStr = item['date'] as String;
-      result.putIfAbsent(dateStr, () => {});
-      result[dateStr]!['steps'] = item['steps'];
     }
 
     return result;

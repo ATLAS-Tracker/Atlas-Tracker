@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_tab_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -26,8 +31,10 @@ class SetStudentMacrosPage extends StatefulWidget {
 
 class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
   // Toujours stocker des dates "pures" (00:00)
-  DateTime _startDate = _today();
+  DateTime _startDate = _today().add(const Duration(days: 1));
   bool _loadingLatest = true;
+  int _tab = 0;
+  bool _saving = false;
   DateTime? _previousStartDate;
   int? _previousCarbs;
   int? _previousFat;
@@ -86,144 +93,508 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
 
   @override
   Widget build(BuildContext context) {
-    final todayDate = _today();
+    final s = S.of(context);
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text(S.of(context).setMacrosLabel)),
+      appBar: AppBar(title: Text(s.setMacrosLabel)),
       body: SafeArea(
         child: _loadingLatest
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
+            : Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: AtlasTabBar(
+                          labels: [s.macroGoalsTabLabel, s.historyLabel],
+                          selectedIndex: _tab,
+                          onSelected: (i) => setState(() => _tab = i),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: _tab == 0 ? _goalsTab() : _historyTab()),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _goalsTab() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final s = S.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    if (_previousStartDate != null)
-                      Card(
-                        elevation: 0,
-                        color: Theme.of(context).colorScheme.surface,
-                        surfaceTintColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                S.of(context).previousGoalAppliedOn(
-                                  DateFormat('yyyy-MM-dd').format(_previousStartDate!),
-                                ),
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${S.of(context).carbsLabel}: ${_previousCarbs ?? '-'} g, '
-                                '${S.of(context).fatLabel}: ${_previousFat ?? '-'} g, '
-                                '${S.of(context).proteinLabel}: ${_previousProtein ?? '-'} g',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                              if (_previousCalories != null)
-                                Text(
-                                  '${S.of(context).caloriesLabel}: $_previousCalories kcal',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                            ],
-                          ),
+                    _summaryCard(),
+                    const SizedBox(height: 28),
+                    _sectionTitle(
+                        Icons.donut_large_rounded, s.macroDistributionTitle),
+                    _macroField(
+                        _carbsController, s.carbsLabel, MacroVisuals.carbs, 4),
+                    const SizedBox(height: 10),
+                    _macroField(
+                        _fatController, s.fatLabel, MacroVisuals.fats, 9),
+                    const SizedBox(height: 10),
+                    _macroField(_proteinController, s.proteinLabel,
+                        MacroVisuals.proteins, 4),
+                    const SizedBox(height: 28),
+                    _bodyGoalPlaceholder(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        // Date + bouton toujours visibles : on voit en permanence
+        // à partir de quand les nouveaux objectifs s'appliquent.
+        Container(
+          decoration: BoxDecoration(
+            color: colors.surfaceContainerLow,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            boxShadow: [
+              BoxShadow(
+                color: colors.shadow.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+            child: Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _dateStepper(locale),
+                    const SizedBox(height: 10),
+                    FilledButton.icon(
+                      onPressed:
+                          _saving || !_allFieldsFilled ? null : _saveMacros,
+                      icon: _saving
+                          ? const SizedBox.square(
+                              dimension: 20,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2.5))
+                          : const Icon(Icons.check_rounded),
+                      label: Text(s.buttonSaveLabel),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(56),
+                        textStyle: theme.textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
                         ),
-                      ),
-                    const SizedBox(height: 8),
-                    // Sélecteur de date
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.chevron_left),
-                          // Désactive si on est déjà sur aujourd'hui (ou avant, par sécurité)
-                          onPressed: _dateOnly(_startDate).isAfter(todayDate)
-                              ? _goToPreviousDay
-                              : null,
-                        ),
-                        InkWell(
-                          onTap: _selectDate,
-                          child: Row(
-                            children: [
-                              Text(
-                                DateFormat('yyyy-MM-dd').format(_startDate),
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              const Icon(Icons.arrow_drop_down),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chevron_right),
-                          onPressed: _goToNextDay,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Glucides
-                    TextFormField(
-                      controller: _carbsController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: S.of(context).carbsLabel,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Lipides
-                    TextFormField(
-                      controller: _fatController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: S.of(context).fatLabel,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Protéines
-                    TextFormField(
-                      controller: _proteinController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        labelText: S.of(context).proteinLabel,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Calories affichées
-                    Center(
-                      child: Text(
-                        '${S.of(context).caloriesLabel}: $_calculatedCalories kcal',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-
-                    // Bouton Enregistrer
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: _saveMacros,
-                        child: Text(S.of(context).buttonSaveLabel),
                       ),
                     ),
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ponytail: n'affiche que le dernier objectif, coach_macro_goals ne garde
+  // qu'une ligne par élève (upsert) ; historiser les lignes pour aller plus loin.
+  Widget _historyTab() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    if (_previousStartDate != null) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child:
+                _previousGoalCard(Localizations.localeOf(context).toString()),
+          ),
+        ),
+      );
+    }
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: colors.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.history_rounded,
+                size: 36, color: colors.onPrimaryContainer),
+          ),
+          const SizedBox(height: 16),
+          Text(S.of(context).macroGoalHistoryEmpty,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium
+                  ?.copyWith(color: colors.onSurfaceVariant)),
+        ]),
+      ),
+    );
+  }
+
+  bool get _allFieldsFilled => [
+        _carbsController,
+        _fatController,
+        _proteinController
+      ].every((c) => c.text.isNotEmpty);
+
+  // ponytail: aperçu désactivé, à brancher quand l'objectif physique
+  // (prise de masse / sèche / maintien + poids cible) sera stocké pour l'élève.
+  Widget _bodyGoalPlaceholder() {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final s = S.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Row(children: [
+            Icon(Icons.flag_rounded, size: 20, color: colors.primary),
+            const SizedBox(width: 8),
+            Text(s.goalLabel,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: colors.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(s.comingSoonLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                        color: colors.onTertiaryContainer,
+                        fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ]),
+        ),
+        _panel(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(s.bodyGoalPreviewDescription,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.onSurfaceVariant)),
+              const SizedBox(height: 14),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final (icon, label) in [
+                  (Icons.trending_down_rounded, s.goalLoseWeightDashboard),
+                  (
+                    Icons.horizontal_rule_rounded,
+                    s.goalMaintainWeightDashboard
+                  ),
+                  (Icons.trending_up_rounded, s.goalGainWeightDashboard),
+                ])
+                  ChoiceChip(
+                    avatar: Icon(icon, size: 18),
+                    label: Text(label),
+                    selected: false,
+                    onSelected: null,
+                  ),
+              ]),
+              const SizedBox(height: 14),
+              TextField(
+                enabled: false,
+                decoration: InputDecoration(
+                  labelText: s.targetWeightLabel,
+                  hintText: '—',
+                  suffixText: s.kgLabel,
+                  prefixIcon: const Icon(Icons.monitor_weight_outlined),
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryCard() {
+    final theme = Theme.of(context);
+    final s = S.of(context);
+    const onBrand = Colors.white;
+    return AtlasBrandPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.dailyMacroGoalsTitle.toUpperCase(),
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: onBrand.withValues(alpha: 0.8),
+                letterSpacing: 1.1,
+                fontWeight: FontWeight.w600,
+              )),
+          const SizedBox(height: 6),
+          Text.rich(
+            TextSpan(children: [
+              TextSpan(
+                  text: '$_calculatedCalories',
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    color: onBrand,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  )),
+              TextSpan(
+                  text: ' ${s.kcalLabel}',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: onBrand.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w600,
+                  )),
+            ]),
+          ),
+          if (_previousCalories != null &&
+              _previousCalories != _calculatedCalories) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: onBrand.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                s.trendVsGoal(
+                    '${_calculatedCalories > _previousCalories! ? '+' : ''}'
+                    '${_calculatedCalories - _previousCalories!} ${s.kcalLabel}'),
+                style: theme.textTheme.labelMedium
+                    ?.copyWith(color: onBrand, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          MacroEnergyBar(
+            calories: _calculatedCalories.toDouble(),
+            goal: _calculatedCalories.toDouble(),
+            carbs: double.tryParse(_carbsController.text) ?? 0,
+            fats: double.tryParse(_fatController.text) ?? 0,
+            proteins: double.tryParse(_proteinController.text) ?? 0,
+            backgroundColor: onBrand.withValues(alpha: 0.18),
+          ),
+          const SizedBox(height: 12),
+          Text(s.macroCaloriesExplanation,
+              style: theme.textTheme.bodySmall
+                  ?.copyWith(color: onBrand.withValues(alpha: 0.75))),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(IconData icon, String title) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 12),
+      child: Row(children: [
+        Icon(icon, size: 20, color: theme.colorScheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(title,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700)),
+        ),
+      ]),
+    );
+  }
+
+  Widget _panel({required Widget child, EdgeInsetsGeometry? padding}) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: padding ?? const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(22),
+        border:
+            Border.all(color: colors.outlineVariant.withValues(alpha: 0.45)),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _dateStepper(String locale) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          tooltip: MaterialLocalizations.of(context).previousPageTooltip,
+          onPressed: _startDate.isAfter(_today()) ? _goToPreviousDay : null,
+          icon: const Icon(Icons.chevron_left_rounded),
+        ),
+        Expanded(
+          child: TextButton.icon(
+            onPressed: _selectDate,
+            icon: Icon(Icons.event_rounded, size: 20, color: colors.primary),
+            label: Text(
+              DateFormat.yMMMMd(locale).format(_startDate),
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.onSurface, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        IconButton.filledTonal(
+          tooltip: MaterialLocalizations.of(context).nextPageTooltip,
+          onPressed: _goToNextDay,
+          icon: const Icon(Icons.chevron_right_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _previousGoalCard(String locale) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final s = S.of(context);
+    Widget chip(String label, int? grams, Color color) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 6),
+            Text('$label · ${grams ?? '-'} g',
+                style: theme.textTheme.labelMedium),
+          ]),
+        );
+    return _panel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.history_rounded,
+                size: 18, color: colors.onSurfaceVariant),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                s.previousGoalAppliedOn(
+                    DateFormat.yMMMd(locale).format(_previousStartDate!)),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: colors.onSurfaceVariant),
+              ),
+            ),
+            if (_previousCalories != null)
+              Text('$_previousCalories ${s.kcalLabel}',
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+          ]),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            chip(s.carbsLabel, _previousCarbs, carbColor),
+            chip(s.fatLabel, _previousFat, fatColor),
+            chip(s.proteinLabel, _previousProtein, proteinColor),
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _macroField(TextEditingController controller, String label,
+      MacroVisual visual, int caloriesPerGram) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final energy = (int.tryParse(controller.text) ?? 0) * caloriesPerGram;
+    final fieldBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide.none,
+    );
+    return _panel(
+      padding: const EdgeInsets.all(14),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: visual.color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: MacroIcon(visual: visual, size: 24),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text('$energy ${S.of(context).kcalLabel}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: colors.onSurfaceVariant)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 96,
+            child: Semantics(
+              label: label,
+              child: TextFormField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                textInputAction: controller == _proteinController
+                    ? TextInputAction.done
+                    : TextInputAction.next,
+                textAlign: TextAlign.end,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w700),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  hintText: '0',
+                  suffixText: 'g',
+                  isDense: true,
+                  filled: true,
+                  fillColor: colors.surfaceContainerHighest,
+                  border: fieldBorder,
+                  enabledBorder: fieldBorder,
+                  focusedBorder: fieldBorder.copyWith(
+                      borderSide: BorderSide(color: visual.color, width: 2)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -317,6 +688,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
   }
 
   Future<void> _saveMacros() async {
+    setState(() => _saving = true);
     try {
       final supabase = locator<SupabaseClient>();
 
@@ -361,6 +733,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
       FirebaseCrashlytics.instance.recordError(exception, stacktrace);
 
       if (mounted) {
+        setState(() => _saving = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

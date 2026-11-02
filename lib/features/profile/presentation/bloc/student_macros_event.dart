@@ -7,7 +7,10 @@ abstract class StudentMacrosEvent extends Equatable {
 
 class LoadStudentMacrosEvent extends StudentMacrosEvent {
   final String studentId;
-  LoadStudentMacrosEvent(this.studentId);
+
+  /// Complété à la fin du chargement (tirer pour rafraîchir).
+  final Completer<void>? done;
+  LoadStudentMacrosEvent(this.studentId, {this.done});
   @override
   List<Object?> get props => [studentId];
 }
@@ -40,4 +43,3 @@ class UpdateDayMacrosEvent extends StudentMacrosEvent {
   @override
   List<Object?> get props => [dayKey, data];
 }
-

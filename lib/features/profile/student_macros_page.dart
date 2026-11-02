@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -84,20 +85,30 @@ class _StudentMacrosViewState extends State<_StudentMacrosView> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            children: [
-              AtlasTabBar(
-                labels: [s.studentDayTab, s.studentTrendTab],
-                selectedIndex: _tab,
-                onSelected: (i) => setState(() => _tab = i),
-              ),
-              const SizedBox(height: 16),
-              if (_tab == 0)
-                _DayView(state: state)
-              else
-                _TrendView(state: state),
-            ],
+          return RefreshIndicator(
+            onRefresh: () {
+              final done = Completer<void>();
+              context
+                  .read<StudentMacrosBloc>()
+                  .add(LoadStudentMacrosEvent(widget.studentId, done: done));
+              return done.future;
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                AtlasTabBar(
+                  labels: [s.studentDayTab, s.studentTrendTab],
+                  selectedIndex: _tab,
+                  onSelected: (i) => setState(() => _tab = i),
+                ),
+                const SizedBox(height: 16),
+                if (_tab == 0)
+                  _DayView(state: state)
+                else
+                  _TrendView(state: state),
+              ],
+            ),
           );
         },
       ),
@@ -156,31 +167,6 @@ Map<String, dynamic>? _latestGoals(
   return bestKey == null ? null : macros[bestKey];
 }
 
-/// Latest weight recorded on or before [day], with its date.
-({DateTime date, double weight})? _weightOnOrBefore(
-    Map<String, Map<String, dynamic>> macros, DateTime day) {
-  final dayKey = _dayKey(day);
-  String? bestKey;
-  for (final entry in macros.entries) {
-    if (entry.key.compareTo(dayKey) > 0 || entry.value['weight'] == null) {
-      continue;
-    }
-    if (bestKey == null || entry.key.compareTo(bestKey) > 0) {
-      bestKey = entry.key;
-    }
-  }
-  if (bestKey == null) return null;
-  return (
-    date: DateTime.parse(bestKey),
-    weight: _num(macros[bestKey], 'weight')!,
-  );
-}
-
-/// Rough walking energy cost: ~0.5 kcal per kg of body weight per 1000 steps
-/// (≈ 0.035 kcal/step at 70 kg). Falls back to 70 kg without a weigh-in.
-double stepsToKcal(int steps, double? weightKg) =>
-    steps * (weightKg ?? 70) * 0.0005;
-
 class _DayView extends StatelessWidget {
   final StudentMacrosLoaded state;
 
@@ -191,6 +177,8 @@ class _DayView extends StatelessWidget {
     final day = _dateOnly(state.selectedDate);
     final data = state.macros[_dayKey(day)];
     final goals = _latestGoals(state.macros, day);
+    // Comme la tendance : une journée compte seulement avec des kcal > 0.
+    final logged = (_num(data, 'caloriesTracked') ?? 0) > 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -202,7 +190,9 @@ class _DayView extends StatelessWidget {
             Expanded(
               child: AspectRatio(
                 aspectRatio: 1,
-                child: _DayWeightCard(weight: _num(data, 'weight')),
+                child: _DayWeightCard(
+                    weight: _num(data, 'weight'),
+                    targetWeight: state.targetWeight),
               ),
             ),
             const SizedBox(width: 12),
@@ -210,7 +200,7 @@ class _DayView extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 1,
                 child: StudentEnergyCard(
-                  consumed: _num(data, 'caloriesTracked') ?? 0,
+                  consumed: logged ? _num(data, 'caloriesTracked') : null,
                   goal: _num(data, 'calorieGoal') ??
                       _num(goals, 'calorieGoal') ??
                       0,
@@ -220,15 +210,7 @@ class _DayView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        _DayMacrosCard(data: data, goals: goals),
-        const SizedBox(height: 12),
-        _DayBalanceCard(
-          consumed: _num(data, 'caloriesTracked') ?? 0,
-          activityKcal: _num(data, 'caloriesBurned') ?? 0,
-          steps: (_num(data, 'steps') ?? 0).round(),
-          weightKg: _weightOnOrBefore(state.macros, day)?.weight,
-          goal: _num(data, 'calorieGoal') ?? _num(goals, 'calorieGoal') ?? 0,
-        ),
+        _DayMacrosCard(data: logged ? data : null, goals: goals),
       ],
     );
   }
@@ -301,12 +283,14 @@ class _InfoCard extends StatelessWidget {
   final IconData icon;
   final Widget child;
   final bool fill;
+  final Widget? trailing;
 
   const _InfoCard({
     required this.title,
     required this.icon,
     required this.child,
     this.fill = true,
+    this.trailing,
   });
 
   @override
@@ -339,6 +323,7 @@ class _InfoCard extends StatelessWidget {
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w800)),
               ),
+              if (trailing != null) trailing!,
             ],
           ),
           SizedBox(height: fill ? 10 : 16),
@@ -373,14 +358,19 @@ BoxDecoration _cardDecoration(ColorScheme colors) => BoxDecoration(
 
 class _DayWeightCard extends StatelessWidget {
   final double? weight;
+  final double? targetWeight;
 
-  const _DayWeightCard({required this.weight});
+  const _DayWeightCard({required this.weight, required this.targetWeight});
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final locale = Localizations.localeOf(context).toString();
+    final oneDecimal =
+        NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1);
+    final target = targetWeight ?? 0;
 
     return _InfoCard(
       title: s.weightLabel,
@@ -394,25 +384,30 @@ class _DayWeightCard extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text.rich(TextSpan(children: [
               TextSpan(
-                  text: weight?.toStringAsFixed(1) ?? '—',
-                  style: theme.textTheme.displayMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -2,
+                  text: weight == null ? '—' : oneDecimal.format(weight),
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                       color: weight == null
                           ? colors.onSurfaceVariant.withValues(alpha: 0.5)
                           : colors.onSurface)),
               if (weight != null)
                 TextSpan(
                     text: ' ${s.kgLabel}',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                        color: colors.primary, fontWeight: FontWeight.w800)),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600)),
             ])),
           ),
-          if (weight == null)
-            Text(s.noWeighInLabel,
-                style: theme.textTheme.bodySmall?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600)),
+          if (weight != null && target > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+                s.trendVsGoal(
+                    '${_signedNum(weight! - target, 1, locale)} ${s.kgLabel}'),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.primary, fontWeight: FontWeight.w700)),
+          ],
         ],
       ),
     );
@@ -459,7 +454,8 @@ String _percent(double value, double goal) =>
 
 /// Energy ring of the coach's day view; tap toggles kcal and %.
 class StudentEnergyCard extends StatefulWidget {
-  final double consumed;
+  /// Null quand l'élève n'a rien saisi ce jour-là.
+  final double? consumed;
   final double goal;
 
   const StudentEnergyCard(
@@ -477,7 +473,8 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
     final s = S.of(context);
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final consumed = widget.consumed;
+    final consumed = widget.consumed ?? 0;
+    final logged = widget.consumed != null;
     final goal = widget.goal;
     final progress = goal > 0 ? consumed / goal : 0.0;
     final numberStyle = theme.textTheme.headlineMedium
@@ -486,7 +483,7 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
     // Tap toggles the ring's centre between kcal and % of the goal.
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => _showPercent = !_showPercent),
+      onTap: logged ? () => setState(() => _showPercent = !_showPercent) : null,
       child: _InfoCard(
         title: toBeginningOfSentenceCase(s.energyLabel),
         icon: Icons.local_fire_department_outlined,
@@ -509,21 +506,27 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
                 padding: const EdgeInsets.all(18),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: _FadeToggle(
-                    showSecond: _showPercent,
-                    first: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('${consumed.round()}', style: numberStyle),
-                        Text(s.kcalLabel,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                                color: colors.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                                height: 1)),
-                      ],
-                    ),
-                    second: Text(_percent(consumed, goal), style: numberStyle),
-                  ),
+                  child: !logged
+                      ? Text('—',
+                          style: numberStyle?.copyWith(
+                              color: colors.onSurfaceVariant
+                                  .withValues(alpha: 0.5)))
+                      : _FadeToggle(
+                          showSecond: _showPercent,
+                          first: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('${consumed.round()}', style: numberStyle),
+                              Text(s.kcalLabel,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                      color: colors.onSurfaceVariant,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1)),
+                            ],
+                          ),
+                          second: Text(_percent(consumed, goal),
+                              style: numberStyle),
+                        ),
                 ),
               ),
             ),
@@ -596,20 +599,25 @@ class _DayMacrosCardState extends State<_DayMacrosCard> {
         title: s.dayMacrosTitle,
         icon: Icons.pie_chart_outline_rounded,
         fill: false,
-        child: Column(
-          children: [
-            for (var i = 0; i < rows.length; i++) ...[
-              if (i > 0) const SizedBox(height: 14),
-              _MacroProgressRow(
-                label: rows[i].$1,
-                visual: rows[i].$2,
-                tracked: _num(data, rows[i].$3) ?? 0,
-                goal: goal(rows[i].$4),
-                showPercent: _showPercent,
+        child: data == null
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: _ChartEmpty(s.studentNoEntryLabel),
+              )
+            : Column(
+                children: [
+                  for (var i = 0; i < rows.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 14),
+                    _MacroProgressRow(
+                      label: rows[i].$1,
+                      visual: rows[i].$2,
+                      tracked: _num(data, rows[i].$3) ?? 0,
+                      goal: goal(rows[i].$4),
+                      showPercent: _showPercent,
+                    ),
+                  ],
+                ],
               ),
-            ],
-          ],
-        ),
       ),
     );
   }
@@ -698,113 +706,6 @@ class _MacroProgressRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _DayBalanceCard extends StatelessWidget {
-  final double consumed;
-  final double activityKcal;
-  final int steps;
-  final double? weightKg;
-  final double goal;
-
-  const _DayBalanceCard({
-    required this.consumed,
-    required this.activityKcal,
-    required this.steps,
-    required this.weightKg,
-    required this.goal,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final s = S.of(context);
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    final stepKcal = stepsToKcal(steps, weightKg);
-    final burned = activityKcal + stepKcal;
-    final net = consumed - burned;
-    final gap = net - goal;
-    final accent = colors.primary;
-
-    Widget metric(String label, double value, {bool strong = false}) {
-      return Expanded(
-        child: Column(
-          children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text('${value.round()}',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: strong ? accent : colors.onSurface)),
-            ),
-            const SizedBox(height: 2),
-            Text(label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
-                    fontWeight: FontWeight.w600)),
-          ],
-        ),
-      );
-    }
-
-    Widget operator(String symbol) => Text(symbol,
-        style: theme.textTheme.titleMedium?.copyWith(
-            color: colors.onSurfaceVariant, fontWeight: FontWeight.w700));
-
-    return _InfoCard(
-      title: s.dayBalanceTitle,
-      icon: Icons.balance_outlined,
-      fill: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              metric(toBeginningOfSentenceCase(s.consumedLabel), consumed),
-              operator('−'),
-              metric(s.burnedLabel, burned),
-              operator('='),
-              metric(s.netLabel, net, strong: true),
-            ],
-          ),
-          if (steps > 0) ...[
-            const SizedBox(height: 8),
-            Text(
-                '${NumberFormat.decimalPattern(Localizations.localeOf(context).toString()).format(steps)} ${s.stepsLabel} ≈ ${stepKcal.round()} ${s.kcalLabel}',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.labelMedium
-                    ?.copyWith(color: colors.onSurfaceVariant)),
-          ],
-          if (goal > 0) ...[
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                        '${gap <= 0 ? s.deficitLabel : s.surplusLabel} ${s.vsGoalLabel}',
-                        style: theme.textTheme.bodyMedium
-                            ?.copyWith(fontWeight: FontWeight.w600)),
-                  ),
-                  Text(
-                      '${gap > 0 ? '+' : gap < 0 ? '−' : ''}${gap.abs().round()} ${s.kcalLabel}',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                          color: accent, fontWeight: FontWeight.w800)),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
     );
   }
 }

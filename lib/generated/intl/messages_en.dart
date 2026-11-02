@@ -96,10 +96,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "bmiInfo": MessageLookupByLibrary.simpleMessage(
             "Body Mass Index (BMI) is a index to classify overweight and obesity in adults. It is defined as weight in kilograms divided by the square of height in meters (kg/m²).\n\nBMI does not differentiate between fat and muscle mass and can be misleading for some individuals."),
         "bmiLabel": MessageLookupByLibrary.simpleMessage("BMI"),
+        "bodyGoalPreviewDescription": MessageLookupByLibrary.simpleMessage(
+            "Bulking, cutting or maintenance: macros will adapt to the target weight."),
         "breakfastExample": MessageLookupByLibrary.simpleMessage(
             "e.g. cereal, milk, coffee ..."),
         "breakfastLabel": MessageLookupByLibrary.simpleMessage("Breakfast"),
-        "burnedLabel": MessageLookupByLibrary.simpleMessage("burned"),
         "buttonNextLabel": MessageLookupByLibrary.simpleMessage("NEXT"),
         "buttonResetLabel": MessageLookupByLibrary.simpleMessage("Reset"),
         "buttonSaveLabel": MessageLookupByLibrary.simpleMessage("Save"),
@@ -189,14 +190,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "customFoodTitle": MessageLookupByLibrary.simpleMessage("Custom food"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Daily Kcal adjustment:"),
+        "dailyMacroGoalsTitle":
+            MessageLookupByLibrary.simpleMessage("Daily targets"),
         "dailySummaryLabel":
             MessageLookupByLibrary.simpleMessage("Day summary"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
             "Support development by providing anonymous usage data"),
-        "dayBalanceTitle":
-            MessageLookupByLibrary.simpleMessage("Daily balance"),
         "dayMacrosTitle": MessageLookupByLibrary.simpleMessage("Macros"),
-        "deficitLabel": MessageLookupByLibrary.simpleMessage("Deficit"),
         "deleteAllLabel": MessageLookupByLibrary.simpleMessage("Delete all"),
         "deleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
             "Do want to delete the selected item?"),
@@ -361,8 +361,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "lunchExample":
             MessageLookupByLibrary.simpleMessage("e.g. pizza, salad, rice ..."),
         "lunchLabel": MessageLookupByLibrary.simpleMessage("Lunch"),
+        "macroCaloriesExplanation": MessageLookupByLibrary.simpleMessage(
+            "Calories calculated from macronutrients."),
         "macroDistributionLabel":
             MessageLookupByLibrary.simpleMessage("Macronutrient Distribution:"),
+        "macroDistributionTitle":
+            MessageLookupByLibrary.simpleMessage("Macro distribution"),
+        "macroGoalHistoryEmpty": MessageLookupByLibrary.simpleMessage(
+            "The history of target changes will appear here."),
+        "macroGoalsTabLabel": MessageLookupByLibrary.simpleMessage("Targets"),
         "manageAccountConfirmAction":
             MessageLookupByLibrary.simpleMessage("Confirm Deletion"),
         "manageAccountConfirmMessage": MessageLookupByLibrary.simpleMessage(
@@ -404,7 +411,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "missingProductInfo": MessageLookupByLibrary.simpleMessage(
             "Product missing required kcal or macronutrients information"),
         "myStudentsTitle": MessageLookupByLibrary.simpleMessage("My students"),
-        "netLabel": MessageLookupByLibrary.simpleMessage("Net"),
         "noActivityRecentlyAddedLabel":
             MessageLookupByLibrary.simpleMessage("No activity recently added"),
         "noDataToday":
@@ -923,7 +929,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "e.g. apple, ice cream, chocolate ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Snack"),
-        "stepsLabel": MessageLookupByLibrary.simpleMessage("steps"),
         "studentAverage7Label":
             MessageLookupByLibrary.simpleMessage("7-day avg"),
         "studentConsistencyLabel":
@@ -940,7 +945,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "sugarLabel": MessageLookupByLibrary.simpleMessage("sugar"),
         "supabaseError": m10,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("supplied"),
-        "surplusLabel": MessageLookupByLibrary.simpleMessage("Surplus"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Target"),
         "targetWeightLabel":
             MessageLookupByLibrary.simpleMessage("Target weight"),
@@ -970,7 +974,6 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("User not connected."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("View product page"),
-        "vsGoalLabel": MessageLookupByLibrary.simpleMessage("vs goal"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("website"),
         "weekLabel": MessageLookupByLibrary.simpleMessage("week"),
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("wk."),

@@ -91,10 +91,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "bmiInfo": MessageLookupByLibrary.simpleMessage(
             "Vücut Kitle İndeksi (BMI), yetişkinlerde aşırı kiloyu ve obeziteyi sınıflandırmak için kullanılan bir indekstir. Kilogram cinsinden ağırlığın, metre cinsinden boyun karesine bölünmesiyle tanımlanır (kg/m²).\n\nBMI, yağ ve kas kütlesi arasında ayrım yapmaz ve bazı bireyler için yanıltıcı olabilir."),
         "bmiLabel": MessageLookupByLibrary.simpleMessage("BMI"),
+        "bodyGoalPreviewDescription": MessageLookupByLibrary.simpleMessage(
+            "Kilo alma, yağ yakma veya koruma: makrolar hedef kiloya göre ayarlanacak."),
         "breakfastExample": MessageLookupByLibrary.simpleMessage(
             "ör. mısır gevreği, süt, kahve ..."),
         "breakfastLabel": MessageLookupByLibrary.simpleMessage("Kahvaltı"),
-        "burnedLabel": MessageLookupByLibrary.simpleMessage("yakılan"),
         "buttonNextLabel": MessageLookupByLibrary.simpleMessage("İLERİ"),
         "buttonResetLabel": MessageLookupByLibrary.simpleMessage("Sıfırla"),
         "buttonSaveLabel": MessageLookupByLibrary.simpleMessage("Kaydet"),
@@ -183,12 +184,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "customFoodTitle": MessageLookupByLibrary.simpleMessage("Özel besin"),
         "dailyKcalAdjustmentLabel":
             MessageLookupByLibrary.simpleMessage("Günlük Kcal ayarı:"),
+        "dailyMacroGoalsTitle":
+            MessageLookupByLibrary.simpleMessage("Günlük hedefler"),
         "dailySummaryLabel": MessageLookupByLibrary.simpleMessage("Gün özeti"),
         "dataCollectionLabel": MessageLookupByLibrary.simpleMessage(
             "Anonim kullanım verileri sağlayarak geliştirmeyi destekleyin"),
-        "dayBalanceTitle": MessageLookupByLibrary.simpleMessage("Günlük denge"),
         "dayMacrosTitle": MessageLookupByLibrary.simpleMessage("Makrolar"),
-        "deficitLabel": MessageLookupByLibrary.simpleMessage("Açık"),
         "deleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
             "Seçilen öğeyi silmek istiyor musunuz?"),
         "deleteTimeDialogPluralContent": MessageLookupByLibrary.simpleMessage(
@@ -348,8 +349,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "lunchExample": MessageLookupByLibrary.simpleMessage(
             "ör. pizza, salata, pirinç ..."),
         "lunchLabel": MessageLookupByLibrary.simpleMessage("Öğle Yemeği"),
+        "macroCaloriesExplanation": MessageLookupByLibrary.simpleMessage(
+            "Kaloriler makro besinlerden hesaplanır."),
         "macroDistributionLabel":
             MessageLookupByLibrary.simpleMessage("Makro besin Dağılımı:"),
+        "macroDistributionTitle":
+            MessageLookupByLibrary.simpleMessage("Makro dağılımı"),
+        "macroGoalHistoryEmpty": MessageLookupByLibrary.simpleMessage(
+            "Hedef değişikliklerinin geçmişi burada görünecek."),
+        "macroGoalsTabLabel": MessageLookupByLibrary.simpleMessage("Hedefler"),
         "manageAccountConfirmAction":
             MessageLookupByLibrary.simpleMessage("Silmeyi Onayla"),
         "manageAccountConfirmMessage":
@@ -388,7 +396,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "missingProductInfo": MessageLookupByLibrary.simpleMessage(
             "Üründe gerekli kcal veya makro besin bilgileri eksik"),
         "myStudentsTitle": MessageLookupByLibrary.simpleMessage("Öğrencilerim"),
-        "netLabel": MessageLookupByLibrary.simpleMessage("Net"),
         "noActivityRecentlyAddedLabel": MessageLookupByLibrary.simpleMessage(
             "Son zamanlarda eklenen aktivite yok"),
         "noDataToday":
@@ -899,7 +906,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ör. elma, dondurma, çikolata ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Atıştırmalık"),
-        "stepsLabel": MessageLookupByLibrary.simpleMessage("adım"),
         "studentAverage7Label":
             MessageLookupByLibrary.simpleMessage("7 gün ort."),
         "studentConsistencyLabel":
@@ -916,7 +922,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
         "supabaseError": m10,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
-        "surplusLabel": MessageLookupByLibrary.simpleMessage("Fazla"),
         "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
         "todayLabel": MessageLookupByLibrary.simpleMessage("Bugün"),
@@ -945,7 +950,6 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Kullanıcı bağlı değil."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("Ürün sayfasını aç"),
-        "vsGoalLabel": MessageLookupByLibrary.simpleMessage("hedefe göre"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("web sitesi"),
         "weekLabel": MessageLookupByLibrary.simpleMessage("hafta"),
         "weekShortLabel": MessageLookupByLibrary.simpleMessage("hf."),

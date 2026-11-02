@@ -9,12 +9,23 @@ class TrendDay {
   final double? fat;
   final double? protein;
 
+  /// Objectif kcal en vigueur ce jour-là (0 sans objectif).
+  final double calorieGoal;
+
   const TrendDay(this.date,
-      {this.kcal, this.weight, this.carbs, this.fat, this.protein});
+      {this.kcal,
+      this.weight,
+      this.carbs,
+      this.fat,
+      this.protein,
+      this.calorieGoal = 0});
 }
 
 class TrendData {
   final List<TrendDay> days;
+
+  /// Objectifs moyens des jours saisis : chaque jour est comparé à l'objectif
+  /// qui s'appliquait ce jour-là, même si le coach l'a changé en cours de période.
   final double calorieGoal;
   final double carbsGoal;
   final double fatGoal;
@@ -33,28 +44,41 @@ class TrendData {
 /// A day counts as logged only with calories > 0, as in the day view.
 TrendData trendDataFrom(Map<String, Map<String, dynamic>> macros, int length) {
   final today = _dateOnly(DateTime.now());
-  final goals = _latestGoals(macros, today);
+  final days = <TrendDay>[];
+  final dayGoals = <Map<String, dynamic>?>[];
+  for (var i = length - 1; i >= 0; i--) {
+    final date = today.subtract(Duration(days: i));
+    final row = macros[_dayKey(date)];
+    // ponytail: _latestGoals parcourt tout l'historique pour chaque jour
+    // (90 × ~365 lignes), trier les clés une fois si ça devient lent.
+    final goals = _latestGoals(macros, date);
+    double goal(String key) => _num(row, key) ?? _num(goals, key) ?? 0;
+    final logged = (_num(row, 'caloriesTracked') ?? 0) > 0;
+    days.add(TrendDay(
+      date,
+      kcal: logged ? _num(row, 'caloriesTracked') : null,
+      weight: _num(row, 'weight'),
+      carbs: logged ? _num(row, 'carbsTracked') : null,
+      fat: logged ? _num(row, 'fatTracked') : null,
+      protein: logged ? _num(row, 'proteinTracked') : null,
+      calorieGoal: goal('calorieGoal'),
+    ));
+    if (logged) {
+      dayGoals.add({
+        for (final k in ['calorieGoal', 'carbsGoal', 'fatGoal', 'proteinGoal'])
+          k: goal(k),
+      });
+    }
+  }
+  // Sans jour saisi, on retombe sur l'objectif actuel.
+  if (dayGoals.isEmpty) dayGoals.add(_latestGoals(macros, today));
+  double avgGoal(String key) => _avg(dayGoals.map((g) => _num(g, key))) ?? 0;
   return TrendData(
-    calorieGoal: _num(goals, 'calorieGoal') ?? 0,
-    carbsGoal: _num(goals, 'carbsGoal') ?? 0,
-    fatGoal: _num(goals, 'fatGoal') ?? 0,
-    proteinGoal: _num(goals, 'proteinGoal') ?? 0,
-    days: [
-      for (var i = length - 1; i >= 0; i--)
-        () {
-          final date = today.subtract(Duration(days: i));
-          final row = macros[_dayKey(date)];
-          final logged = (_num(row, 'caloriesTracked') ?? 0) > 0;
-          return TrendDay(
-            date,
-            kcal: logged ? _num(row, 'caloriesTracked') : null,
-            weight: _num(row, 'weight'),
-            carbs: logged ? _num(row, 'carbsTracked') : null,
-            fat: logged ? _num(row, 'fatTracked') : null,
-            protein: logged ? _num(row, 'proteinTracked') : null,
-          );
-        }(),
-    ],
+    days: days,
+    calorieGoal: avgGoal('calorieGoal'),
+    carbsGoal: avgGoal('carbsGoal'),
+    fatGoal: avgGoal('fatGoal'),
+    proteinGoal: avgGoal('proteinGoal'),
   );
 }
 
@@ -354,19 +378,46 @@ class _TrendChartCardState extends State<_TrendChartCard> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    Widget metric(int i, String label) {
+      final selected = i == _metric;
+      return Semantics(
+        button: true,
+        selected: selected,
+        child: InkWell(
+          onTap: () => setState(() => _metric = i),
+          borderRadius: BorderRadius.circular(999),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: selected
+                  ? colors.primary.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(label,
+                style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color:
+                        selected ? colors.primary : colors.onSurfaceVariant)),
+          ),
+        ),
+      );
+    }
+
     return _InfoCard(
       title: s.trendEvolutionTitle,
       icon: Icons.show_chart_rounded,
       fill: false,
+      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+        metric(0, s.weightLabel),
+        metric(1, s.caloriesLabel),
+      ]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TrendPillSelector(
-            labels: [s.weightLabel, s.caloriesLabel],
-            selectedIndex: _metric,
-            onSelected: (i) => setState(() => _metric = i),
-          ),
-          const SizedBox(height: 12),
           SizedBox(
             height: 220,
             child: AnimatedSwitcher(
@@ -559,9 +610,13 @@ class _CaloriesChart extends StatelessWidget {
     final logged = data.days.where((d) => d.kcal != null).toList();
     if (logged.isEmpty) return _ChartEmpty(s.trendNoDataLabel);
 
-    final goal = data.calorieGoal;
-    final top =
-        math.max(goal, logged.map((d) => d.kcal!).reduce(math.max)) * 1.08;
+    final goalDays = data.days.where((d) => d.calorieGoal > 0).toList();
+    final top = math.max(
+            goalDays.isEmpty
+                ? 0.0
+                : goalDays.map((d) => d.calorieGoal).reduce(math.max),
+            logged.map((d) => d.kcal!).reduce(math.max)) *
+        1.08;
     final missing = data.days.where((d) => d.kcal == null).toList();
 
     Widget tooltip(dynamic d, _, __, ___, ____) {
@@ -570,7 +625,8 @@ class _CaloriesChart extends StatelessWidget {
         day.kcal == null
             ? s.studentNoEntryLabel
             : '${day.kcal!.round()} ${s.kcalLabel}',
-        if (goal > 0) '${s.trendGoalLabel} ${goal.round()} ${s.kcalLabel}',
+        if (day.calorieGoal > 0)
+          '${s.trendGoalLabel} ${day.calorieGoal.round()} ${s.kcalLabel}',
       ]);
     }
 
@@ -578,17 +634,7 @@ class _CaloriesChart extends StatelessWidget {
       margin: EdgeInsets.zero,
       plotAreaBorderWidth: 0,
       primaryXAxis: _dateAxis(context, data),
-      primaryYAxis: _valueAxis(context, minimum: 0, plotBands: [
-        if (goal > 0)
-          PlotBand(
-            start: goal,
-            end: goal,
-            borderWidth: 1.5,
-            borderColor: colors.onSurfaceVariant.withValues(alpha: 0.7),
-            dashArray: const [5, 4],
-            shouldRenderAboveSeries: true,
-          ),
-      ]),
+      primaryYAxis: _valueAxis(context, minimum: 0),
       tooltipBehavior: TooltipBehavior(
         enable: true,
         color: Colors.transparent,
@@ -615,6 +661,18 @@ class _CaloriesChart extends StatelessWidget {
           animationDuration: 600,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
         ),
+        // Objectif du jour : une marche à chaque changement d'objectif.
+        if (goalDays.isNotEmpty)
+          StepLineSeries<TrendDay, DateTime>(
+            dataSource: goalDays,
+            xValueMapper: (d, _) => d.date,
+            yValueMapper: (d, _) => d.calorieGoal,
+            color: colors.onSurfaceVariant.withValues(alpha: 0.7),
+            width: 1.5,
+            dashArray: const [5, 4],
+            animationDuration: 0,
+            enableTooltip: false,
+          ),
       ],
     );
   }
