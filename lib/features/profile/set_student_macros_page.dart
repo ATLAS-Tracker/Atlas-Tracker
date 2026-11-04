@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:logging/logging.dart';
+import 'coach_macro_goal_remote.dart';
 
 class SetStudentMacrosPage extends StatefulWidget {
   final String studentId;
@@ -31,15 +32,12 @@ class SetStudentMacrosPage extends StatefulWidget {
 
 class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
   // Toujours stocker des dates "pures" (00:00)
-  DateTime _startDate = _today().add(const Duration(days: 1));
+  DateTime _startDate = _today();
   bool _loadingLatest = true;
   int _tab = 0;
   bool _saving = false;
-  DateTime? _previousStartDate;
-  int? _previousCarbs;
-  int? _previousFat;
-  int? _previousProtein;
   int? _previousCalories;
+  List<Map<String, dynamic>> _goalHistory = [];
 
   static DateTime _today() {
     final now = DateTime.now();
@@ -184,6 +182,9 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _dateStepper(locale),
+                    if (!_allFieldsFilled)
+                      Text(s.enterValidMacrosHelp,
+                          style: theme.textTheme.bodySmall),
                     const SizedBox(height: 10),
                     FilledButton.icon(
                       onPressed:
@@ -214,19 +215,22 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     );
   }
 
-  // ponytail: n'affiche que le dernier objectif, coach_macro_goals ne garde
-  // qu'une ligne par élève (upsert) ; historiser les lignes pour aller plus loin.
   Widget _historyTab() {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    if (_previousStartDate != null) {
+    if (_goalHistory.isNotEmpty) {
       return SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child:
-                _previousGoalCard(Localizations.localeOf(context).toString()),
+            child: Column(children: [
+              for (final row in _goalHistory) ...[
+                _previousGoalCard(
+                    Localizations.localeOf(context).toString(), row),
+                const SizedBox(height: 12),
+              ],
+            ]),
           ),
         ),
       );
@@ -255,11 +259,13 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     );
   }
 
-  bool get _allFieldsFilled => [
-        _carbsController,
-        _fatController,
-        _proteinController
-      ].every((c) => c.text.isNotEmpty);
+  bool get _allFieldsFilled =>
+      [_carbsController, _fatController, _proteinController].every((c) {
+        final grams = int.tryParse(c.text);
+        return grams != null && grams >= 0 && grams <= 1000;
+      }) &&
+      _calculatedCalories > 0 &&
+      _calculatedCalories <= 10000;
 
   // ponytail: aperçu désactivé, à brancher quand l'objectif physique
   // (prise de masse / sèche / maintien + poids cible) sera stocké pour l'élève.
@@ -471,10 +477,14 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     );
   }
 
-  Widget _previousGoalCard(String locale) {
+  Widget _previousGoalCard(String locale, Map<String, dynamic> row) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final s = S.of(context);
+    final carbs = (row['carb_goal'] as num).toInt();
+    final fat = (row['fat_goal'] as num).toInt();
+    final protein = (row['protein_goal'] as num).toInt();
+    final calories = carbs * 4 + fat * 9 + protein * 4;
     Widget chip(String label, int? grams, Color color) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -502,22 +512,21 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                s.previousGoalAppliedOn(
-                    DateFormat.yMMMd(locale).format(_previousStartDate!)),
+                s.previousGoalAppliedOn(DateFormat.yMMMd(locale)
+                    .format(DateTime.parse(row['start_date']))),
                 style: theme.textTheme.bodySmall
                     ?.copyWith(color: colors.onSurfaceVariant),
               ),
             ),
-            if (_previousCalories != null)
-              Text('$_previousCalories ${s.kcalLabel}',
-                  style: theme.textTheme.titleSmall
-                      ?.copyWith(fontWeight: FontWeight.w700)),
+            Text('$calories ${s.kcalLabel}',
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.w700)),
           ]),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: [
-            chip(s.carbsLabel, _previousCarbs, carbColor),
-            chip(s.fatLabel, _previousFat, fatColor),
-            chip(s.proteinLabel, _previousProtein, proteinColor),
+            chip(s.carbsLabel, carbs, carbColor),
+            chip(s.fatLabel, fat, fatColor),
+            chip(s.proteinLabel, protein, proteinColor),
           ]),
         ],
       ),
@@ -638,34 +647,42 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
       // Déjà à true au démarrage; laisse tel quel
       final supabase = locator<SupabaseClient>();
 
-      // S'il n'y a qu'une seule ligne par user (onConflict sur user_id),
-      // maybeSingle suffit; on garde tout de même un order/limit pour robustesse.
-      final response = await supabase
-          .from('coach_macro_goals')
-          .select()
-          .eq('user_id', widget.studentId)
-          .order('start_date', ascending: false)
-          .limit(1)
-          .maybeSingle();
+      final history = <Map<String, dynamic>>[];
+      for (var offset = 0;; offset += 500) {
+        final page = await supabase
+            .from('coach_macro_goals')
+            .select()
+            .eq('user_id', widget.studentId)
+            .order('start_date', ascending: false)
+            .range(offset, offset + 499)
+            .timeout(const Duration(seconds: 8));
+        history.addAll(page);
+        if (page.length < 500) break;
+      }
+      _goalHistory = history
+          .where((row) =>
+              DateTime.tryParse(row['start_date']?.toString() ?? '') != null &&
+              [row['carb_goal'], row['fat_goal'], row['protein_goal']].every(
+                  (value) =>
+                      value is num &&
+                      value.isFinite &&
+                      value >= 0 &&
+                      value <= 1000))
+          .toList();
+      final current = _goalHistory
+          .where((row) => !DateTime.parse(row['start_date']).isAfter(_today()));
+      final response = current.firstOrNull;
 
       if (mounted) {
         if (response != null) {
           final carbs = (response['carb_goal'] as num?)?.toInt();
           final fat = (response['fat_goal'] as num?)?.toInt();
           final protein = (response['protein_goal'] as num?)?.toInt();
-          final startDateStr = response['start_date'] as String?;
-          final prevStart =
-              startDateStr != null ? DateTime.tryParse(startDateStr) : null;
 
           if (carbs != null) _carbsController.text = carbs.toString();
           if (fat != null) _fatController.text = fat.toString();
           if (protein != null) _proteinController.text = protein.toString();
 
-          // Stocke pour affichage "ancien objectif"
-          _previousStartDate = prevStart;
-          _previousCarbs = carbs;
-          _previousFat = fat;
-          _previousProtein = protein;
           if (carbs != null && fat != null && protein != null) {
             _previousCalories = (carbs * 4) + (fat * 9) + (protein * 4);
           }
@@ -687,37 +704,19 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
   }
 
   Future<void> _saveMacros() async {
+    if (_saving || !_allFieldsFilled) return;
     setState(() => _saving = true);
     try {
       final supabase = locator<SupabaseClient>();
 
       final startDate = DateFormat('yyyy-MM-dd').format(_startDate);
 
-      // d’abord tu enregistres les objectifs globaux
-      final json = {
-        'user_id': widget.studentId,
-        'start_date': startDate,
-        'calorie_goal': _calculatedCalories,
-        'carb_goal': int.parse(_carbsController.text),
-        'fat_goal': int.parse(_fatController.text),
-        'protein_goal': int.parse(_proteinController.text),
-      };
-
-      await supabase
-          .from('coach_macro_goals')
-          .upsert(json, onConflict: 'user_id');
-
-      // ensuite tu mets à jour les tracked_days de cet élève après startDate
-      await supabase
-          .from('tracked_days')
-          .update({
-            'calorieGoal': _calculatedCalories,
-            'carbsGoal': int.parse(_carbsController.text),
-            'fatGoal': int.parse(_fatController.text),
-            'proteinGoal': int.parse(_proteinController.text),
-          })
-          .gte('day', startDate)
-          .eq('user_id', widget.studentId);
+      await saveCoachMacroGoal(supabase,
+          studentId: widget.studentId,
+          startDate: _startDate,
+          carbs: int.parse(_carbsController.text),
+          fat: int.parse(_fatController.text),
+          protein: int.parse(_proteinController.text));
 
       if (!mounted) return;
       Navigator.pop(context, {

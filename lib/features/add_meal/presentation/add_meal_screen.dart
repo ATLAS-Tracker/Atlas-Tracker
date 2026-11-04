@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -36,6 +37,7 @@ class _AddMealScreenState extends State<AddMealScreen>
   late DateTime _day;
   bool _isIngredientSearch = false;
   late ProductsBloc _productsBloc;
+  late AddMealBloc _addMealBloc;
   late RecentMealBloc _recentMealBloc;
   late RecipeSearchBloc _recipeSearchBloc;
   late final ScrollController _productsScrollController;
@@ -44,6 +46,7 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   @override
   void initState() {
+    _addMealBloc = locator<AddMealBloc>()..add(InitializeAddMealEvent());
     _productsBloc = locator<ProductsBloc>();
     _recentMealBloc = locator<RecentMealBloc>();
     _recipeSearchBloc = locator<RecipeSearchBloc>();
@@ -70,6 +73,11 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   @override
   void dispose() {
+    _addMealBloc.close();
+    _searchStringListener.dispose();
+    _productsBloc.close();
+    _recentMealBloc.close();
+    _recipeSearchBloc.close();
     _tabController.dispose();
     _productsScrollController.removeListener(_onProductsScroll);
     _productsScrollController.dispose();
@@ -86,26 +94,37 @@ class _AddMealScreenState extends State<AddMealScreen>
         backgroundColor: colorScheme.surface,
         surfaceTintColor: colorScheme.surface,
         elevation: 0,
+        toolbarHeight: 76,
         centerTitle: false,
         title: Row(children: [
           Icon(Icons.manage_search_rounded,
               color: colorScheme.primary, size: 23),
           const SizedBox(width: 10),
           Expanded(
-              child: Text(S.of(context).searchLabel,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800))),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                Text(S.of(context).searchLabel,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                    '${_mealType.getTypeName(context)} · ${DateFormat.MMMd(Localizations.localeOf(context).toString()).format(_day)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium),
+              ])),
         ]),
         actions: [
           BlocBuilder<AddMealBloc, AddMealState>(
-            bloc: locator<AddMealBloc>()..add(InitializeAddMealEvent()),
+            bloc: _addMealBloc,
             builder: (BuildContext context, AddMealState state) {
               if (state is AddMealLoadedState) {
                 return IconButton(
-                  onPressed: () =>
-                      _onCustomAddButtonPressed(state.usesImperialUnits),
+                  tooltip: S.of(context).customFoodTitle,
+                  onPressed: () => _onCustomAddButtonPressed(),
                   icon: const Icon(Icons.edit_outlined),
                   color: colorScheme.primary,
                 );
@@ -142,6 +161,9 @@ class _AddMealScreenState extends State<AddMealScreen>
                             day: _day,
                             mealType: _mealType,
                             onRefreshPressed: _onProductsRefreshButtonPressed,
+                            search: _searchStringListener,
+                            onCreate: _openEditMealScreen,
+                            onScan: _onBarcodeIconPressed,
                           ),
                           RecipeResultsList(
                             day: _day,
@@ -205,37 +227,21 @@ class _AddMealScreenState extends State<AddMealScreen>
         arguments: ScannerScreenArguments(_day, _mealType.getIntakeType()));
   }
 
-  void _onCustomAddButtonPressed(bool usesImperialUnits) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(S.of(context).createCustomDialogTitle),
-            content: Text(S.of(context).createCustomDialogContent),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(), // close dialog
-                  child: Text(S.of(context).dialogCancelLabel)),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    _openEditMealScreen(usesImperialUnits);
-                  },
-                  child: Text(S.of(context).buttonYesLabel)),
-            ],
-          );
-        });
+  void _onCustomAddButtonPressed() {
+    _openEditMealScreen();
   }
 
-  void _openEditMealScreen(bool usesImperialUnits) {
+  Future<void> _openEditMealScreen() async {
     // TODO
-    Navigator.of(context).pushNamed(NavigationOptions.editMealRoute,
+    await Navigator.of(context).pushNamed(NavigationOptions.editMealRoute,
         arguments: EditMealScreenArguments(
           _day,
-          MealEntity.empty(),
+          MealEntity.empty().copyWith(name: _searchStringListener.value.trim()),
           _mealType.getIntakeType(),
-          usesImperialUnits,
         ));
+    if (mounted) {
+      _recentMealBloc.add(const LoadRecentMealEvent(searchString: ''));
+    }
   }
 
   void _onProductsScroll() {
@@ -337,6 +343,9 @@ class _ProductsResultsPane extends StatelessWidget {
   final DateTime day;
   final AddMealType mealType;
   final VoidCallback onRefreshPressed;
+  final ValueNotifier<String> search;
+  final VoidCallback onCreate;
+  final VoidCallback onScan;
 
   const _ProductsResultsPane({
     required this.bloc,
@@ -344,6 +353,9 @@ class _ProductsResultsPane extends StatelessWidget {
     required this.day,
     required this.mealType,
     required this.onRefreshPressed,
+    required this.search,
+    required this.onCreate,
+    required this.onScan,
   });
 
   @override
@@ -387,7 +399,10 @@ class _ProductsResultsPane extends StatelessWidget {
                 if (state.visibleCount == 0) {
                   return state.isLoadingMore
                       ? const Center(child: CircularProgressIndicator())
-                      : const NoResultsWidget();
+                      : NoResultsWidget(
+                          query: search.value,
+                          onCreate: onCreate,
+                          onScan: onScan);
                 }
                 final itemCount =
                     state.visibleCount + (state.isLoadingMore ? 1 : 0);
@@ -412,7 +427,6 @@ class _ProductsResultsPane extends StatelessWidget {
                       day: day,
                       mealEntity: state.products[index],
                       addMealType: mealType,
-                      usesImperialUnits: state.usesImperialUnits,
                     );
                   },
                 );
@@ -476,7 +490,8 @@ class _RecentMealsPane extends StatelessWidget {
                 day: day,
                 mealEntity: filteredMeals[index],
                 addMealType: mealType,
-                usesImperialUnits: state.usesImperialUnits,
+                onReturn: () =>
+                    bloc.add(const LoadRecentMealEvent(searchString: '')),
               );
             },
           );

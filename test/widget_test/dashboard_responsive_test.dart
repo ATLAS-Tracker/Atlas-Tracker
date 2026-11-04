@@ -55,7 +55,6 @@ void main() {
             weeklyWeightDelta: null,
             targetWeight: 84,
             userWeightGoal: UserWeightGoalEntity.loseWeight,
-            usesImperialUnits: false,
           ))),
         ));
         await tester.pumpAndSettle();

@@ -90,11 +90,9 @@ void main() {
                               context: context,
                               builder: (_) => weight
                                   ? SetWeightDialog(
-                                      userWeight: imperial ? 170 : 78,
-                                      usesImperialUnits: imperial)
+                                      userWeight: imperial ? 170 : 78)
                                   : SetHeightDialog(
-                                      userHeight: imperial ? 6 : 180,
-                                      usesImperialUnits: imperial));
+                                      userHeight: imperial ? 6 : 180));
                         },
                         child: const Text('open'),
                       ))),

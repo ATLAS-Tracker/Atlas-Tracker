@@ -9,19 +9,24 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dar
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'dart:io';
+import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 
 class MealItemCard extends StatelessWidget {
   final DateTime day;
   final AddMealType addMealType;
   final MealEntity mealEntity;
-  final bool usesImperialUnits;
+  final VoidCallback? onDelete;
+  final VoidCallback? onReturn;
 
   const MealItemCard(
       {super.key,
       required this.day,
       required this.mealEntity,
-      required this.addMealType,
-      required this.usesImperialUnits});
+      this.onDelete,
+      this.onReturn,
+      required this.addMealType});
 
   @override
   Widget build(BuildContext context) {
@@ -70,21 +75,41 @@ class MealItemCard extends StatelessWidget {
                     ],
                     if (mealEntity.mealQuantity != null) ...[
                       const SizedBox(height: 5),
-                      MealValueUnitText(
-                          value: double.parse(mealEntity.mealQuantity ?? '0'),
-                          meal: mealEntity,
-                          usesImperialUnits: usesImperialUnits),
+                      Row(children: [
+                        if (mealEntity.source == MealSourceEntity.off)
+                          Text('${S.of(context).packageLabel} ',
+                              style: Theme.of(context).textTheme.bodySmall),
+                        Flexible(
+                            child: MealValueUnitText(
+                                value: double.tryParse(
+                                        mealEntity.mealQuantity ?? '') ??
+                                    0,
+                                meal: mealEntity)),
+                      ]),
+                    ],
+                    if (mealEntity.nutriments.energyKcalPerQuantity !=
+                        null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                          '${formatNumber(mealEntity.isPortionBased ? mealEntity.nutriments.energyKcalPerQuantity! / 100 : mealEntity.nutriments.energyKcalPerQuantity!)} ${S.of(context).kcalLabel} / ${mealEntity.isPortionBased || mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe ? "1 ${S.of(context).servingLabel}" : "100 ${MealEntity.metricUnit(mealEntity.mealUnit)}"}',
+                          style: Theme.of(context).textTheme.bodySmall),
                     ],
                   ],
                 )),
                 const SizedBox(width: 4),
                 IconButton(
+                  tooltip: S.of(context).addLabel,
                   style: IconButton.styleFrom(
                       foregroundColor: colors.primary,
                       backgroundColor: colors.primary.withValues(alpha: 0.08)),
                   onPressed: () => _onItemPressed(context),
                   icon: const Icon(Icons.add_rounded, size: 23),
                 ),
+                if (onDelete != null)
+                  IconButton(
+                      tooltip: S.of(context).dialogDeleteLabel,
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline)),
               ],
             ),
           ),
@@ -93,10 +118,11 @@ class MealItemCard extends StatelessWidget {
     );
   }
 
-  void _onItemPressed(BuildContext context) {
-    Navigator.of(context).pushNamed(NavigationOptions.mealDetailRoute,
+  Future<void> _onItemPressed(BuildContext context) async {
+    await Navigator.of(context).pushNamed(NavigationOptions.mealDetailRoute,
         arguments: MealDetailScreenArguments(
-            mealEntity, addMealType.getIntakeType(), day, usesImperialUnits));
+            mealEntity, addMealType.getIntakeType(), day));
+    if (context.mounted) onReturn?.call();
   }
 
   Widget _buildThumbnail(BuildContext context) {

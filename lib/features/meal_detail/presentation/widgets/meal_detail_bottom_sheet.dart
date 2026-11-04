@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
@@ -14,7 +17,7 @@ import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_det
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 
-class MealDetailBottomSheet extends StatelessWidget {
+class MealDetailBottomSheet extends StatefulWidget {
   final MealEntity product;
   final DateTime day;
   final IntakeTypeEntity intakeTypeEntity;
@@ -22,6 +25,7 @@ class MealDetailBottomSheet extends StatelessWidget {
   final MealDetailBloc mealDetailBloc;
 
   final String selectedUnit;
+  final IntakeEntity? intakeToEdit;
 
   final Function(String?, String?) onQuantityOrUnitChanged;
 
@@ -34,7 +38,25 @@ class MealDetailBottomSheet extends StatelessWidget {
     required this.onQuantityOrUnitChanged,
     required this.mealDetailBloc,
     required this.selectedUnit,
+    this.intakeToEdit,
   });
+
+  @override
+  State<MealDetailBottomSheet> createState() => _MealDetailBottomSheetState();
+}
+
+class _MealDetailBottomSheetState extends State<MealDetailBottomSheet> {
+  bool _saving = false;
+  MealEntity get product => widget.product;
+  DateTime get day => widget.day;
+  IntakeTypeEntity get intakeTypeEntity => widget.intakeTypeEntity;
+  TextEditingController get quantityTextController =>
+      widget.quantityTextController;
+  MealDetailBloc get mealDetailBloc => widget.mealDetailBloc;
+  String get selectedUnit => widget.selectedUnit;
+  IntakeEntity? get intakeToEdit => widget.intakeToEdit;
+  Function(String?, String?) get onQuantityOrUnitChanged =>
+      widget.onQuantityOrUnitChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -71,13 +93,19 @@ class MealDetailBottomSheet extends StatelessWidget {
                         Expanded(
                           child: TextFormField(
                             enabled: !productMissingRequiredInfo,
-                            controller: quantityTextController
-                              ..addListener(() {
-                                onQuantityOrUnitChanged(
-                                  quantityTextController.text,
-                                  selectedUnit,
-                                );
-                              }),
+                            controller: quantityTextController,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: (text) =>
+                                parsePositiveQuantity(text) == null
+                                    ? S.of(context).positiveQuantityError
+                                    : null,
+                            onChanged: (text) {
+                              onQuantityOrUnitChanged(
+                                text,
+                                selectedUnit,
+                              );
+                            },
                             keyboardType: TextInputType.numberWithOptions(
                               decimal: true,
                             ),
@@ -153,26 +181,36 @@ class MealDetailBottomSheet extends StatelessWidget {
                     const SizedBox(height: 14),
                     SizedBox(
                       width: double.infinity, // Make button full width
-                      child: FilledButton.icon(
-                        onPressed: !productMissingRequiredInfo
-                            ? () {
-                                onAddButtonPressed(context);
-                              }
-                            : null,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          foregroundColor: Theme.of(
-                            context,
-                          ).colorScheme.onPrimary,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).colorScheme.primary,
-                        ).copyWith(elevation: ButtonStyleButton.allOrNull(0.0)),
-                        icon: const Icon(Icons.add_outlined),
-                        label: Text(S.of(context).addLabel),
-                      ),
+                      child: ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: quantityTextController,
+                          builder: (context, value, _) => FilledButton.icon(
+                                onPressed: !_saving &&
+                                        !productMissingRequiredInfo &&
+                                        parsePositiveQuantity(value.text) !=
+                                            null
+                                    ? () {
+                                        onAddButtonPressed(context);
+                                      }
+                                    : null,
+                                style: FilledButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16)),
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                ).copyWith(
+                                    elevation:
+                                        ButtonStyleButton.allOrNull(0.0)),
+                                icon: const Icon(Icons.add_outlined),
+                                label: Text(intakeToEdit == null
+                                    ? S.of(context).addLabel
+                                    : S.of(context).saveQuantityLabel),
+                              )),
                     ),
                     productMissingRequiredInfo
                         ? Text(
@@ -208,50 +246,70 @@ class MealDetailBottomSheet extends StatelessWidget {
   }
 
   Future<void> onAddButtonPressed(BuildContext context) async {
-    late final CreateMealBloc createMealBloc = locator<CreateMealBloc>();
+    final quantity = parsePositiveQuantity(quantityTextController.text);
+    if (_saving || quantity == null) return;
+    setState(() => _saving = true);
+    try {
+      late final CreateMealBloc createMealBloc = locator<CreateMealBloc>();
 
-    if (createMealBloc.state.isOnCreateMealScreen) {
-      createMealBloc.addIntake(
-        mealDetailBloc.state.selectedUnit,
-        mealDetailBloc.state.totalQuantityConverted,
-        intakeTypeEntity,
-        product,
-        day,
-      );
-    } else {
-      // Persist serving as count when selected, otherwise use converted quantity
-      final isServing = mealDetailBloc.state.selectedUnit ==
-          UnitDropdownItem.serving.toString();
-      final amountToPersist = isServing
-          ? quantityTextController.text // e.g., "1" portion
-          : mealDetailBloc
-              .state.totalQuantityConverted; // converted g/ml or imperial
+      if (intakeToEdit != null) {
+        final updated = await locator<UpdateIntakeUsecase>()
+            .updateIntake(intakeToEdit!.id, {
+          'amount': quantity,
+          'unit': selectedUnit,
+          'meal': product,
+        });
+        if (updated == null) throw StateError('Intake no longer exists');
+        locator<HomeBloc>().add(const LoadItemsEvent());
+        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
+        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+      } else if (createMealBloc.state.isOnCreateMealScreen) {
+        await createMealBloc.addIntake(
+          mealDetailBloc.state.selectedUnit,
+          mealDetailBloc.state.totalQuantityConverted,
+          intakeTypeEntity,
+          product,
+          day,
+        );
+      } else {
+        final amountToPersist = quantity.toString();
 
-      // Await the write so the refresh below reads the updated day.
-      await mealDetailBloc.addIntake(
+        // Await the write so the refresh below reads the updated day.
+        await mealDetailBloc.addIntake(
+          context,
+          mealDetailBloc.state.selectedUnit,
+          amountToPersist,
+          intakeTypeEntity,
+          product,
+          day,
+        );
+
+        // Refresh Home Page
+        locator<HomeBloc>().add(const LoadItemsEvent());
+
+        // Refresh Diary Page
+        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
+        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+      }
+
+      if (!context.mounted) return;
+
+      // Show snackbar and return to dashboard
+      ScaffoldMessenger.of(
         context,
-        mealDetailBloc.state.selectedUnit,
-        amountToPersist,
-        intakeTypeEntity,
-        product,
-        day,
-      );
-
-      // Refresh Home Page
-      locator<HomeBloc>().add(const LoadItemsEvent());
-
-      // Refresh Diary Page
-      locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-      locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+      ).showSnackBar(SnackBar(
+          content: Text(intakeToEdit == null
+              ? S.of(context).infoAddedIntakeLabel
+              : S.of(context).itemUpdatedSnackbar)));
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).intakeSaveError)));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-
-    if (!context.mounted) return;
-
-    // Show snackbar and return to dashboard
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(S.of(context).infoAddedIntakeLabel)));
-    Navigator.of(context).pop();
   }
 
   DropdownMenuItem<String> _getServingDropdownItem(BuildContext context) {
@@ -261,7 +319,7 @@ class MealDetailBottomSheet extends StatelessWidget {
     final hasPhysicalQuantity = quantity != null &&
         quantity.isFinite &&
         quantity > 0 &&
-        ['g', 'ml', 'oz', 'fl oz', 'fl.oz'].contains(unit);
+        ['g', 'ml'].contains(unit);
     final description = hasPhysicalQuantity
         ? '${NumberFormat('0.##', Localizations.localeOf(context).toString()).format(quantity)} ${_localizedUnit(context, unit)}'
         : product.servingSize?.trim();
@@ -320,11 +378,6 @@ class MealDetailBottomSheet extends StatelessWidget {
         return S.of(context).gramUnit;
       case 'ml':
         return S.of(context).milliliterUnit;
-      case 'oz':
-        return S.of(context).ozUnit;
-      case 'fl oz':
-      case 'fl.oz':
-        return S.of(context).flOzUnit;
       default:
         return unit ?? S.of(context).gramUnit;
     }

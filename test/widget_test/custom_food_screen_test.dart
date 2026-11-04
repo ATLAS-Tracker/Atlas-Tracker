@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:opennutritracker/core/utils/path_helper.dart';
+import 'package:opennutritracker/core/data/repository/recipe_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_nutriments_table.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_detail_bottom_sheet.dart';
@@ -23,9 +24,12 @@ class MockGetConfigUsecase extends Mock implements GetConfigUsecase {}
 
 class MockMealDetailBloc extends Mock implements MealDetailBloc {}
 
+class MockRecipeRepository extends Mock implements RecipeRepository {}
+
 void main() {
   late Directory photoDir;
   setUpAll(() async {
+    registerFallbackValue(MealEntity.empty());
     photoDir = await Directory.systemTemp.createTemp('atlas-custom-photo-');
     await File('assets/icon/app_icon.png')
         .copy('${photoDir.path}/selected.png');
@@ -36,7 +40,10 @@ void main() {
   });
   late EditMealBloc bloc;
   setUp(() {
-    bloc = EditMealBloc(MockGetConfigUsecase());
+    final recipes = MockRecipeRepository();
+    when(() => recipes.saveFood(any())).thenAnswer((_) async {});
+    locator.registerSingleton<RecipeRepository>(recipes);
+    bloc = EditMealBloc();
     locator.registerSingleton<EditMealBloc>(bloc);
   });
   tearDown(() async {
@@ -94,8 +101,7 @@ void main() {
                               mainImageUrl: 'old.png',
                               thumbnailImageUrl: 'old.png')
                           : MealEntity.empty(),
-                      IntakeTypeEntity.lunch,
-                      false)),
+                      IntakeTypeEntity.lunch)),
               builder: (_) => const EditMealScreen());
         },
       ));
@@ -200,10 +206,7 @@ void main() {
           body: SingleChildScrollView(
               child: Column(children: [
         MealDetailNutrimentsTable(
-            product: meal,
-            usesImperialUnits: false,
-            servingQuantity: 1,
-            servingUnit: 'serving'),
+            product: meal, servingQuantity: 1, servingUnit: 'serving'),
         MealDetailBottomSheet(
             product: meal,
             day: DateTime(2026, 10, 24),

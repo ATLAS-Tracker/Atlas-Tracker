@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -19,9 +20,8 @@ class IntakeCard extends StatelessWidget {
 
   final IntakeEntity intake;
   final Function(BuildContext, IntakeEntity)? onItemLongPressed;
-  final Function(BuildContext, IntakeEntity, bool)? onItemTapped;
+  final Function(BuildContext, IntakeEntity)? onItemTapped;
   final bool firstListElement;
-  final bool usesImperialUnits;
   final bool compact;
 
   const IntakeCard({
@@ -30,7 +30,6 @@ class IntakeCard extends StatelessWidget {
     this.onItemLongPressed,
     this.onItemTapped,
     required this.firstListElement,
-    required this.usesImperialUnits,
     this.compact = false,
   });
 
@@ -71,9 +70,7 @@ class IntakeCard extends StatelessWidget {
               onLongPress: onItemLongPressed != null
                   ? () => onLongPressedItem(context)
                   : null,
-              onTap: onItemTapped != null
-                  ? () => onTappedItem(context, usesImperialUnits)
-                  : null,
+              onTap: onItemTapped != null ? () => onTappedItem(context) : null,
               child: Ink(
                 decoration: BoxDecoration(
                   color: cardSurface,
@@ -146,7 +143,6 @@ class IntakeCard extends StatelessWidget {
                                     intake.unit.toLowerCase() == 'serving'
                                         ? 'serving'
                                         : null,
-                                usesImperialUnits: usesImperialUnits,
                                 textStyle: theme.textTheme.labelSmall?.copyWith(
                                   color: colorScheme.onSurface,
                                   fontWeight: FontWeight.w800,
@@ -160,7 +156,7 @@ class IntakeCard extends StatelessWidget {
                             child: _MetricPill(
                               surface: metricSurface,
                               child: Text(
-                                '${intake.totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                                '${formatNumber(intake.totalKcal)} ${S.of(context).kcalLabel}',
                                 maxLines: 1,
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   color: colorScheme.onSurface,
@@ -214,9 +210,7 @@ class IntakeCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onItemTapped == null
-            ? null
-            : () => onTappedItem(context, usesImperialUnits),
+        onTap: onItemTapped == null ? null : () => onTappedItem(context),
         onLongPress:
             onItemLongPressed == null ? null : () => onLongPressedItem(context),
         borderRadius: BorderRadius.circular(12),
@@ -243,7 +237,7 @@ class IntakeCard extends StatelessWidget {
                             style: theme.textTheme.bodyMedium
                                 ?.copyWith(fontWeight: FontWeight.w600))),
                     const SizedBox(width: 8),
-                    Text('${intake.totalKcal.toInt()} ${s.kcalLabel}',
+                    Text('${formatNumber(intake.totalKcal)} ${s.kcalLabel}',
                         style: theme.textTheme.bodySmall
                             ?.copyWith(fontWeight: FontWeight.w700)),
                   ]),
@@ -254,7 +248,6 @@ class IntakeCard extends StatelessWidget {
                     displayUnit: intake.unit.toLowerCase() == 'serving'
                         ? 'serving'
                         : null,
-                    usesImperialUnits: usesImperialUnits,
                     textStyle: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                   ),
@@ -283,6 +276,11 @@ class IntakeCard extends StatelessWidget {
                   ]),
                 ],
               )),
+              if (onItemLongPressed != null)
+                IconButton(
+                    tooltip: S.of(context).copyOrDeleteTimeDialogTitle,
+                    onPressed: () => onLongPressedItem(context),
+                    icon: const Icon(Icons.more_vert)),
             ],
           ),
         ),
@@ -294,8 +292,8 @@ class IntakeCard extends StatelessWidget {
     onItemLongPressed?.call(context, intake);
   }
 
-  void onTappedItem(BuildContext context, bool usesImperialUnits) {
-    onItemTapped?.call(context, intake, usesImperialUnits);
+  void onTappedItem(BuildContext context) {
+    onItemTapped?.call(context, intake);
   }
 
   Widget _buildMealImage(BuildContext context) {
@@ -420,10 +418,10 @@ class _MacroValue extends StatelessWidget {
             MacroIcon(visual: visual, size: 10),
             const SizedBox(width: 2),
             Text(
-              '${value.toInt()}${S.of(context).gramUnit}',
+              '${formatNumber(value)}${S.of(context).gramUnit}',
               maxLines: 1,
               style: theme.textTheme.labelSmall?.copyWith(
-                color: visual.color,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w800,
                 height: 1,
               ),

@@ -16,13 +16,11 @@ class RecipeLoadingState extends RecipeSearchState {
 
 class RecipeLoadedState extends RecipeSearchState {
   final List<MealEntity> recipes;
-  final bool usesImperialUnits;
 
-  const RecipeLoadedState(
-      {required this.recipes, this.usesImperialUnits = false});
+  const RecipeLoadedState({required this.recipes});
 
   @override
-  List<Object?> get props => [recipes, usesImperialUnits];
+  List<Object?> get props => [recipes];
 }
 
 class RecipeFailedState extends RecipeSearchState {

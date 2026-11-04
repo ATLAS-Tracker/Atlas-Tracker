@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
+import 'package:opennutritracker/generated/l10n.dart';
 
 class ProfileValuePicker extends StatefulWidget {
   final double initialValue;
@@ -26,6 +28,14 @@ class ProfileValuePicker extends StatefulWidget {
 
 class _ProfileValuePickerState extends State<ProfileValuePicker> {
   late double _value = widget.initialValue;
+  late final _controller =
+      TextEditingController(text: formatQuantity(widget.initialValue));
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +52,31 @@ class _ProfileValuePickerState extends State<ProfileValuePicker> {
             decoration: BoxDecoration(
                 color: widget.color.withValues(alpha: 0.07),
                 borderRadius: BorderRadius.circular(20)),
-            child: Text('${format.format(_value)} ${widget.unit}',
+            child: TextFormField(
+                controller: _controller,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 textAlign: TextAlign.center,
+                decoration: InputDecoration(suffixText: widget.unit),
+                validator: (text) {
+                  final value = parsePositiveQuantity(text);
+                  return value == null ||
+                          value < widget.min ||
+                          value > widget.max
+                      ? S.of(context).profileValueRange(
+                          formatQuantity(widget.min),
+                          formatQuantity(widget.max),
+                          widget.unit)
+                      : null;
+                },
+                onChanged: (text) {
+                  final value = parsePositiveQuantity(text);
+                  if (value == null || value < widget.min || value > widget.max) {
+                    return;
+                  }
+                  setState(() => _value = value);
+                  widget.onChanged(value);
+                },
                 style: Theme.of(context)
                     .textTheme
                     .headlineMedium
@@ -59,6 +92,7 @@ class _ProfileValuePickerState extends State<ProfileValuePicker> {
             label: '${format.format(_value)} ${widget.unit}',
             onChanged: (value) {
               setState(() => _value = value);
+              _controller.text = formatQuantity(value);
               widget.onChanged(value);
             },
           ),

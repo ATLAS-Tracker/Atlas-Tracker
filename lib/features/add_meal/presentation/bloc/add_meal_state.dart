@@ -19,10 +19,8 @@ class AddMealLoadingState extends AddMealState {
 }
 
 class AddMealLoadedState extends AddMealState {
-  final bool usesImperialUnits;
-
-  const AddMealLoadedState({this.usesImperialUnits = false});
+  const AddMealLoadedState();
 
   @override
-  List<Object?> get props => [usesImperialUnits];
+  List<Object?> get props => [];
 }

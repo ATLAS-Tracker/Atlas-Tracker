@@ -67,7 +67,6 @@
   "buttonSaveLabel": "Speichern",
   "buttonYesLabel": "JA",
   "buttonResetLabel": "Zurücksetzen",
-  "settingsUnitsLabel": "Einheiten",
   "settingsThemeLabel": "Thema",
   "settingsThemeLightLabel": "Hell",
   "settingsThemeDarkLabel": "Dunkel",
@@ -220,8 +219,6 @@
   "gramUnit": "g",
   "milliliterUnit": "ml",
   "gramMilliliterUnit": "g/ml",
-  "ozUnit": "oz",
-  "flOzUnit": "fl.oz",
   "notAvailableLabel": "N/A",
   "emptyValueLabel": "-",
   "saveMacroGoalsError": "Problem beim Speichern der Makroziele.",
@@ -232,11 +229,9 @@
   "mealNameLabel": "Mahlzeitenname",
   "mealBrandsLabel": "Marken",
   "mealSizeLabel": "Mahlzeitsgröße (g/ml)",
-  "mealSizeLabelImperial": "Mahlzeitsgröße (oz/fl oz)",
   "servingLabel": "Portion",
   "perServingLabel": "Pro Portion",
   "servingSizeLabelMetric": "Portionsgröße (g/ml)",
-  "servingSizeLabelImperial": "Portionsgröße (oz/fl oz)",
   "mealUnitLabel": "Mahlzeiteinheit",
   "mealKcalLabel": "kcal pro 100 g/ml",
   "mealCarbsLabel": "Kohlenhydrate pro 100 g/ml",
@@ -613,5 +608,7 @@
   "macroDistributionTitle": "Makroverteilung",
   "macroGoalsTabLabel": "Ziele",
   "macroGoalHistoryEmpty": "Der Verlauf der Zieländerungen wird hier angezeigt.",
-  "bodyGoalPreviewDescription": "Aufbau, Diät oder Erhalt: Die Makros passen sich dem Zielgewicht an."
+  "bodyGoalPreviewDescription": "Aufbau, Diät oder Erhalt: Die Makros passen sich dem Zielgewicht an.",
+  "caloriesAboveGoal": "+{amount} kcal über dem Ziel",
+  "lastJournalDay": "Zuletzt erfasster Tag: {date}"
 }

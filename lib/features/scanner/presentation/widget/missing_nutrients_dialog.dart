@@ -11,13 +11,11 @@ class MissingNutrientsDialog extends StatelessWidget {
     required this.day,
     required this.mealEntity,
     required this.intakeTypeEntity,
-    required this.usesImperialUnits,
   });
 
   final DateTime day;
   final MealEntity mealEntity;
   final IntakeTypeEntity intakeTypeEntity;
-  final bool usesImperialUnits;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +67,6 @@ class MissingNutrientsDialog extends StatelessWidget {
                 day,
                 mealEntity,
                 intakeTypeEntity,
-                usesImperialUnits,
               ),
             );
           },

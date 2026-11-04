@@ -25,7 +25,6 @@ class DayInfoWidget extends StatelessWidget {
   final List<IntakeEntity> dinnerIntake;
   final List<IntakeEntity> snackIntake;
 
-  final bool usesImperialUnits;
   final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity)
       onDeleteIntake;
   final Function(UserActivityEntity userActivityEntity,
@@ -48,7 +47,6 @@ class DayInfoWidget extends StatelessWidget {
     required this.lunchIntake,
     required this.dinnerIntake,
     required this.snackIntake,
-    required this.usesImperialUnits,
     required this.onDeleteIntake,
     required this.onDeleteActivity,
     required this.onDeleteWeight,
@@ -137,7 +135,6 @@ class DayInfoWidget extends StatelessWidget {
                   DateUtils.isSameDay(selectedDay, DateTime.now())
                       ? null
                       : onCopyIntake,
-              usesImperialUnits: usesImperialUnits,
               trackedDayEntity: trackedDay,
             ),
             IntakeVerticalList(
@@ -148,7 +145,6 @@ class DayInfoWidget extends StatelessWidget {
               intakeList: lunchIntake,
               onDeleteIntakeCallback: onDeleteIntake,
               onItemLongPressedCallback: onIntakeItemLongPressed,
-              usesImperialUnits: usesImperialUnits,
               onCopyIntakeCallback:
                   DateUtils.isSameDay(selectedDay, DateTime.now())
                       ? null
@@ -167,7 +163,6 @@ class DayInfoWidget extends StatelessWidget {
                   DateUtils.isSameDay(selectedDay, DateTime.now())
                       ? null
                       : onCopyIntake,
-              usesImperialUnits: usesImperialUnits,
             ),
             IntakeVerticalList(
               day: selectedDay,
@@ -177,7 +172,6 @@ class DayInfoWidget extends StatelessWidget {
               intakeList: snackIntake,
               onDeleteIntakeCallback: onDeleteIntake,
               onItemLongPressedCallback: onIntakeItemLongPressed,
-              usesImperialUnits: usesImperialUnits,
               onCopyIntakeCallback:
                   DateUtils.isSameDay(selectedDay, DateTime.now())
                       ? null

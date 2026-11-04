@@ -103,13 +103,13 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     }
   }
 
-  /// Poids cible du profil élève (users.weight_kg, comme sur l'accueil).
   Future<double?> _fetchTargetWeight(String studentId) async {
     final row = await _supabase
         .from('users')
         .select('weight_kg')
         .eq('id', studentId)
-        .maybeSingle();
+        .maybeSingle()
+        .timeout(const Duration(seconds: 8));
     return (row?['weight_kg'] as num?)?.toDouble();
   }
 
@@ -129,15 +129,17 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
         .eq('user_id', studentId)
         .gte('day', startDate)
         .lte('day', endDate)
-        .order('day');
+        .order('day')
+        .timeout(const Duration(seconds: 8));
 
     final weightResponse = await _supabase
         .from('user_weight')
-        .select('date, weight')
+        .select()
         .eq('user_id', studentId)
         .gte('date', startDate)
         .lte('date', endDate)
-        .order('date');
+        .order('date')
+        .timeout(const Duration(seconds: 8));
 
     final Map<String, Map<String, dynamic>> result = {
       for (final Map<String, dynamic> item in macroResponse)
@@ -145,6 +147,7 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     };
 
     for (final Map<String, dynamic> item in weightResponse) {
+      if (item['deleted_at'] != null) continue;
       final dateStr = item['date'] as String;
       result.putIfAbsent(dateStr, () => {});
       result[dateStr]!['weight'] = item['weight'];

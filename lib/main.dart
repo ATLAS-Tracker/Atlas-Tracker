@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/repository/config_repository.dart';
-import 'package:opennutritracker/core/data/repository/intake_repository.dart';
-import 'package:opennutritracker/core/data/repository/recipe_repository.dart';
 import 'package:opennutritracker/core/domain/entity/app_theme_entity.dart';
 import 'package:opennutritracker/core/presentation/main_screen.dart';
 import 'package:opennutritracker/core/presentation/widgets/image_full_screen.dart';
@@ -29,11 +28,7 @@ import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/features/recipe/recipe_page.dart';
 import 'package:opennutritracker/features/auth/login_screen.dart';
 import 'package:opennutritracker/features/auth/reset_password_screen.dart';
-import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
-import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
-import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
-import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
-import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,17 +37,29 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final view = PlatformDispatcher.instance.views.first;
+  if ((view.physicalSize / view.devicePixelRatio).shortestSide < 600) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   LoggerConfig.intiLogger();
   await initLocator();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
 
   FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    if (FirebaseCrashlytics.instance.isCrashlyticsCollectionEnabled) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    } else {
+      FlutterError.presentError(errorDetails);
+    }
   };
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
+    if (!FirebaseCrashlytics.instance.isCrashlyticsCollectionEnabled) {
+      return false;
+    }
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
@@ -65,14 +72,6 @@ Future<void> main() async {
       await configRepo.getConfigHasAcceptedAnonymousData();
   final savedAppTheme = await configRepo.getConfigAppTheme();
   final log = Logger('main');
-
-  if (hasAuthSession) {
-    await _restoreSupabaseArchiveAtStartup(log);
-    await locator<JournalRemoteSyncService>().syncAtStartup();
-    await locator<StartupRemoteSyncService>().syncAtStartup();
-    await syncProfileFromSupabase(Supabase.instance.client);
-  }
-
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
     hasAcceptedAnonymousData,
   );
@@ -81,44 +80,7 @@ Future<void> main() async {
     'Starting App with Crashlytics ${hasAcceptedAnonymousData ? 'enabled' : 'disabled'} ...',
   );
   runAppWithChangeNotifiers(isUserInitialized, hasAuthSession, savedAppTheme);
-}
-
-Future<void> _restoreSupabaseArchiveAtStartup(Logger log) async {
-  try {
-    final hasLocalIntakes =
-        (await locator<IntakeRepository>().getAllIntakesDBO()).isNotEmpty;
-    final hasLocalRecipes =
-        (await locator<RecipeRepository>().getAllRecipeDBOs()).isNotEmpty;
-
-    if (hasLocalIntakes && hasLocalRecipes) {
-      log.fine(
-          'Local intake and recipe data already present; skipping archive import.');
-      return;
-    }
-
-    final imported = await locator<ImportDataSupabaseUsecase>().importData(
-      ExportImportBloc.exportZipFileName,
-      ExportImportBloc.userActivityJsonFileName,
-      ExportImportBloc.userIntakeJsonFileName,
-      ExportImportBloc.trackedDayJsonFileName,
-      ExportImportBloc.userWeightJsonFileName,
-      ExportImportBloc.recipesJsonFileName,
-      ExportImportBloc.userJsonFileName,
-      deleteMissingLocalEntries: false,
-    );
-
-    if (imported) {
-      log.fine('Supabase archive merged at startup.');
-    } else {
-      log.warning('Supabase archive merge failed at startup.');
-    }
-  } catch (error, stack) {
-    log.warning(
-      'Could not merge Supabase archive at startup; continuing with local data.',
-      error,
-      stack,
-    );
-  }
+  if (hasAuthSession) unawaited(synchronizeUserData(Supabase.instance.client));
 }
 
 void runAppWithChangeNotifiers(

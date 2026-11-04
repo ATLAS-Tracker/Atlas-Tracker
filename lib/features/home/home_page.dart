@@ -9,8 +9,15 @@ import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
+import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/utils/id_generator.dart';
+import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/add_intake_usecase.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
@@ -36,6 +43,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   HomeLoadedState? _lastLoadedState;
   final ScrollController _scrollController = ScrollController();
   bool _isDragging = false;
+  bool _copyingYesterday = false;
   int _steps = 0;
   StepTrackingController? _stepTrackingController;
   StreamSubscription<int>? _stepSubscription;
@@ -97,6 +105,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         } else if (state is HomeLoadedState) {
           _lastLoadedState = state;
           return _getLoadedContentFromState(context, state);
+        } else if (state is HomeErrorState) {
+          return ErrorDialog(
+              errorText: S.of(context).journalLoadError,
+              onRefreshPressed: () => _homeBloc.add(const LoadItemsEvent()));
         } else {
           return _getLoadingContent();
         }
@@ -147,7 +159,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       state.weeklyWeightDelta,
       state.targetWeight,
       state.userWeightGoal,
-      state.usesImperialUnits,
     );
   }
 
@@ -173,144 +184,165 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     double? weeklyWeightDelta,
     double targetWeight,
     UserWeightGoalEntity userWeightGoal,
-    bool usesImperialUnits,
   ) {
-    return Stack(
-      children: [
-        ListView(
-          key: const PageStorageKey<String>('home-page-scroll'),
-          controller: _scrollController,
+    return RefreshIndicator(
+        onRefresh: () async {
+          final done = _homeBloc.stream.firstWhere(
+              (state) => state is HomeLoadedState || state is HomeErrorState);
+          _homeBloc.add(const LoadItemsEvent());
+          await done;
+        },
+        child: Stack(
           children: [
-            _HomeHeader(userName: userName, coachName: coachName),
-            DashboardWidget(
-              totalKcalDaily: totalKcalDaily,
-              totalKcalLeft: totalKcalLeft,
-              totalKcalSupplied: totalKcalSupplied,
-              dailyStepCount: _steps,
-              totalCarbsIntake: totalCarbsIntake,
-              totalFatsIntake: totalFatsIntake,
-              totalProteinsIntake: totalProteinsIntake,
-              totalCarbsGoal: totalCarbsGoal,
-              totalFatsGoal: totalFatsGoal,
-              totalProteinsGoal: totalProteinsGoal,
-              userWeight: userWeight,
-              weeklyWeightDelta: weeklyWeightDelta,
-              targetWeight: targetWeight,
-              userWeightGoal: userWeightGoal,
-              usesImperialUnits: usesImperialUnits,
+            ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              key: const PageStorageKey<String>('home-page-scroll'),
+              controller: _scrollController,
+              children: [
+                _HomeHeader(userName: userName, coachName: coachName),
+                DashboardWidget(
+                  totalKcalDaily: totalKcalDaily,
+                  totalKcalLeft: totalKcalLeft,
+                  totalKcalSupplied: totalKcalSupplied,
+                  dailyStepCount: _steps,
+                  totalCarbsIntake: totalCarbsIntake,
+                  totalFatsIntake: totalFatsIntake,
+                  totalProteinsIntake: totalProteinsIntake,
+                  totalCarbsGoal: totalCarbsGoal,
+                  totalFatsGoal: totalFatsGoal,
+                  totalProteinsGoal: totalProteinsGoal,
+                  userWeight: userWeight,
+                  weeklyWeightDelta: weeklyWeightDelta,
+                  targetWeight: targetWeight,
+                  userWeightGoal: userWeightGoal,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
+                  child: Row(
+                    children: [
+                      Text(
+                        S.of(context).mealsOfDayLabel,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        S.of(context).kcalMacrosLabel,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+                IntakeVerticalList(
+                  compact: true,
+                  day: DateTime.now(),
+                  title: S.of(context).breakfastLabel,
+                  listIcon: IntakeTypeEntity.breakfast.getIconData(),
+                  addMealType: AddMealType.breakfastType,
+                  intakeList: breakfastIntakeList,
+                  onDeleteIntakeCallback: onDeleteIntake,
+                  onDeleteAllIntakesCallback: onDeleteIntakes,
+                  onCopyFromYesterday: () =>
+                      _copyYesterday(AddMealType.breakfastType),
+                  onItemDragCallback: onIntakeItemDrag,
+                  onItemTappedCallback: onIntakeItemTapped,
+                  onItemLongPressedCallback: onIntakeItemLongPressed,
+                ),
+                IntakeVerticalList(
+                  compact: true,
+                  day: DateTime.now(),
+                  title: S.of(context).lunchLabel,
+                  listIcon: IntakeTypeEntity.lunch.getIconData(),
+                  addMealType: AddMealType.lunchType,
+                  intakeList: lunchIntakeList,
+                  onDeleteIntakeCallback: onDeleteIntake,
+                  onDeleteAllIntakesCallback: onDeleteIntakes,
+                  onCopyFromYesterday: () =>
+                      _copyYesterday(AddMealType.lunchType),
+                  onItemDragCallback: onIntakeItemDrag,
+                  onItemTappedCallback: onIntakeItemTapped,
+                  onItemLongPressedCallback: onIntakeItemLongPressed,
+                ),
+                IntakeVerticalList(
+                  compact: true,
+                  day: DateTime.now(),
+                  title: S.of(context).dinnerLabel,
+                  addMealType: AddMealType.dinnerType,
+                  listIcon: IntakeTypeEntity.dinner.getIconData(),
+                  intakeList: dinnerIntakeList,
+                  onDeleteIntakeCallback: onDeleteIntake,
+                  onDeleteAllIntakesCallback: onDeleteIntakes,
+                  onCopyFromYesterday: () =>
+                      _copyYesterday(AddMealType.dinnerType),
+                  onItemDragCallback: onIntakeItemDrag,
+                  onItemTappedCallback: onIntakeItemTapped,
+                  onItemLongPressedCallback: onIntakeItemLongPressed,
+                ),
+                IntakeVerticalList(
+                  compact: true,
+                  day: DateTime.now(),
+                  title: S.of(context).snackLabel,
+                  listIcon: IntakeTypeEntity.snack.getIconData(),
+                  addMealType: AddMealType.snackType,
+                  intakeList: snackIntakeList,
+                  onDeleteIntakeCallback: onDeleteIntake,
+                  onDeleteAllIntakesCallback: onDeleteIntakes,
+                  onCopyFromYesterday: () =>
+                      _copyYesterday(AddMealType.snackType),
+                  onItemDragCallback: onIntakeItemDrag,
+                  onItemTappedCallback: onIntakeItemTapped,
+                  onItemLongPressedCallback: onIntakeItemLongPressed,
+                ),
+                const SizedBox(height: 48.0),
+                // TEMP: activities temporarily hidden by request
+                // ActivityVerticalList(
+                //   day: DateTime.now(),
+                //   title: S.of(context).activityLabel,
+                //   userActivityList: userActivities,
+                //   onItemLongPressedCallback: onActivityItemLongPressed,
+                // ),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 8, 22, 0),
-              child: Row(
-                children: [
-                  Text(
-                    S.of(context).mealsOfDayLabel,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w800,
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Visibility(
+                visible: _isDragging,
+                child: Container(
+                  height: 70,
+                  color: Theme.of(context).colorScheme.error
+                    ..withValues(alpha: 0.3),
+                  child: DragTarget<IntakeEntity>(
+                    onAcceptWithDetails: (data) {
+                      _confirmDelete(context, data.data);
+                    },
+                    onLeave: (data) {
+                      setState(() {
+                        _isDragging = false;
+                      });
+                    },
+                    builder: (context, candidateData, rejectedData) {
+                      return const Center(
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 36,
+                          color: Colors.white,
                         ),
+                      );
+                    },
                   ),
-                  const Spacer(),
-                  Text(
-                    S.of(context).kcalMacrosLabel,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                ],
+                ),
               ),
             ),
-            IntakeVerticalList(
-              compact: true,
-              day: DateTime.now(),
-              title: S.of(context).breakfastLabel,
-              listIcon: IntakeTypeEntity.breakfast.getIconData(),
-              addMealType: AddMealType.breakfastType,
-              intakeList: breakfastIntakeList,
-              onDeleteIntakeCallback: onDeleteIntake,
-              onItemDragCallback: onIntakeItemDrag,
-              onItemTappedCallback: onIntakeItemTapped,
-              usesImperialUnits: usesImperialUnits,
-            ),
-            IntakeVerticalList(
-              compact: true,
-              day: DateTime.now(),
-              title: S.of(context).lunchLabel,
-              listIcon: IntakeTypeEntity.lunch.getIconData(),
-              addMealType: AddMealType.lunchType,
-              intakeList: lunchIntakeList,
-              onDeleteIntakeCallback: onDeleteIntake,
-              onItemDragCallback: onIntakeItemDrag,
-              onItemTappedCallback: onIntakeItemTapped,
-              usesImperialUnits: usesImperialUnits,
-            ),
-            IntakeVerticalList(
-              compact: true,
-              day: DateTime.now(),
-              title: S.of(context).dinnerLabel,
-              addMealType: AddMealType.dinnerType,
-              listIcon: IntakeTypeEntity.dinner.getIconData(),
-              intakeList: dinnerIntakeList,
-              onDeleteIntakeCallback: onDeleteIntake,
-              onItemDragCallback: onIntakeItemDrag,
-              onItemTappedCallback: onIntakeItemTapped,
-              usesImperialUnits: usesImperialUnits,
-            ),
-            IntakeVerticalList(
-              compact: true,
-              day: DateTime.now(),
-              title: S.of(context).snackLabel,
-              listIcon: IntakeTypeEntity.snack.getIconData(),
-              addMealType: AddMealType.snackType,
-              intakeList: snackIntakeList,
-              onDeleteIntakeCallback: onDeleteIntake,
-              onItemDragCallback: onIntakeItemDrag,
-              onItemTappedCallback: onIntakeItemTapped,
-              usesImperialUnits: usesImperialUnits,
-            ),
-            const SizedBox(height: 48.0),
-            // TEMP: activities temporarily hidden by request
-            // ActivityVerticalList(
-            //   day: DateTime.now(),
-            //   title: S.of(context).activityLabel,
-            //   userActivityList: userActivities,
-            //   onItemLongPressedCallback: onActivityItemLongPressed,
-            // ),
           ],
-        ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Visibility(
-            visible: _isDragging,
-            child: Container(
-              height: 70,
-              color: Theme.of(context).colorScheme.error
-                ..withValues(alpha: 0.3),
-              child: DragTarget<IntakeEntity>(
-                onAcceptWithDetails: (data) {
-                  _confirmDelete(context, data.data);
-                },
-                onLeave: (data) {
-                  setState(() {
-                    _isDragging = false;
-                  });
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return const Center(
-                    child: Icon(
-                      Icons.delete_outline,
-                      size: 36,
-                      color: Colors.white,
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
+        ));
   }
 
   void onActivityItemLongPressed(
@@ -351,20 +383,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     BuildContext context,
     IntakeEntity intakeEntity,
   ) async {
-    final deleteIntake = await showDialog<bool>(
-      context: context,
-      builder: (context) => const DeleteDialog(),
-    );
-
-    if (deleteIntake != null) {
-      _homeBloc.deleteIntakeItem(intakeEntity);
-      _homeBloc.add(const LoadItemsEvent());
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
-        );
-      }
-    }
+    await showIntakeActions(context, intakeEntity,
+        edit: () => onIntakeItemTapped(context, intakeEntity),
+        delete: () => onDeleteIntake(intakeEntity, null),
+        refresh: _refreshAllViews);
   }
 
   void onIntakeItemDrag(bool isDragging) {
@@ -378,13 +400,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   void onIntakeItemTapped(
     BuildContext context,
     IntakeEntity intakeEntity,
-    bool usesImperialUnits,
   ) async {
     final dialogResult = await showDialog<EditDialogResult>(
       context: context,
       builder: (context) => EditDialog(
         intakeEntity: intakeEntity,
-        usesImperialUnits: usesImperialUnits,
       ),
     );
     if (dialogResult == null) {
@@ -397,7 +417,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         if (updatedAmount == null) {
           return;
         }
-        _homeBloc.updateIntakeItem(intakeEntity.id, {
+        await _homeBloc.updateIntakeItem(intakeEntity.id, {
           'amount': updatedAmount,
         });
         _homeBloc.add(const LoadItemsEvent());
@@ -409,14 +429,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         );
         break;
       case EditDialogAction.deleteItem:
-        _homeBloc.deleteIntakeItem(intakeEntity);
-        _homeBloc.add(const LoadItemsEvent());
-        if (!context.mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
-        );
+        await onDeleteIntake(intakeEntity, null);
         break;
       case EditDialogAction.viewProduct:
         if (!context.mounted) {
@@ -428,16 +441,58 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             intakeEntity.meal,
             intakeEntity.type,
             intakeEntity.dateTime,
-            usesImperialUnits,
+            intakeToEdit: intakeEntity,
           ),
         );
         break;
     }
   }
 
-  void onDeleteIntake(IntakeEntity intake, TrackedDayEntity? trackedDayEntity) {
-    _homeBloc.deleteIntakeItem(intake);
+  Future<void> onDeleteIntake(
+      IntakeEntity intake, TrackedDayEntity? trackedDayEntity) async {
+    await onDeleteIntakes([intake]);
+  }
+
+  Future<void> onDeleteIntakes(List<IntakeEntity> intakes) async {
+    await deleteIntakesWithUndo(
+        context, intakes, _homeBloc.deleteIntakeItem, _refreshAllViews);
+  }
+
+  void _refreshAllViews() {
     _homeBloc.add(const LoadItemsEvent());
+    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
+    locator<CalendarDayBloc>().add(const RefreshCalendarDayEvent());
+  }
+
+  Future<void> _copyYesterday(AddMealType type) async {
+    if (_copyingYesterday) return;
+    _copyingYesterday = true;
+    try {
+      final today = DateUtils.dateOnly(DateTime.now());
+      final yesterday = DateTime(today.year, today.month, today.day - 1);
+      final intakes = await locator<GetIntakeUsecase>()
+          .getIntakeByDay(type.getIntakeType(), yesterday);
+      await locator<AddIntakeUsecase>().addIntakes([
+        for (final intake in intakes)
+          intake.copyWith(
+              id: IdGenerator.getUniqueID(),
+              dateTime: today,
+              updatedAt: DateTime.now().toUtc())
+      ]);
+      _refreshAllViews();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(intakes.isEmpty
+              ? S.of(context).noFoodYesterdayLabel
+              : S.of(context).mealCopiedSnackbar)));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).intakeSaveError)));
+      }
+    } finally {
+      _copyingYesterday = false;
+    }
   }
 
   void _confirmDelete(BuildContext context, IntakeEntity intake) async {

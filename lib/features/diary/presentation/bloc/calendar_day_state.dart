@@ -14,6 +14,11 @@ class CalendarDayLoading extends CalendarDayState {
   List<Object?> get props => [];
 }
 
+class CalendarDayError extends CalendarDayState {
+  @override
+  List<Object?> get props => [];
+}
+
 class CalendarDayLoaded extends CalendarDayState {
   final TrackedDayEntity? trackedDayEntity;
   final List<UserActivityEntity> userActivityList;

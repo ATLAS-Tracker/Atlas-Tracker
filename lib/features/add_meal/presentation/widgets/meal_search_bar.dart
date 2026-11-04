@@ -34,6 +34,7 @@ class _MealSearchBarState extends State<MealSearchBar> {
       children: [
         Expanded(
             child: TextField(
+          autofocus: true,
           controller: _controller,
           textInputAction: TextInputAction.search,
           onChanged: (input) {
@@ -71,7 +72,7 @@ class _MealSearchBarState extends State<MealSearchBar> {
           style: IconButton.styleFrom(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16))),
-          tooltip: S.of(context).searchLabel,
+          tooltip: S.of(context).scanProductLabel,
           icon: const Icon(Icons.qr_code_scanner_rounded, size: 25),
           onPressed: () {
             FocusManager.instance.primaryFocus?.unfocus();

@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
-import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -13,30 +12,28 @@ part 'diary_state.dart';
 
 class DiaryBloc extends Bloc<DiaryEvent, DiaryState> {
   final GetTrackedDayUsecase _getDayTrackedUsecase;
-  final GetConfigUsecase _getConfigUsecase;
 
   DateTime currentDay = DateTime.now();
 
-  DiaryBloc(this._getDayTrackedUsecase, this._getConfigUsecase)
-      : super(DiaryInitial()) {
+  DiaryBloc(this._getDayTrackedUsecase) : super(DiaryInitial()) {
     on<LoadDiaryYearEvent>((event, emit) async {
       emit(DiaryLoadingState());
+      try {
+        currentDay = DateTime.now();
+        const yearDuration = Duration(days: 365);
 
-      final usesImperialUnits =
-          (await _getConfigUsecase.getConfig()).usesImperialUnits;
+        final trackedDays = await _getDayTrackedUsecase.getTrackedDaysByRange(
+            currentDay.subtract(yearDuration), currentDay.add(yearDuration));
 
-      currentDay = DateTime.now();
-      const yearDuration = Duration(days: 356);
+        final trackedDaysMap = {
+          for (var trackedDay in trackedDays)
+            trackedDay.day.toParsedDay(): trackedDay
+        };
 
-      final trackedDays = await _getDayTrackedUsecase.getTrackedDaysByRange(
-          currentDay.subtract(yearDuration), currentDay.add(yearDuration));
-
-      final trackedDaysMap = {
-        for (var trackedDay in trackedDays)
-          trackedDay.day.toParsedDay(): trackedDay
-      };
-
-      emit(DiaryLoadedState(trackedDaysMap, usesImperialUnits));
+        emit(DiaryLoadedState(trackedDaysMap));
+      } catch (_) {
+        emit(DiaryErrorState());
+      }
     });
   }
 

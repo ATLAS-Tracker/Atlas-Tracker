@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 import 'package:flutter/material.dart';
@@ -12,6 +11,13 @@ import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.da
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/domain/usecase/get_recipe_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/delete_recipe_usecase.dart';
+import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
+import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
 
 class RecipeResultsList extends StatefulWidget {
   final DateTime day;
@@ -39,19 +45,20 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
     widget.bloc.add(const LoadRecipeSearchEvent(searchString: ""));
   }
 
-  // 👇 Fonction pour supprimer un fichier local si le chemin n’est pas une URL distante
-  void _deleteImageIfLocal(String? path) async {
-    if (path != null) {
-      final imageFile = File(path);
-      if (await imageFile.exists()) {
-        try {
-          await imageFile.delete();
-          _log.fine('🗑️ Image deleted : $path');
-        } catch (e) {
-          _log.fine('⚠️ Error with image suppression : $e');
-        }
-      }
-    }
+  Future<void> _deleteRecipe(MealEntity meal) async {
+    if (meal.code == null) return;
+    final confirmed = await showDialog<bool>(
+        context: context, builder: (_) => const DeleteDialog());
+    if (confirmed != true) return;
+    final recipe = await locator<GetRecipeUsecase>().getRecipeById(meal.code!);
+    if (recipe == null) return;
+    await locator<DeleteRecipeUsecase>().deleteRecipe(meal.code!);
+    _onRecipeRefreshButtonPressed();
+    if (!mounted) return;
+    showUndo(context, () async {
+      await locator<AddRecipeUsecase>().addRecipe(recipe);
+      if (mounted) _onRecipeRefreshButtonPressed();
+    });
   }
 
   @override
@@ -66,10 +73,13 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: FilledButton.icon(
               key: const ValueKey('create-recipe'),
-              onPressed: () {
+              onPressed: () async {
                 FocusScope.of(context).unfocus();
-                Navigator.of(context)
-                    .pushNamed(NavigationOptions.createMealRoute);
+                await Navigator.of(context).pushNamed(
+                    NavigationOptions.createMealRoute,
+                    arguments: CreateMealContext(
+                        widget.day, widget.mealType.getIntakeType()));
+                if (mounted) _onRecipeRefreshButtonPressed();
               },
               icon: const Icon(Icons.add_rounded),
               label: Text(S.of(context).createRecipeLabel),
@@ -123,8 +133,6 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
                                       day: widget.day,
                                       mealEntity: recipe,
                                       addMealType: widget.mealType,
-                                      usesImperialUnits:
-                                          state.usesImperialUnits,
                                     ),
                                   ),
                                 ),
@@ -135,14 +143,14 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
                                   day: widget.day,
                                   mealEntity: recipe,
                                   addMealType: widget.mealType,
-                                  usesImperialUnits: state.usesImperialUnits,
                                 ),
                               ),
                               child: MealItemCard(
+                                onDelete: () => _deleteRecipe(recipe),
+                                onReturn: _onRecipeRefreshButtonPressed,
                                 day: widget.day,
                                 mealEntity: recipe,
                                 addMealType: widget.mealType,
-                                usesImperialUnits: state.usesImperialUnits,
                               ),
                             );
                           },
@@ -166,11 +174,8 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
                                   final draggedData = details.data;
 
                                   if (draggedData is MealEntity) {
-                                    _deleteImageIfLocal(draggedData.url);
-
                                     if (draggedData.code != null) {
-                                      widget.bloc.add(DeleteRecipeEvent(
-                                          recipeId: draggedData.code!));
+                                      _deleteRecipe(draggedData);
                                     }
                                   }
                                 },

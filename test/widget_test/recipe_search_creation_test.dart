@@ -18,8 +18,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(320, 640));
       addTearDown(() => tester.binding.setSurfaceSize(null));
       final bloc = MockRecipeBloc();
-      when(() => bloc.state).thenReturn(
-          const RecipeLoadedState(recipes: [], usesImperialUnits: false));
+      when(() => bloc.state).thenReturn(const RecipeLoadedState(recipes: []));
       when(() => bloc.stream)
           .thenAnswer((_) => const Stream<RecipeSearchState>.empty());
       String? requestedRoute;

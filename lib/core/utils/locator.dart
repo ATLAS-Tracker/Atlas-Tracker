@@ -78,7 +78,6 @@ import 'package:opennutritracker/features/settings/domain/usecase/import_data_su
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
-import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
 import 'package:opennutritracker/services/step_count/android_step_count_provider.dart';
@@ -163,17 +162,11 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton(() => UserWeightRepository(locator()));
   locator.registerLazySingleton(() => MacroGoalRepository(locator()));
   locator.registerLazySingleton(
-    () => StartupRemoteSyncService(
-      trackedDayRepository: locator(),
-      userWeightRepository: locator(),
-      configRepository: locator(),
-      client: locator(),
-    ),
-  );
-  locator.registerLazySingleton(
     () => JournalRemoteSyncService(
       intakeRepository: locator(),
       recipeRepository: locator(),
+      trackedDayRepository: locator(),
+      userWeightRepository: locator(),
       configRepository: locator(),
       client: locator(),
       hive: hive,
@@ -309,10 +302,9 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
       locator(),
       locator(),
       locator(),
-      locator(),
     ),
   );
-  locator.registerLazySingleton(() => DiaryBloc(locator(), locator()));
+  locator.registerLazySingleton(() => DiaryBloc(locator()));
   locator.registerLazySingleton(
     () => CalendarDayBloc(
       locator(),
@@ -327,7 +319,7 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     ),
   );
   locator.registerLazySingleton<ProfileBloc>(
-    () => ProfileBloc(locator(), locator(), locator(), locator(), locator()),
+    () => ProfileBloc(locator(), locator(), locator(), locator()),
   );
   locator.registerLazySingleton(
     () => SettingsBloc(locator(), locator(), locator(), locator(), locator()),
@@ -358,18 +350,18 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     ),
   );
   locator.registerFactory<MealDetailBloc>(
-    () => MealDetailBloc(locator(), locator(), locator(), locator()),
+    () => MealDetailBloc(locator()),
   );
-  locator.registerFactory<ScannerBloc>(() => ScannerBloc(locator(), locator()));
-  locator.registerFactory<EditMealBloc>(() => EditMealBloc(locator()));
-  locator.registerFactory<AddMealBloc>(() => AddMealBloc(locator()));
+  locator.registerFactory<ScannerBloc>(() => ScannerBloc(locator()));
+  locator.registerFactory<EditMealBloc>(() => EditMealBloc());
+  locator.registerFactory<AddMealBloc>(() => AddMealBloc());
   locator.registerFactory<ProductsBloc>(
-    () => ProductsBloc(locator(), locator()),
+    () => ProductsBloc(locator()),
   );
-  locator.registerFactory<FoodBloc>(() => FoodBloc(locator(), locator()));
+  locator.registerFactory<FoodBloc>(() => FoodBloc(locator()));
   locator.registerFactory(() => RecentMealBloc(locator(), locator()));
   locator.registerFactory(
-    () => RecipeSearchBloc(locator(), locator(), locator()),
+    () => RecipeSearchBloc(locator(), locator()),
   );
   locator.registerLazySingleton(() => WeightBloc());
   locator.registerLazySingleton(

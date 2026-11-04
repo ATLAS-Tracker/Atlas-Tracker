@@ -1,18 +1,18 @@
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
-import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class DiarySummaryCard extends StatelessWidget {
   final TrackedDayEntity? trackedDay;
+  final List<IntakeEntity>? intakes;
   final UserWeightEntity? selectedDayWeight;
   final HomeLoadedState? homeState;
   final VoidCallback? onEditWeight;
@@ -21,6 +21,7 @@ class DiarySummaryCard extends StatelessWidget {
   const DiarySummaryCard({
     super.key,
     required this.trackedDay,
+    this.intakes,
     required this.selectedDayWeight,
     required this.homeState,
     this.onEditWeight,
@@ -30,20 +31,15 @@ class DiarySummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colors = theme.colorScheme;
     final s = S.of(context);
-    final usesImperialUnits = homeState?.usesImperialUnits ?? false;
-    final weightUnit = usesImperialUnits ? s.lbsLabel : s.kgLabel;
-    final weight = selectedDayWeight?.weight;
-    final displayedWeight = weight == null
-        ? null
-        : usesImperialUnits
-            ? UnitCalc.kgToLbs(weight)
-            : weight;
+    final weightUnit = s.kgLabel;
+    final displayedWeight = selectedDayWeight?.weight;
     final calorieGoal =
         trackedDay?.calorieGoal ?? homeState?.totalKcalDaily ?? 0;
-    final caloriesTracked = trackedDay?.caloriesTracked ?? 0;
-    final remaining = (calorieGoal - caloriesTracked).clamp(0, double.infinity);
+    final caloriesTracked =
+        intakes?.fold<double>(0, (sum, intake) => sum + intake.totalKcal) ??
+            trackedDay?.caloriesTracked ??
+            0;
 
     return AtlasBrandPanel(
       child: Column(
@@ -55,14 +51,14 @@ class DiarySummaryCard extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               )),
           const SizedBox(height: 16),
-          Text('${remaining.toInt()} ${s.kcalLeftLabel}',
+          Text(calorieBalanceLabel(s, calorieGoal, caloriesTracked),
               style: theme.textTheme.titleLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
               )),
           const SizedBox(height: 4),
           Text(
-            '${caloriesTracked.toInt()} / ${calorieGoal.toInt()} ${s.kcalLabel} ${s.consumedLabel}',
+            '${formatNumber(caloriesTracked)} / ${formatNumber(calorieGoal)} ${s.kcalLabel} ${s.consumedLabel}',
             style: theme.textTheme.bodySmall?.copyWith(
               color: Colors.white.withValues(alpha: 0.74),
               fontWeight: FontWeight.w600,
@@ -72,9 +68,18 @@ class DiarySummaryCard extends StatelessWidget {
           MacroEnergyBar(
             calories: caloriesTracked,
             goal: calorieGoal,
-            carbs: trackedDay?.carbsTracked ?? 0,
-            fats: trackedDay?.fatTracked ?? 0,
-            proteins: trackedDay?.proteinTracked ?? 0,
+            carbs: intakes?.fold<double>(
+                    0, (sum, intake) => sum + intake.totalCarbsGram) ??
+                trackedDay?.carbsTracked ??
+                0,
+            fats: intakes?.fold<double>(
+                    0, (sum, intake) => sum + intake.totalFatsGram) ??
+                trackedDay?.fatTracked ??
+                0,
+            proteins: intakes?.fold<double>(
+                    0, (sum, intake) => sum + intake.totalProteinsGram) ??
+                trackedDay?.proteinTracked ??
+                0,
             backgroundColor: Colors.white.withValues(alpha: 0.18),
           ),
           ExpansionTile(
@@ -93,19 +98,28 @@ class DiarySummaryCard extends StatelessWidget {
             children: [
               _DashboardMacro(
                 label: s.carbsLabel,
-                intake: trackedDay?.carbsTracked ?? 0,
+                intake: intakes?.fold<double>(
+                        0, (sum, intake) => sum + intake.totalCarbsGram) ??
+                    trackedDay?.carbsTracked ??
+                    0,
                 goal: trackedDay?.carbsGoal ?? homeState?.totalCarbsGoal ?? 0,
                 visual: MacroVisuals.carbs,
               ),
               _DashboardMacro(
                 label: s.fatLabel,
-                intake: trackedDay?.fatTracked ?? 0,
+                intake: intakes?.fold<double>(
+                        0, (sum, intake) => sum + intake.totalFatsGram) ??
+                    trackedDay?.fatTracked ??
+                    0,
                 goal: trackedDay?.fatGoal ?? homeState?.totalFatsGoal ?? 0,
                 visual: MacroVisuals.fats,
               ),
               _DashboardMacro(
                 label: s.proteinLabel,
-                intake: trackedDay?.proteinTracked ?? 0,
+                intake: intakes?.fold<double>(
+                        0, (sum, intake) => sum + intake.totalProteinsGram) ??
+                    trackedDay?.proteinTracked ??
+                    0,
                 goal: trackedDay?.proteinGoal ??
                     homeState?.totalProteinsGoal ??
                     0,
@@ -143,7 +157,7 @@ class DiarySummaryCard extends StatelessWidget {
                                   child: Text(
                                     displayedWeight == null
                                         ? s.emptyValueLabel
-                                        : '${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(displayedWeight)} $weightUnit',
+                                        : '${formatNumber(displayedWeight, decimals: 1)} $weightUnit',
                                     style:
                                         theme.textTheme.titleMedium?.copyWith(
                                       color: Colors.white,
@@ -161,19 +175,11 @@ class DiarySummaryCard extends StatelessWidget {
                                         weeklyWeightDelta == null ||
                                                 displayedWeight == null
                                             ? s.emptyValueLabel
-                                            : '${weeklyWeightDelta! > 0 ? '+' : ''}${NumberFormat('0.0', Localizations.localeOf(context).toLanguageTag()).format(usesImperialUnits ? UnitCalc.kgToLbs(weeklyWeightDelta!) : weeklyWeightDelta!)} $weightUnit',
+                                            : '${formatNumber(weeklyWeightDelta!, decimals: 1, signed: true)} $weightUnit',
                                         style: theme.textTheme.bodyMedium
                                             ?.copyWith(
                                           fontWeight: FontWeight.w800,
-                                          color: weeklyWeightDelta == null ||
-                                                  homeState == null
-                                              ? Colors.white
-                                                  .withValues(alpha: 0.74)
-                                              : weightTrendColor(
-                                                  deltaKg: weeklyWeightDelta!,
-                                                  goal:
-                                                      homeState!.userWeightGoal,
-                                                  colors: colors),
+                                          color: Colors.white,
                                         ),
                                       )))),
                         ],
@@ -238,7 +244,7 @@ class _DashboardMacro extends StatelessWidget {
                 children: [
                   Text(label, style: textStyle),
                   Text(
-                      '${intake.toInt()} / ${goal.toInt()} ${S.of(context).gramUnit}',
+                      '${formatNumber(intake)} / ${formatNumber(goal)} ${S.of(context).gramUnit}',
                       style: textStyle)
                 ],
               ),

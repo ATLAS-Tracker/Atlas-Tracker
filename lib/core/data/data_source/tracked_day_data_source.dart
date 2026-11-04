@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/data/tracked_day_totals.dart';
+import 'package:opennutritracker/core/data/sync_metadata.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/dbo/tracked_day_dbo.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
@@ -10,18 +12,22 @@ class TrackedDayDataSource {
 
   TrackedDayDataSource(this._hive);
 
+  Future<void> _saveChangedDay(TrackedDayDBO day) async {
+    day.updatedAt = SyncMetadata.nextVersion(day.updatedAt);
+    await day.save();
+  }
+
   Future<void> saveTrackedDay(TrackedDayDBO trackedDayDBO) async {
-    log.fine('Updating tracked day in db');
-    await _hive.trackedDayBox
-        .put(trackedDayDBO.day.toParsedDay(), trackedDayDBO);
+    await TrackedDayTotals(
+            _hive.intakeBox, _hive.trackedDayBox, _hive.macroGoalBox)
+        .recalculate([trackedDayDBO.day], replacements: [trackedDayDBO]);
   }
 
   Future<void> saveAllTrackedDays(List<TrackedDayDBO> trackedDayDBOList) async {
-    log.fine('Updating tracked days in db');
-    _hive.trackedDayBox.putAll({
-      for (var trackedDayDBO in trackedDayDBOList)
-        trackedDayDBO.day.toParsedDay(): trackedDayDBO
-    });
+    await TrackedDayTotals(
+            _hive.intakeBox, _hive.trackedDayBox, _hive.macroGoalBox)
+        .recalculate(trackedDayDBOList.map((day) => day.day),
+            replacements: trackedDayDBOList);
   }
 
   Future<List<TrackedDayDBO>> getAllTrackedDays() async {
@@ -29,7 +35,7 @@ class TrackedDayDataSource {
   }
 
   Future<TrackedDayDBO?> getTrackedDay(DateTime day) async {
-    return _hive.trackedDayBox.get(day.toParsedDay());
+    return _hive.trackedDayBox.get(day.toDayKey());
   }
 
   Future<List<TrackedDayDBO>> getTrackedDaysInRange(
@@ -42,7 +48,7 @@ class TrackedDayDataSource {
   }
 
   Future<bool> hasTrackedDay(DateTime day) async =>
-      _hive.trackedDayBox.get(day.toParsedDay()) != null;
+      _hive.trackedDayBox.get(day.toDayKey()) != null;
 
   Future<void> updateDayCalorieGoal(DateTime day, double calorieGoal) async {
     log.fine('Updating tracked day total calories');
@@ -50,7 +56,7 @@ class TrackedDayDataSource {
 
     if (updateDay != null) {
       updateDay.calorieGoal = calorieGoal;
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -60,7 +66,7 @@ class TrackedDayDataSource {
 
     if (updateDay != null) {
       updateDay.calorieGoal += amount;
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -70,29 +76,7 @@ class TrackedDayDataSource {
 
     if (updateDay != null) {
       updateDay.calorieGoal -= amount;
-      await updateDay.save();
-    }
-  }
-
-  Future<void> addDayCaloriesTracked(DateTime day, double addCalories) async {
-    log.fine('Adding new tracked day calories');
-    final updateDay = await getTrackedDay(day);
-
-    if (updateDay != null) {
-      updateDay.caloriesTracked += addCalories;
-      await updateDay.save();
-    }
-  }
-
-  Future<void> decreaseDayCaloriesTracked(
-      DateTime day, double subtractCalories) async {
-    log.fine('Decreasing tracked day calories');
-    final updateDay = await getTrackedDay(day);
-
-    if (updateDay != null) {
-      final newCalories = updateDay.caloriesTracked - subtractCalories;
-      updateDay.caloriesTracked = math.max(0, newCalories);
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -102,7 +86,7 @@ class TrackedDayDataSource {
 
     if (updateDay != null) {
       updateDay.caloriesBurned += addCalories;
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -114,7 +98,7 @@ class TrackedDayDataSource {
     if (updateDay != null) {
       final newValue = updateDay.caloriesBurned - subtractCalories;
       updateDay.caloriesBurned = math.max(0, newValue);
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -134,7 +118,7 @@ class TrackedDayDataSource {
       if (proteinGoal != null) {
         updateDay.proteinGoal = proteinGoal;
       }
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -153,7 +137,7 @@ class TrackedDayDataSource {
       if (proteinAmount != null) {
         updateDay.proteinGoal = (updateDay.proteinGoal ?? 0) + proteinAmount;
       }
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
@@ -180,54 +164,12 @@ class TrackedDayDataSource {
         updateDay.proteinGoal = math.max(0, updatedProteins);
       }
 
-      await updateDay.save();
-    }
-  }
-
-  Future<void> addDayMacroTracked(DateTime day,
-      {double? carbsAmount, double? fatAmount, double? proteinAmount}) async {
-    log.fine('Adding new tracked day macro');
-    final updateDay = await getTrackedDay(day);
-
-    if (updateDay != null) {
-      if (carbsAmount != null) {
-        updateDay.carbsTracked = (updateDay.carbsTracked ?? 0) + carbsAmount;
-      }
-      if (fatAmount != null) {
-        updateDay.fatTracked = (updateDay.fatTracked ?? 0) + fatAmount;
-      }
-      if (proteinAmount != null) {
-        updateDay.proteinTracked =
-            (updateDay.proteinTracked ?? 0) + proteinAmount;
-      }
-      await updateDay.save();
-    }
-  }
-
-  Future<void> removeDayMacroTracked(DateTime day,
-      {double? carbsAmount, double? fatAmount, double? proteinAmount}) async {
-    log.fine('Removing tracked day macro');
-    final updateDay = await getTrackedDay(day);
-
-    if (updateDay != null) {
-      if (carbsAmount != null) {
-        updateDay.carbsTracked =
-            math.max(0, (updateDay.carbsTracked ?? 0) - carbsAmount);
-      }
-      if (fatAmount != null) {
-        updateDay.fatTracked =
-            math.max(0, (updateDay.fatTracked ?? 0) - fatAmount);
-      }
-      if (proteinAmount != null) {
-        updateDay.proteinTracked =
-            math.max(0, (updateDay.proteinTracked ?? 0) - proteinAmount);
-      }
-      await updateDay.save();
+      await _saveChangedDay(updateDay);
     }
   }
 
   Future<void> deleteTrackedDay(DateTime day) async {
     log.fine('Deleting tracked day from db');
-    await _hive.trackedDayBox.delete(day.toParsedDay());
+    await _hive.trackedDayBox.delete(day.toDayKey());
   }
 }

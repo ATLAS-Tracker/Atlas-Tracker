@@ -5,8 +5,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:opennutritracker/core/utils/path_helper.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
+import 'package:opennutritracker/core/data/repository/recipe_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/custom_text_input_formatter.dart';
@@ -504,11 +506,13 @@ class _EditMealScreenState extends State<EditMealScreen> {
           carbs: value(_carbs),
           fat: value(_fat),
           protein: value(_protein));
-      Navigator.of(context).pushNamedAndRemoveUntil(
+      await locator<RecipeRepository>().saveFood(meal);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(
         NavigationOptions.mealDetailRoute,
-        ModalRoute.withName(NavigationOptions.addMealRoute),
-        arguments: MealDetailScreenArguments(meal, _args!.intakeTypeEntity,
-            _args!.day, _args!.usesImperialUnits),
+        arguments: MealDetailScreenArguments(
+            meal, _args!.intakeTypeEntity, _args!.day,
+            intakeToEdit: _args!.intakeToEdit?.copyWith(meal: meal)),
       );
     } catch (_) {
       if (mounted) {
@@ -522,10 +526,10 @@ class _EditMealScreenState extends State<EditMealScreen> {
 }
 
 class EditMealScreenArguments {
+  final IntakeEntity? intakeToEdit;
   final DateTime day;
   final MealEntity mealEntity;
   final IntakeTypeEntity intakeTypeEntity;
-  final bool usesImperialUnits;
-  EditMealScreenArguments(
-      this.day, this.mealEntity, this.intakeTypeEntity, this.usesImperialUnits);
+  EditMealScreenArguments(this.day, this.mealEntity, this.intakeTypeEntity,
+      {this.intakeToEdit});
 }

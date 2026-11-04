@@ -27,13 +27,8 @@ class ProfileLoadedState extends ProfileState {
   final UserBMIEntity userBMI;
   final UserEntity userEntity;
 
-  final bool usesImperialUnits;
-
-  const ProfileLoadedState(
-      {required this.userBMI,
-      required this.userEntity,
-      required this.usesImperialUnits});
+  const ProfileLoadedState({required this.userBMI, required this.userEntity});
 
   @override
-  List<Object?> get props => [userBMI, userEntity, usesImperialUnits];
+  List<Object?> get props => [userBMI, userEntity];
 }

@@ -13,13 +13,12 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_nutriments
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 
 class MealEntity extends Equatable {
-  static const liquidUnits = {'ml', 'l', 'dl', 'cl', 'fl oz', 'fl.oz'};
+  static const liquidUnits = {'ml', 'l', 'dl', 'cl'};
   static const solidUnits = {
     'kg',
     'g',
     'mg',
     'µg',
-    'oz',
   };
 
   final String? code;
@@ -38,7 +37,22 @@ class MealEntity extends Equatable {
   final String? servingUnit;
   final String? servingSize;
 
-  get hasServingValues => servingQuantity != null && servingUnit != null;
+  bool get hasServingValues =>
+      servingQuantity != null &&
+      servingQuantity!.isFinite &&
+      servingQuantity! > 0 &&
+      const {'g', 'ml', 'serving'}.contains(servingUnit);
+
+  static String metricUnit(String? unit) {
+    final normalized = unit?.trim().toLowerCase();
+    if (normalized == 'serving') return 'serving';
+    // Legacy intake amounts already use base units; only their labels change.
+    return liquidUnits.contains(normalized) ||
+            normalized == 'fl oz' ||
+            normalized == 'fl.oz'
+        ? 'ml'
+        : 'g';
+  }
 
   final MealSourceEntity source;
 
@@ -47,7 +61,7 @@ class MealEntity extends Equatable {
   bool get isPortionBased =>
       mealUnit == 'serving' && servingUnit == 'serving' && servingQuantity == 1;
 
-  bool get isLiquid => liquidUnits.contains(mealUnit);
+  bool get isLiquid => metricUnit(mealUnit) == 'ml';
 
   bool get isSolid => solidUnits.contains(mealUnit);
 

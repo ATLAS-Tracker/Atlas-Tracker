@@ -26,6 +26,7 @@ class _RecipeState extends State<RecipePage> {
 
   @override
   void dispose() {
+    _recipeSearchBloc.close();
     super.dispose();
   }
 

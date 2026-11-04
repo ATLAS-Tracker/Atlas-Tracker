@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'package:opennutritracker/core/data/repository/user_weight_repository.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
@@ -7,6 +8,9 @@ class GetWeightUsecase {
   final UserWeightRepository _userWeightRepository =
       locator<UserWeightRepository>();
   final GetUserUsecase _getUserUsecase = locator<GetUserUsecase>();
+
+  Future<WeightSnapshot> getSnapshot(DateTime day) async =>
+      WeightSnapshot.at(day, await getAllUserWeights());
 
   Future<UserWeightEntity?> getUserWeightByDate(DateTime dateTime) async {
     return await _userWeightRepository.getUserWeightByDate(dateTime);
@@ -52,7 +56,8 @@ class GetWeightUsecase {
     final int lastOffset = includeToday ? days - 1 : days;
 
     for (int i = includeToday ? 0 : 1; i <= lastOffset; i++) {
-      DateTime date = currentDay.subtract(Duration(days: i));
+      DateTime date =
+          DateTime(currentDay.year, currentDay.month, currentDay.day - i);
       UserWeightEntity? weight = await getUserWeightByDate(date);
 
       if (weight != null) {

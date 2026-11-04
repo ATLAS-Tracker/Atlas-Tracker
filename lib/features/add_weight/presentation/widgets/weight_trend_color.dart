@@ -4,9 +4,10 @@ import 'package:opennutritracker/core/styles/color_macro.dart';
 
 Color weightTrendColor({
   required double deltaKg,
-  required UserWeightGoalEntity goal,
+  required UserWeightGoalEntity? goal,
   required ColorScheme colors,
 }) {
+  if (goal == null) return colors.onSurfaceVariant;
   final isOnTarget = switch (goal) {
     UserWeightGoalEntity.loseWeight => deltaKg < 0,
     UserWeightGoalEntity.gainWeight => deltaKg > 0,

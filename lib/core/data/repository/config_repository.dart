@@ -12,12 +12,13 @@ class ConfigRepository {
 
   Future<void> updateConfig(ConfigEntity configEntity) async {
     final configDBO = ConfigDBO.fromConfigEntity(configEntity);
-    _configDataSource.addConfig(configDBO);
+    await _configDataSource.addConfig(configDBO);
   }
 
   Future<void> setConfigHasAcceptedAnonymousData(
       bool hasAcceptedAnonymousData) async {
-    _configDataSource.setConfigAcceptedAnonymousData(hasAcceptedAnonymousData);
+    await _configDataSource
+        .setConfigAcceptedAnonymousData(hasAcceptedAnonymousData);
   }
 
   Future<bool> getConfigHasAcceptedAnonymousData() async {
@@ -47,10 +48,6 @@ class ConfigRepository {
   Future<ConfigDBO> getConfigDBO() async {
     final configDBO = await _configDataSource.getConfig();
     return configDBO;
-  }
-
-  Future<void> setConfigUsesImperialUnits(bool usesImperialUnits) async {
-    _configDataSource.setConfigUsesImperialUnits(usesImperialUnits);
   }
 
   Future<void> setSupabaseSyncEnabled(bool enabled) async {

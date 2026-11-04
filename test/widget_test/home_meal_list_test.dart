@@ -47,7 +47,7 @@ void main() {
 
   Widget buildMeal(
       {required List<IntakeEntity> intakes,
-      Function(BuildContext, IntakeEntity, bool)? onTapped,
+      Function(BuildContext, IntakeEntity)? onTapped,
       Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
       DateTime? mealDay,
       double textScale = 1,
@@ -77,7 +77,6 @@ void main() {
         listIcon: Icons.restaurant,
         addMealType: AddMealType.lunchType,
         intakeList: intakes,
-        usesImperialUnits: false,
         compact: true,
         isCollapsible: journal,
         initiallyExpanded: !journal,
@@ -92,8 +91,8 @@ void main() {
 
   testWidgets('compact meal keeps food details tappable', (tester) async {
     IntakeEntity? selected;
-    await tester.pumpWidget(buildMeal(
-        intakes: [intake], onTapped: (_, item, __) => selected = item));
+    await tester.pumpWidget(
+        buildMeal(intakes: [intake], onTapped: (_, item) => selected = item));
     await tester.pumpAndSettle();
     expect(find.text('100 g'), findsOneWidget);
     await tester.tap(find.text('Chicken Breast'));

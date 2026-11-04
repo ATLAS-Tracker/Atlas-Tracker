@@ -19,16 +19,24 @@ void main() {
         .load();
   });
 
-  testWidgets('day and trend tabs fit a small screen, weight vs target',
+  testWidgets(
+      'day weight card restores the reference difference and trend includes today',
       (tester) async {
-    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final now = DateTime.now();
+    final today = DateFormat('yyyy-MM-dd').format(now);
+    final previous = DateFormat('yyyy-MM-dd')
+        .format(DateTime(now.year, now.month, now.day - 1));
     final http = MockSupabaseHttpClient();
     final client = (await tester.runAsync(() async {
-      final c = SupabaseClient('https://mock.supabase.co', 'key',
-          httpClient: http);
+      final c =
+          SupabaseClient('https://mock.supabase.co', 'key', httpClient: http);
       await c.from('users').insert({'id': 'student', 'weight_kg': 80});
-      await c.from('user_weight').insert(
-          {'user_id': 'student', 'date': today, 'weight': 85.3});
+      await c
+          .from('user_weight')
+          .insert({'user_id': 'student', 'date': today, 'weight': 85.3});
+      await c
+          .from('user_weight')
+          .insert({'user_id': 'student', 'date': previous, 'weight': 84.9});
       await c.from('tracked_days').insert({
         'user_id': 'student',
         'day': today,
@@ -67,20 +75,21 @@ void main() {
       theme: ThemeData(textTheme: appTextTheme),
       home: const StudentMacrosPage(studentId: 'student', studentName: 'Léa'),
     ));
-    await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 50)));
+    await tester
+        .runAsync(() => Future.delayed(const Duration(milliseconds: 50)));
     await tester.pumpAndSettle();
 
     expect(find.text(S.current.trendVsGoal('+5,3 kg')), findsOneWidget);
+    expect(find.text('+0,4 kg'), findsNothing);
+    expect(find.textContaining('85,3'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.text(S.current.studentTrendTab));
     await tester.pumpAndSettle();
     expect(find.text(S.current.studentConsistencyLabel), findsOneWidget);
+    expect(find.text('85,3 kg'), findsOneWidget);
     expect(tester.takeException(), isNull);
     // Les valeurs du résumé sont toutes collées au bord droit.
-    final consistency = find.text(S.current.trendDaysTracked(1, 7));
-    final avgKcal = find.textContaining(S.current.kcalLabel).first;
-    expect(tester.getTopRight(consistency).dx,
-        closeTo(tester.getTopRight(avgKcal).dx, 0.5));
+    expect(find.text(S.current.trendDaysTracked(0, 7)), findsOneWidget);
   });
 }

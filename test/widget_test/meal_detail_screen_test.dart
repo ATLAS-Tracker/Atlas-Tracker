@@ -5,9 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_intake_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/get_kcal_goal_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
@@ -21,27 +18,21 @@ import 'package:opennutritracker/generated/l10n.dart';
 
 class MockAddIntake extends Mock implements AddIntakeUsecase {}
 
-class MockAddTracked extends Mock implements AddTrackedDayUsecase {}
-
-class MockGetKcal extends Mock implements GetKcalGoalUsecase {}
-
-class MockGetMacro extends Mock implements GetMacroGoalUsecase {}
-
 class MockSearchByBarcode extends Mock
     implements SearchProductByBarcodeUseCase {}
 
 void main() {
   late MealDetailBloc bloc;
   tearDown(() async {
-    await bloc.close();
     await locator.reset();
   });
 
   testWidgets(
       '26g serving label shows count and weight, grams hide portion count',
       (tester) async {
-    bloc = MealDetailBloc(
-        MockAddIntake(), MockAddTracked(), MockGetKcal(), MockGetMacro());
+    tester.view.padding = const FakeViewPadding(top: 44, bottom: 34);
+    addTearDown(tester.view.resetPadding);
+    bloc = MealDetailBloc(MockAddIntake());
     locator.registerSingleton<MealDetailBloc>(bloc);
     final meal = MealEntity.empty().copyWith(
       name: 'Cookie Milka',
@@ -71,10 +62,19 @@ void main() {
       onGenerateRoute: (_) => MaterialPageRoute<void>(
           settings: RouteSettings(
               arguments: MealDetailScreenArguments(
-                  meal, IntakeTypeEntity.lunch, DateTime(2026, 10, 25), false)),
+                  meal, IntakeTypeEntity.lunch, DateTime(2026, 10, 25))),
           builder: (_) => const MealDetailScreen()),
     ));
     await tester.pumpAndSettle();
+    final scaffoldRect = tester.getRect(find.byType(Scaffold));
+    expect(scaffoldRect.top, 0, reason: 'the scaffold paints the status bar');
+    final photoTap = tester.widget<GestureDetector>(find
+        .ancestor(
+            of: find.byIcon(Icons.fastfood_outlined),
+            matching: find.byType(GestureDetector))
+        .first);
+    expect(photoTap.onTap, isNull,
+        reason: 'a missing photo cannot open an empty viewer');
     expect(find.text('1 portion (de 26 g)'), findsOneWidget);
     expect(find.text('Portion (26 g)'), findsOneWidget);
     expect(find.text('26g'), findsNothing);
@@ -87,6 +87,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text(S.current.gramUnit).last);
     await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField))
+            .controller!
+            .text,
+        '52');
+    expect(find.text('260 kcal'), findsOneWidget,
+        reason: 'changing units preserves the physical quantity');
     await tester.enterText(find.byType(TextFormField), '26');
     await tester.pumpAndSettle();
     expect(find.text('26 g'), findsOneWidget);
@@ -99,8 +107,7 @@ void main() {
     testWidgets(
         'detail preserves information and quantity updates on narrow screen, keyboard=$keyboard',
         (tester) async {
-      bloc = MealDetailBloc(
-          MockAddIntake(), MockAddTracked(), MockGetKcal(), MockGetMacro());
+      bloc = MealDetailBloc(MockAddIntake());
       locator.registerSingleton<MealDetailBloc>(bloc);
 
       tester.view.devicePixelRatio = 1;
@@ -152,7 +159,7 @@ void main() {
           return MaterialPageRoute<void>(
               settings: RouteSettings(
                   arguments: MealDetailScreenArguments(
-                      meal, IntakeTypeEntity.lunch, day, false)),
+                      meal, IntakeTypeEntity.lunch, day)),
               builder: (_) => const MealDetailScreen());
         },
       ));
@@ -191,8 +198,7 @@ void main() {
   testWidgets(
       'OFF search result gets its serving from the full product and keeps it '
       'when the unit menu opens', (tester) async {
-    bloc = MealDetailBloc(
-        MockAddIntake(), MockAddTracked(), MockGetKcal(), MockGetMacro());
+    bloc = MealDetailBloc(MockAddIntake());
     locator.registerSingleton<MealDetailBloc>(bloc);
     // Search results carry the package size (300 g) but no serving.
     final searchResult = MealEntity.empty().copyWith(
@@ -227,8 +233,8 @@ void main() {
       ],
       onGenerateRoute: (_) => MaterialPageRoute<void>(
           settings: RouteSettings(
-              arguments: MealDetailScreenArguments(searchResult,
-                  IntakeTypeEntity.lunch, DateTime(2026, 11, 2), false)),
+              arguments: MealDetailScreenArguments(
+                  searchResult, IntakeTypeEntity.lunch, DateTime(2026, 11, 2))),
           builder: (_) => const MealDetailScreen()),
     ));
     await tester.pumpAndSettle();
@@ -248,8 +254,7 @@ void main() {
 
   testWidgets('OFF product without serving defaults to 100 g, not the jar',
       (tester) async {
-    bloc = MealDetailBloc(
-        MockAddIntake(), MockAddTracked(), MockGetKcal(), MockGetMacro());
+    bloc = MealDetailBloc(MockAddIntake());
     locator.registerSingleton<MealDetailBloc>(bloc);
     final nutella = MealEntity.empty().copyWith(
       code: '3017620422003',
@@ -282,8 +287,8 @@ void main() {
       ],
       onGenerateRoute: (_) => MaterialPageRoute<void>(
           settings: RouteSettings(
-              arguments: MealDetailScreenArguments(nutella,
-                  IntakeTypeEntity.lunch, DateTime(2026, 11, 2), false)),
+              arguments: MealDetailScreenArguments(
+                  nutella, IntakeTypeEntity.lunch, DateTime(2026, 11, 2))),
           builder: (_) => const MealDetailScreen()),
     ));
     await tester.pumpAndSettle();

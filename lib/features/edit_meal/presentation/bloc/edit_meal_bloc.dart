@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_nutriments_entity.dart';
@@ -10,14 +9,11 @@ part 'edit_meal_state.dart';
 part 'edit_meal_event.dart';
 
 class EditMealBloc extends Bloc<EditMealEvent, EditMealState> {
-  final GetConfigUsecase _getConfigUsecase;
-
-  EditMealBloc(this._getConfigUsecase) : super(EditMealInitial()) {
+  EditMealBloc() : super(EditMealInitial()) {
     on<InitializeEditMealEvent>((event, emit) async {
       emit(EditMealLoadingState());
 
-      final config = await _getConfigUsecase.getConfig();
-      emit(EditMealLoadedState(usesImperialUnits: config.usesImperialUnits));
+      emit(const EditMealLoadedState());
     });
   }
 
@@ -59,7 +55,7 @@ class EditMealBloc extends Bloc<EditMealEvent, EditMealState> {
         fiberPerQuantity: original.nutriments.fiberPerQuantity,
         mealOrRecipe: original.nutriments.mealOrRecipe,
       ),
-      source: original.source,
+      source: MealSourceEntity.custom,
     );
   }
 
@@ -110,6 +106,6 @@ class EditMealBloc extends Bloc<EditMealEvent, EditMealState> {
         servingUnit: servingQuantityText.toStringOrNull(),
         servingSize: oldMealEntity.servingSize,
         nutriments: newMealNutriments,
-        source: oldMealEntity.source);
+        source: MealSourceEntity.custom);
   }
 }

@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/data/dbo/config_dbo.dart';
+import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,6 +40,7 @@ class MockCalendar extends Mock implements CalendarDayBloc {}
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final day = DateTime(2026, 10, 22);
+  late MockGetConfig config;
   late MockAddWeight addWeight;
   late MockGetWeight getWeight;
   late MockHome home;
@@ -63,7 +66,7 @@ void main() {
     home = MockHome();
     calendar = MockCalendar();
     final user = MockGetUser();
-    final config = MockGetConfig();
+    config = MockGetConfig();
     savedWeights = [
       entry('today', 54.4, day),
       entry('previous', 54.2, day.subtract(const Duration(days: 1)))
@@ -71,6 +74,15 @@ void main() {
     when(() => getWeight.getWeightsFromPastDays(any(), any(),
             includeToday: any(named: 'includeToday')))
         .thenAnswer((_) async => savedWeights);
+    when(() => getWeight.getSnapshot(any()))
+        .thenAnswer((_) async => WeightSnapshot.at(day, savedWeights));
+    when(() => getWeight.getAllUserWeights())
+        .thenAnswer((_) async => savedWeights);
+    when(() => getWeight.getUserWeightByDate(any())).thenAnswer((call) async {
+      final matches = savedWeights.where((entry) => DateUtils.isSameDay(
+          entry.date, call.positionalArguments.first as DateTime));
+      return matches.isEmpty ? null : matches.first;
+    });
     when(() => getWeight.getAverageWeight(any(), any()))
         .thenAnswer((_) async => 54.1);
     when(() => getWeight.getLastUserWeight(any()))
@@ -113,10 +125,12 @@ void main() {
             data: MediaQuery.of(context)
                 .copyWith(textScaler: TextScaler.linear(scale)),
             child: child!),
-        onGenerateRoute: (_) => MaterialPageRoute<void>(
-            settings: RouteSettings(
-                arguments:
-                    AddWeightScreenArguments(day: day, isReadOnly: readOnly)),
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            settings: settings.arguments is AddWeightScreenArguments
+                ? settings
+                : RouteSettings(
+                    arguments: AddWeightScreenArguments(
+                        day: day, isReadOnly: readOnly)),
             builder: (_) => const AddWeightScreen()),
       );
   Future<void> pumpScreen(WidgetTester tester,
@@ -136,6 +150,68 @@ void main() {
   final saveButton = find.byKey(const ValueKey('save-weight'));
   final saved = find.byKey(const ValueKey('weight-saved'));
   final delete = find.byKey(const ValueKey('delete-weight'));
+
+  testWidgets('history edit saves to the selected historical day',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.historyLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-weight-previous')));
+    await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('weight-entry-date')))
+            .data,
+        contains('21 octobre 2026'));
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '54,5');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.date, day.subtract(const Duration(days: 1)));
+    expect(value.id, 'previous');
+    expect(value.weight, 54.5);
+  });
+
+  testWidgets('supports measured weights up to 400 kg', (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '399,9');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 399.9);
+  });
+
+  testWidgets('deleted weight can be restored with its original day and ID',
+      (tester) async {
+    await pumpScreen(tester);
+    final original = savedWeights.first;
+    await tester.scrollUntilVisible(delete, 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(delete);
+    await tester.pumpAndSettle();
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogOKLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.undoLabel));
+    await tester.pumpAndSettle();
+    final restored = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(restored.id, original.id);
+    expect(restored.date, original.date);
+    expect(restored.weight, original.weight);
+  });
 
   testWidgets(
       'save waits for persistence, blocks duplicate taps and confirms the saved value',
@@ -259,6 +335,11 @@ void main() {
     final chart =
         tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
     expect((chart.primaryYAxis as NumericAxis).plotBands.single.start, 54);
+    final series = chart.series.first;
+    final points = series.dataSource! as List<WeightData>;
+    expect(points.where((point) => point.weight != null), hasLength(3),
+        reason: 'only recorded weights are presented as measured points');
+    expect(points.last.weight, 52);
     expect(find.text(S.current.weightMeasurementsLabel), findsOneWidget);
   });
 
@@ -268,6 +349,38 @@ void main() {
     await pumpScreen(tester);
     expect(find.text(S.current.weightNoMeasurementsLabel), findsOneWidget);
     expect(find.byType(SfCartesianChart), findsNothing);
+  });
+
+  testWidgets('profile weight is not shown as a target', (tester) async {
+    await pumpScreen(tester);
+    expect(find.text(S.current.weightGoalShortLabel), findsNothing);
+    expect(find.text(S.current.remainingToLoseLabel), findsNothing);
+  });
+
+  testWidgets('legacy imperial preference displays and saves kilograms',
+      (tester) async {
+    final legacy = ConfigDBO.fromJson({
+      'hasAcceptedDisclaimer': true,
+      'hasAcceptedPolicy': true,
+      'hasAcceptedSendAnonymousData': false,
+      'usesImperialUnits': true,
+    });
+    when(() => config.getConfig())
+        .thenAnswer((_) async => ConfigEntity.fromConfigDBO(legacy));
+    await pumpScreen(tester);
+    expect(
+        tester.widget<EditableTextWidget>(find.byType(EditableTextWidget)).unit,
+        'kg');
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '72,5');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 72.5);
   });
 
   for (final dark in [false, true]) {

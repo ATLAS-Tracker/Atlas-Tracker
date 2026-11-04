@@ -40,14 +40,14 @@ class TrendData {
   });
 }
 
-/// Last [length] days ending today, from the student's Supabase rows.
+/// Last [length] completed civil days, from the student's Supabase rows.
 /// A day counts as logged only with calories > 0, as in the day view.
 TrendData trendDataFrom(Map<String, Map<String, dynamic>> macros, int length) {
   final today = _dateOnly(DateTime.now());
   final days = <TrendDay>[];
   final dayGoals = <Map<String, dynamic>?>[];
   for (var i = length - 1; i >= 0; i--) {
-    final date = today.subtract(Duration(days: i));
+    final date = DateTime(today.year, today.month, today.day - i - 1);
     final row = macros[_dayKey(date)];
     // ponytail: _latestGoals parcourt tout l'historique pour chaque jour
     // (90 × ~365 lignes), trier les clés une fois si ça devient lent.
@@ -87,14 +87,6 @@ double? _avg(Iterable<double?> values) {
   return v.isEmpty ? null : v.reduce((a, b) => a + b) / v.length;
 }
 
-String _signedNum(double value, int decimals, String locale) {
-  final text =
-      NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: decimals)
-          .format(value.abs());
-  if (value.abs() < 0.5 * math.pow(10, -decimals)) return text;
-  return value > 0 ? '+$text' : '−$text';
-}
-
 class _TrendView extends StatefulWidget {
   final StudentMacrosLoaded state;
 
@@ -127,9 +119,24 @@ class _TrendViewState extends State<_TrendView> {
           onSelected: (i) => setState(() => _period = i),
         ),
         const SizedBox(height: 12),
-        _TrendStats(data: data),
+        _TrendStats(
+            data: data,
+            weightSnapshot: _studentWeightSnapshot(
+                widget.state.macros, _dateOnly(DateTime.now()))),
         const SizedBox(height: 12),
-        _TrendChartCard(data: data),
+        _TrendChartCard(
+            data: TrendData(
+          days: [
+            ...data.days,
+            TrendDay(_dateOnly(DateTime.now()),
+                weight: _num(
+                    widget.state.macros[_dayKey(DateTime.now())], 'weight'))
+          ],
+          calorieGoal: data.calorieGoal,
+          carbsGoal: data.carbsGoal,
+          fatGoal: data.fatGoal,
+          proteinGoal: data.proteinGoal,
+        )),
         const SizedBox(height: 12),
         _TrendMacrosCard(data: data),
       ],
@@ -202,29 +209,27 @@ class TrendPillSelector extends StatelessWidget {
 class _TrendStats extends StatelessWidget {
   final TrendData data;
 
-  const _TrendStats({required this.data});
+  final WeightSnapshot weightSnapshot;
+
+  const _TrendStats({required this.data, required this.weightSnapshot});
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final locale = Localizations.localeOf(context).toString();
-    final weighIns = data.days.where((d) => d.weight != null).toList();
+
     final logged = data.days.where((d) => d.kcal != null).length;
     final total = data.days.length;
     final avgKcal = _avg(data.days.map((d) => d.kcal));
-    final kcalFormat = NumberFormat.decimalPattern(locale);
-    final oneDecimal =
-        NumberFormat.decimalPatternDigits(locale: locale, decimalDigits: 1);
 
     final String weightValue;
     final IconData? weightTrend;
-    if (weighIns.length < 2) {
+    final delta = weightSnapshot.delta;
+    if (delta == null) {
       weightValue = '—';
       weightTrend = null;
     } else {
-      final delta = weighIns.last.weight! - weighIns.first.weight!;
-      weightValue = '${_signedNum(delta, 1, locale)} ${s.kgLabel}';
-      // Direction only, no good/bad colour: goals differ between students.
+      weightValue =
+          '${formatNumber(delta, decimals: 1, signed: true)} ${s.kgLabel}';
       weightTrend = delta.abs() < 0.05
           ? Icons.trending_flat_rounded
           : delta > 0
@@ -239,15 +244,18 @@ class _TrendStats extends StatelessWidget {
         children: [
           _TrendStatRow(
             icon: Icons.monitor_weight_outlined,
-            color: proteinColor,
-            label: s.weightLabel,
+            color: delta == null
+                ? Theme.of(context).colorScheme.onSurfaceVariant
+                : weightTrendColor(
+                    deltaKg: delta,
+                    goal: null,
+                    colors: Theme.of(context).colorScheme),
+            label: s.weightAverageDeltaLabel,
             value: weightValue,
             trailing: weightTrend,
-            detail: weighIns.isEmpty
+            detail: weightSnapshot.current == null
                 ? s.trendNotEnoughDataLabel
-                : weighIns.length == 1
-                    ? '${s.trendNotEnoughDataLabel} · ${oneDecimal.format(weighIns.last.weight)} ${s.kgLabel}'
-                    : '${oneDecimal.format(weighIns.last.weight)} ${s.kgLabel}',
+                : '${formatNumber(weightSnapshot.current!.weight, decimals: 1)} ${s.kgLabel}',
           ),
           const Divider(height: 1),
           _TrendStatRow(
@@ -265,12 +273,12 @@ class _TrendStats extends StatelessWidget {
             label: s.trendAvgCaloriesLabel,
             value: avgKcal == null
                 ? '—'
-                : '${kcalFormat.format(avgKcal.round())} ${s.kcalLabel}',
+                : '${formatNumber(avgKcal)} ${s.kcalLabel}',
             detail: avgKcal == null
                 ? s.trendNotEnoughDataLabel
                 : data.calorieGoal > 0
                     ? s.trendVsGoal(
-                        '${_signedNum(avgKcal - data.calorieGoal, 0, locale)} ${s.kcalLabel}')
+                        '${formatNumber(-remainingCalories(data.calorieGoal, avgKcal), signed: true)} ${s.kcalLabel}')
                     : null,
           ),
         ],
@@ -520,7 +528,7 @@ NumericAxis _valueAxis(BuildContext context,
     minimum: minimum,
     plotBands: plotBands,
     rangePadding: ChartRangePadding.round,
-    numberFormat: NumberFormat('0.#'),
+    numberFormat: numberFormatter(decimals: 1),
     majorTickLines: const MajorTickLines(size: 0),
     majorGridLines: MajorGridLines(
         width: 0.7,
@@ -558,7 +566,7 @@ class _WeightChart extends StatelessWidget {
               elevation: 0,
               builder: (d, _, __, ___, ____) => _ChartTooltip(
                 date: (d as TrendDay).date,
-                lines: ['${d.weight!.toStringAsFixed(1)} ${s.kgLabel}'],
+                lines: ['${formatNumber(d.weight!, decimals: 1)} ${s.kgLabel}'],
               ),
             ),
             series: [
@@ -659,6 +667,10 @@ class _CaloriesChart extends StatelessWidget {
           xValueMapper: (d, _) => d.date,
           yValueMapper: (d, _) => d.kcal,
           color: colors.primary,
+          pointColorMapper: (day, _) =>
+              isWithinNutritionGoal(day.kcal!, day.calorieGoal)
+                  ? colors.primary
+                  : colors.error,
           width: 0.7,
           animationDuration: 600,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),

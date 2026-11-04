@@ -4,11 +4,10 @@ import 'package:opennutritracker/core/domain/entity/user_bmi_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/add_user_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/domain/usecase/get_kcal_goal_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/utils/calc/bmi_calc.dart';
-import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
@@ -24,14 +23,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetUserUsecase _getUserUsecase;
   final AddUserUsecase _addUserUsecase;
   final AddTrackedDayUsecase _addTrackedDayUsecase;
-  final GetConfigUsecase _getConfigUsecase;
   final GetKcalGoalUsecase _getKcalGoalUsecase;
 
   ProfileBloc(
     this._getUserUsecase,
     this._addUserUsecase,
     this._addTrackedDayUsecase,
-    this._getConfigUsecase,
     this._getKcalGoalUsecase,
   ) : super(ProfileInitial()) {
     on<LoadProfileEvent>((event, emit) async {
@@ -44,13 +41,11 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           bmiValue: userBMIValue,
           nutritionalStatus: BMICalc.getNutritionalStatus(userBMIValue),
         );
-        final userConfig = await _getConfigUsecase.getConfig();
 
         emit(
           ProfileLoadedState(
             userBMI: userBMIEntity,
             userEntity: user,
-            usesImperialUnits: userConfig.usesImperialUnits,
           ),
         );
       } catch (error, stackTrace) {
@@ -90,22 +85,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     }
   }
 
-  /// Returns the user's height in cm or ft/in based on the user's config
-  String getDisplayHeight(UserEntity user, bool usesImperialUnits) {
-    if (usesImperialUnits) {
-      // Convert cm to feet and inches
-      return UnitCalc.cmToFeet(user.heightCM).toStringAsFixed(1);
-    } else {
-      return user.heightCM.roundToDouble().toStringAsFixed(0);
-    }
-  }
+  String getDisplayHeight(UserEntity user) => formatNumber(user.heightCM);
 
-  /// Returns the user's weight in kg or lbs based on the user's config
-  String getDisplayWeight(UserEntity user, bool usesImperialUnits) {
-    if (usesImperialUnits) {
-      return UnitCalc.kgToLbs(user.weightKG).toStringAsFixed(0);
-    } else {
-      return user.weightKG.roundToDouble().toStringAsFixed(0);
-    }
-  }
+  String getDisplayWeight(UserEntity user) =>
+      formatNumber(user.weightKG, decimals: 1);
 }

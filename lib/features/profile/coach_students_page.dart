@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
@@ -38,12 +39,13 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
         .from('users')
         .select('id, display_name')
         .eq('coach_id', coachId)
-        .order('display_name', ascending: true);
+        .order('display_name', ascending: true)
+        .timeout(const Duration(seconds: 8));
 
     final students = response
         .map((e) => {
               'id': e['id'],
-              'name': e['display_name'] ?? e['id'],
+              'name': e['display_name'] ?? '',
             })
         .toList();
 
@@ -64,7 +66,23 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
         .from('tracked_days')
         .select('user_id, ${fields.join(', ')}')
         .eq('day', todayKey)
-        .inFilter('user_id', studentIds);
+        .inFilter('user_id', studentIds)
+        .timeout(const Duration(seconds: 8));
+
+    final lastEntries = await Future.wait(studentIds.map((id) => supabase
+        .from('tracked_days')
+        .select('day')
+        .eq('user_id', id)
+        .gt('caloriesTracked', 0)
+        .lte('day', todayKey)
+        .order('day', ascending: false)
+        .limit(1)
+        .maybeSingle()
+        .timeout(const Duration(seconds: 8))));
+    final lastByUser = {
+      for (var i = 0; i < studentIds.length; i++)
+        studentIds[i]: lastEntries[i]?['day'],
+    };
 
     final byUser = {
       for (final row in rows.cast<Map<String, dynamic>>())
@@ -77,13 +95,16 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
         .map((student) => {
               ...student,
               'today': byUser[student['id'].toString()],
+              'last_day': lastByUser[student['id'].toString()],
             })
         .toList();
   }
 
   Future<void> _refresh() async {
     final future = _fetchStudents();
-    setState(() => _studentsFuture = future);
+    setState(() {
+      _studentsFuture = future;
+    });
     await future;
   }
 
@@ -95,18 +116,19 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _studentsFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
+          if (snapshot.connectionState != ConnectionState.done &&
+              !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
             return _CenteredMessage(
               icon: Icons.cloud_off_outlined,
-              text: '${s.errorPrefix} ${snapshot.error}',
+              text: s.studentLoadError,
               onRefresh: _refresh,
             );
           }
 
-          final students = snapshot.data ?? [];
+          final students = List<Map<String, dynamic>>.of(snapshot.data ?? []);
           if (students.isEmpty) {
             return _CenteredMessage(
               icon: Icons.group_outlined,
@@ -129,19 +151,24 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
                 }
                 final student = students[index - 1];
                 final studentId = student['id'].toString();
-                final studentName = student['name'].toString();
+                final rawName = student['name'].toString().trim();
+                final studentName =
+                    rawName.isEmpty ? s.unnamedStudentLabel : rawName;
                 return _StudentCard(
                   name: studentName,
                   student: student,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => StudentMacrosPage(
-                        studentId: studentId,
-                        studentName: studentName,
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => StudentMacrosPage(
+                          studentId: studentId,
+                          studentName: studentName,
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                    if (mounted) await _refresh();
+                  },
                 );
               },
             ),
@@ -283,7 +310,7 @@ class _StudentCard extends StatelessWidget {
                     child: Text(
                         today == null
                             ? s.noDataToday
-                            : '${v('caloriesTracked').toInt()} / ${v('calorieGoal').toInt()} ${s.kcalLabel}',
+                            : '${formatNumber(v('caloriesTracked'))} / ${formatNumber(v('calorieGoal'))} ${s.kcalLabel}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.end,
@@ -295,6 +322,16 @@ class _StudentCard extends StatelessWidget {
                   Icon(Icons.chevron_right, color: colors.onSurfaceVariant),
                 ],
               ),
+              const SizedBox(height: 8),
+              Text(
+                  s.lastJournalDay(student['last_day'] == null
+                      ? '—'
+                      : DateFormat.yMMMd(
+                              Localizations.localeOf(context).toString())
+                          .format(
+                              DateTime.parse(student['last_day'].toString()))),
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: colors.onSurfaceVariant)),
               if (today != null)
                 // No legend popup here: a tap opens the student.
                 IgnorePointer(

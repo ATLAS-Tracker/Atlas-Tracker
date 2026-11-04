@@ -3,6 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:opennutritracker/features/profile/student_macros_page.dart';
 
 void main() {
+  test('trend excludes the partially entered current day', () {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final data = trendDataFrom({
+      DateFormat('yyyy-MM-dd').format(today): {'caloriesTracked': 100}
+    }, 7);
+    expect(data.days.every((day) => day.date.isBefore(today)), isTrue);
+    expect(data.days.where((day) => day.kcal != null), isEmpty);
+  });
   test('each trend day is compared to the goal in force that day', () {
     final today = DateTime.now();
     String key(int daysAgo) => DateFormat('yyyy-MM-dd')
@@ -14,11 +23,10 @@ void main() {
       key(0): {'caloriesTracked': 1600},
     }, 7);
 
-    expect(data.days[3].calorieGoal, 2000);
-    expect(data.days[4].calorieGoal, 2000); // hérité de la veille
-    expect(data.days[5].calorieGoal, 1500);
+    expect(data.days[4].calorieGoal, 2000);
+    expect(data.days[5].calorieGoal, 2000); // hérité de la veille
     expect(data.days[6].calorieGoal, 1500);
     // Moyenne des objectifs des jours saisis : (2000 + 1500 + 1500) / 3.
-    expect(data.calorieGoal, closeTo(5000 / 3, 0.01));
+    expect(data.calorieGoal, 1750);
   });
 }

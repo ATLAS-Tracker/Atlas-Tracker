@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/data/data_source/macro_goal_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/intake_dbo.dart';
 import 'dart:io';
 import 'dart:async';
 
@@ -71,6 +73,8 @@ void main() {
       box = await Hive.openBox<TrackedDayDBO>('tracked_day_test');
       final hive = HiveDBProvider();
       hive.trackedDayBox = box;
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
 
       // Initialize repository with the Hive box
       repo = TrackedDayRepository(TrackedDayDataSource(hive));
@@ -205,20 +209,13 @@ void main() {
       // Simulate a local update by adding a new tracked day
       await repo.addNewTrackedDay(day, 2, 2, 2, 2);
 
-      // Make multiple changes while offline
-      await repo.addDayMacrosTracked(
-        day,
-        carbsTracked: 2,
-        fatTracked: 2,
-        proteinTracked: 2,
-      );
-      await repo.addDayMacrosTracked(
-        day,
-        carbsTracked: 3,
-        fatTracked: 3,
-        proteinTracked: 3,
-      );
-      await repo.addDayTrackedCalories(day, 10);
+      // The watcher receives an already recalculated local snapshot.
+      final snapshot = box.get(day.toDayKey())!;
+      snapshot.caloriesTracked = 10;
+      snapshot.carbsTracked = 5;
+      snapshot.fatTracked = 5;
+      snapshot.proteinTracked = 5;
+      await snapshot.save();
 
       // Wait for the isolate to detect the modification
       await waitForCondition(
@@ -253,7 +250,7 @@ void main() {
       expect(remote['proteinTracked'], 5);
 
       // Ensure the remote data matches what is stored locally
-      final dbo = box.get(day.toParsedDay());
+      final dbo = box.get(day.toDayKey());
       expect(dbo, isNotNull);
       expect(remote, equals(dbo!.toJson()));
     });

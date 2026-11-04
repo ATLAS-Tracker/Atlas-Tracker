@@ -6,17 +6,15 @@ import 'package:opennutritracker/generated/l10n.dart';
 
 class SetHeightDialog extends StatelessWidget {
   static const _heightRangeCM = 100.0;
-  static const _heightRangeFt = 10;
 
   final double userHeight;
-  final bool usesImperialUnits;
 
-  const SetHeightDialog(
-      {super.key, required this.userHeight, required this.usesImperialUnits});
+  const SetHeightDialog({super.key, required this.userHeight});
 
   @override
   Widget build(BuildContext context) {
     double selectedHeight = userHeight;
+    final form = GlobalKey<FormState>();
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
@@ -26,15 +24,17 @@ class SetHeightDialog extends StatelessWidget {
           icon: Icons.height_outlined,
           color: carbColor),
       scrollable: true,
-      content: ProfileValuePicker(
-        initialValue: userHeight,
-        min: userHeight - (usesImperialUnits ? _heightRangeFt : _heightRangeCM),
-        max: userHeight + (usesImperialUnits ? _heightRangeFt : _heightRangeCM),
-        divisions: 400,
-        unit: usesImperialUnits ? S.of(context).ftLabel : S.of(context).cmLabel,
-        color: carbColor,
-        onChanged: (value) => selectedHeight = value,
-      ),
+      content: Form(
+          key: form,
+          child: ProfileValuePicker(
+            initialValue: userHeight,
+            min: (userHeight - _heightRangeCM).clamp(0.1, 300),
+            max: (userHeight + _heightRangeCM).clamp(0.1, 300),
+            divisions: 400,
+            unit: S.of(context).cmLabel,
+            color: carbColor,
+            onChanged: (value) => selectedHeight = value,
+          )),
       actions: <Widget>[
         TextButton(
             onPressed: () {
@@ -43,7 +43,7 @@ class SetHeightDialog extends StatelessWidget {
             child: Text(S.of(context).dialogCancelLabel)),
         FilledButton(
             onPressed: () {
-              // TODO validate selected height
+              if (!form.currentState!.validate()) return;
               Navigator.pop(context, selectedHeight);
             },
             child: Text(S.of(context).dialogOKLabel))

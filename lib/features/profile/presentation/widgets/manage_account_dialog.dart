@@ -18,6 +18,7 @@ class ManageAccountDialog extends StatefulWidget {
 class _ManageAccountDialogState extends State<ManageAccountDialog> {
   bool _syncEnabled = true;
   bool _saving = false;
+  bool _deleting = false;
 
   final _addConfig = locator<AddConfigUsecase>();
   final _configRepo = locator<ConfigRepository>();
@@ -67,53 +68,62 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-      surfaceTintColor: Colors.transparent,
-      title: ProfileDialogTitle(
-          title: S.of(context).manageAccountTitle,
-          icon: Icons.manage_accounts_outlined,
-          color: Theme.of(context).colorScheme.primary),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(S.of(context).manageAccountDescription),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              secondary: Icon(Icons.cloud_sync_outlined,
-                  color: Theme.of(context).colorScheme.primary),
-              title: Text(S.of(context).manageAccountEnableSync),
-              value: _syncEnabled,
-              onChanged: _saving ? null : _toggleSync,
+    return PopScope(
+        canPop: !_deleting,
+        child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+          backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
+          surfaceTintColor: Colors.transparent,
+          title: ProfileDialogTitle(
+              title: S.of(context).manageAccountTitle,
+              icon: Icons.manage_accounts_outlined,
+              color: Theme.of(context).colorScheme.primary),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(S.of(context).manageAccountDescription),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(Icons.cloud_sync_outlined,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text(S.of(context).manageAccountEnableSync),
+                  value: _syncEnabled,
+                  onChanged: _saving || _deleting ? null : _toggleSync,
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error),
+                  icon: _deleting
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.delete_outline_rounded),
+                  onPressed: _deleting ? null : () => _confirmDelete(context),
+                  label: Text(S.of(context).manageAccountDelete),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              style: TextButton.styleFrom(
-                  foregroundColor: Theme.of(context).colorScheme.error),
-              icon: const Icon(Icons.delete_outline_rounded),
-              onPressed: () => _confirmDelete(context),
-              label: Text(S.of(context).manageAccountDelete),
+          ),
+          actions: [
+            TextButton(
+              onPressed: _deleting ? null : () => Navigator.of(context).pop(),
+              child: Text(S.of(context).dialogOKLabel),
             ),
           ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(S.of(context).dialogOKLabel),
-        ),
-      ],
-    );
+        ));
   }
 
   void _confirmDelete(BuildContext context) async {
+    if (_deleting) return;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
@@ -128,6 +138,8 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
             child: Text(S.of(context).dialogCancelLabel),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(S.of(context).manageAccountConfirmAction),
           ),
@@ -141,6 +153,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
   }
 
   Future<void> _deleteAccount() async {
+    if (_deleting) return;
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
 
@@ -152,6 +165,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       return;
     }
 
+    setState(() => _deleting = true);
     try {
       final response = await supabase.functions.invoke('delete_my_account');
       if (!mounted) return;
@@ -200,6 +214,8 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(S.of(context).genericErrorOccurred)),
       );
+    } finally {
+      if (mounted) setState(() => _deleting = false);
     }
   }
 }

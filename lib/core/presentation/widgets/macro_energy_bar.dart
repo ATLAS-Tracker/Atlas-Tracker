@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -104,7 +105,7 @@ class MacroEnergyBar extends StatelessWidget {
       ),
       child: Semantics(
         label:
-            '${s.energyLabel}: ${calories.toInt()} / ${goal.toInt()} ${s.kcalLabel}',
+            '${s.energyLabel}: ${formatNumber(calories)} / ${formatNumber(goal)} ${s.kcalLabel}',
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 17),
           child: ClipRRect(
@@ -114,25 +115,42 @@ class MacroEnergyBar extends StatelessWidget {
               child: LayoutBuilder(builder: (context, constraints) {
                 return ColoredBox(
                   color: backgroundColor,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: SizedBox(
-                      width: constraints.maxWidth * progress,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          for (var i = 0; i < shares.length; i++)
-                            if (shares[i] > 0)
-                              SizedBox(
-                                key: ValueKey('energy-segment-$i'),
-                                width:
-                                    constraints.maxWidth * progress * shares[i],
-                                child: ColoredBox(color: colors[i]),
-                              ),
-                        ],
+                  child: Stack(children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: SizedBox(
+                        width: constraints.maxWidth * progress,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (var i = 0; i < shares.length; i++)
+                              if (shares[i] > 0)
+                                SizedBox(
+                                  key: ValueKey('energy-segment-$i'),
+                                  width: constraints.maxWidth *
+                                      progress *
+                                      shares[i],
+                                  child: ColoredBox(color: colors[i]),
+                                ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                    if (goal > 0 && calories > goal)
+                      Positioned(
+                        key: const ValueKey('energy-overflow'),
+                        left: constraints.maxWidth * goal / calories,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: DecoratedBox(
+                            decoration: BoxDecoration(
+                          color: theme.colorScheme.error.withValues(alpha: 0.8),
+                          border: const Border(
+                              left: BorderSide(color: Colors.white, width: 2)),
+                        )),
+                      ),
+                  ]),
                 );
               }),
             ),

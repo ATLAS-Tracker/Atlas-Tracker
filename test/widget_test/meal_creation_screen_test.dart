@@ -13,6 +13,10 @@ import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_det
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/core/domain/usecase/get_recipe_usecase.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
+import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 
 import '../fixture/intake_for_recipe_fixtures.dart';
 
@@ -22,15 +26,36 @@ class MockHomeBloc extends Mock implements HomeBloc {}
 
 class MockMealDetailBloc extends Mock implements MealDetailBloc {}
 
+class MockAddRecipeUsecase extends Mock implements AddRecipeUsecase {}
+
+class MockRecipeSearchBloc extends Mock implements RecipeSearchBloc {}
+
+class MockDiaryBloc extends Mock implements DiaryBloc {}
+
+class MockCalendarDayBloc extends Mock implements CalendarDayBloc {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late CreateMealBloc bloc;
+  late MockAddRecipeUsecase addRecipe;
+  RecipeEntity? savedRecipe;
+  setUpAll(() => registerFallbackValue(RecipeEntity(
+      meal: IntakeForRecipeFixtures.chicken.meal!, ingredients: const [])));
   setUp(() {
+    savedRecipe = null;
+    addRecipe = MockAddRecipeUsecase();
+    when(() => addRecipe.addRecipe(any())).thenAnswer((call) async {
+      savedRecipe = call.positionalArguments.first as RecipeEntity;
+    });
     bloc = CreateMealBloc(MockGetRecipeUsecase());
     locator.registerSingleton<CreateMealBloc>(bloc);
     locator.registerSingleton<HomeBloc>(MockHomeBloc());
     locator.registerSingleton<MealDetailBloc>(MockMealDetailBloc());
+    locator.registerSingleton<AddRecipeUsecase>(addRecipe);
+    locator.registerSingleton<RecipeSearchBloc>(MockRecipeSearchBloc());
+    locator.registerSingleton<DiaryBloc>(MockDiaryBloc());
+    locator.registerSingleton<CalendarDayBloc>(MockCalendarDayBloc());
   });
 
   tearDown(() async {
@@ -168,12 +193,11 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('save-recipe')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull, reason: 'recipe save sheet fits');
-    final modal = tester.widget<CalendarMealTypeSelector>(
-        find.byType(CalendarMealTypeSelector));
-    expect(modal.idOfRecipeToModify, 'original-id');
-    expect(modal.mealName, 'Ma recette');
-    Navigator.of(tester.element(find.byType(CalendarMealTypeSelector))).pop();
-    await tester.pumpAndSettle();
+    expect(find.byType(CalendarMealTypeSelector), findsNothing);
+    expect(savedRecipe!.meal.code, 'original-id');
+    expect(savedRecipe!.meal.mealUnit, 'serving');
+    expect(savedRecipe!.ingredients.single.amount, 150);
+    verifyZeroInteractions(locator<MealDetailBloc>());
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();

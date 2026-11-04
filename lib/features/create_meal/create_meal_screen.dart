@@ -3,6 +3,7 @@ import 'package:opennutritracker/features/meal_detail/presentation/widgets/meal_
 import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
 import 'package:opennutritracker/features/create_meal/create_meal_modal.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 import 'package:opennutritracker/features/create_meal/pick_image_screen.dart';
@@ -36,6 +38,12 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
   late String _id = "";
   late String _name = "";
   bool _isInitialized = false;
+  bool _saving = false;
+  bool _allowLeave = false;
+  bool _confirmingLeave = false;
+  String _initialName = '';
+  String? _initialImage;
+  List<IntakeForRecipeEntity> _initialIngredients = [];
 
   @override
   void initState() {
@@ -81,6 +89,11 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
       _name = "";
       _nameTextController.text = "";
     }
+    _initialName = _nameTextController.text;
+    _initialImage = _imagePath;
+    _initialIngredients = args is CreateMealScreenArguments
+        ? List.of(args.recipe.ingredients)
+        : _createMealBloc.getListOfIntakeForRecipeEntity();
   }
 
   @override
@@ -90,193 +103,238 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     final colors = theme.colorScheme;
     final editing =
         ModalRoute.of(context)?.settings.arguments is CreateMealScreenArguments;
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: colors.surface,
-        appBar: AppBar(
-          backgroundColor: colors.surface,
-          surfaceTintColor: colors.surface,
-          title: Text(editing ? s.editRecipeLabel : s.createRecipeLabel,
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(fontWeight: FontWeight.w800)),
-        ),
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-            decoration: BoxDecoration(
-                color: colors.surface,
-                border: Border(
-                    top: BorderSide(
-                        color: colors.onSurface.withValues(alpha: 0.06)))),
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _nameTextController,
-              builder: (context, value, _) =>
-                  BlocBuilder<CreateMealBloc, CreateMealState>(
-                bloc: _createMealBloc,
-                builder: (context, state) => FilledButton.icon(
-                  key: const ValueKey('save-recipe'),
-                  onPressed: value.text.trim().isNotEmpty &&
-                          state.intakeList.isNotEmpty
-                      ? _onSavePressed
-                      : null,
-                  icon: const Icon(Icons.check_rounded),
-                  label: Text(s.buttonSaveLabel),
-                  style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(56),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18))),
+    return PopScope(
+        canPop: _allowLeave,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _confirmLeave();
+        },
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Scaffold(
+            backgroundColor: colors.surface,
+            appBar: AppBar(
+              backgroundColor: colors.surface,
+              surfaceTintColor: colors.surface,
+              title: Text(editing ? s.editRecipeLabel : s.createRecipeLabel,
+                  style: theme.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.w800)),
+            ),
+            bottomNavigationBar: SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                decoration: BoxDecoration(
+                    color: colors.surface,
+                    border: Border(
+                        top: BorderSide(
+                            color: colors.onSurface.withValues(alpha: 0.06)))),
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: _nameTextController,
+                  builder: (context, value, _) =>
+                      BlocBuilder<CreateMealBloc, CreateMealState>(
+                    bloc: _createMealBloc,
+                    builder: (context, state) => FilledButton.icon(
+                      key: const ValueKey('save-recipe'),
+                      onPressed: value.text.trim().isNotEmpty &&
+                              state.intakeList.isNotEmpty &&
+                              !_saving
+                          ? _onSavePressed
+                          : null,
+                      icon: const Icon(Icons.check_rounded),
+                      label: Text(s.buttonSaveLabel),
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(56),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18))),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        body: SafeArea(
-          top: false,
-          child: SingleChildScrollView(
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  PhotoPickerButton(
-                      initialImagePath: _imagePath,
-                      onImagePicked: (path) =>
-                          setState(() => _imagePath = path)),
-                  const SizedBox(height: 26),
-                  Text(s.recipeNameLabel,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  TextFormField(
-                    controller: _nameTextController,
-                    textCapitalization: TextCapitalization.sentences,
-                    minLines: 1,
-                    maxLines: 3,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800, letterSpacing: -0.7),
-                    decoration: InputDecoration(
-                        hintText: s.recipeNameHint,
-                        hintStyle: theme.textTheme.headlineSmall?.copyWith(
-                            color: colors.onSurface.withValues(alpha: 0.28),
-                            fontWeight: FontWeight.w700),
-                        filled: false,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none),
-                  ),
-                  const SizedBox(height: 28),
-                  BlocBuilder<CreateMealBloc, CreateMealState>(
-                    bloc: _createMealBloc,
-                    builder: (context, state) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (editing && state.intakeList.isNotEmpty) ...[
-                          _nutritionSummary(state),
-                          const SizedBox(height: 28),
-                        ],
-                        Row(children: [
-                          Expanded(
-                              child: Text(s.recipeIngredientsLabel,
-                                  style: theme.textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w800))),
-                          Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 5),
-                              decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.09),
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text('${state.intakeList.length}',
-                                  style: theme.textTheme.labelLarge?.copyWith(
-                                      color: colors.primary,
-                                      fontWeight: FontWeight.w700))),
-                        ]),
-                        const SizedBox(height: 16),
-                        if (state.intakeList.isEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                                color: colors.surfaceContainerLowest,
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(
-                                    color: colors.onSurface
-                                        .withValues(alpha: 0.06))),
-                            child: Column(children: [
+            body: SafeArea(
+              top: false,
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      PhotoPickerButton(
+                          initialImagePath: _imagePath,
+                          onImagePicked: (path) =>
+                              setState(() => _imagePath = path)),
+                      const SizedBox(height: 26),
+                      Text(s.recipeNameLabel,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      TextFormField(
+                        controller: _nameTextController,
+                        textCapitalization: TextCapitalization.sentences,
+                        minLines: 1,
+                        maxLines: 3,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800, letterSpacing: -0.7),
+                        decoration: InputDecoration(
+                            hintText: s.recipeNameHint,
+                            hintStyle: theme.textTheme.headlineSmall?.copyWith(
+                                color: colors.onSurface.withValues(alpha: 0.28),
+                                fontWeight: FontWeight.w700),
+                            filled: false,
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 12),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none),
+                      ),
+                      const SizedBox(height: 28),
+                      BlocBuilder<CreateMealBloc, CreateMealState>(
+                        bloc: _createMealBloc,
+                        builder: (context, state) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (editing && state.intakeList.isNotEmpty) ...[
+                              _nutritionSummary(state),
+                              const SizedBox(height: 28),
+                            ],
+                            Row(children: [
+                              Expanded(
+                                  child: Text(s.recipeIngredientsLabel,
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w800))),
                               Container(
-                                  padding: const EdgeInsets.all(14),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 5),
                                   decoration: BoxDecoration(
                                       color: colors.primary
-                                          .withValues(alpha: 0.07),
-                                      shape: BoxShape.circle),
-                                  child: Icon(Icons.restaurant_outlined,
-                                      color: colors.primary, size: 28)),
-                              const SizedBox(height: 14),
-                              Text(s.noFoodAddedLabel,
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.titleSmall
-                                      ?.copyWith(fontWeight: FontWeight.w700)),
-                              const SizedBox(height: 6),
-                              Text(s.recipeEmptyHelp,
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                      color: colors.onSurfaceVariant)),
+                                          .withValues(alpha: 0.09),
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: Text('${state.intakeList.length}',
+                                      style: theme.textTheme.labelLarge
+                                          ?.copyWith(
+                                              color: colors.primary,
+                                              fontWeight: FontWeight.w700))),
                             ]),
-                          )
-                        else
-                          Container(
-                            clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
-                                color: colors.surfaceContainerLowest,
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(
-                                    color: colors.onSurface
-                                        .withValues(alpha: 0.06))),
-                            child: Column(children: [
-                              for (var i = 0;
-                                  i < state.intakeList.length;
-                                  i++) ...[
-                                if (i > 0)
-                                  Divider(
-                                      height: 1,
-                                      indent: 16,
-                                      endIndent: 16,
-                                      color: colors.onSurface
-                                          .withValues(alpha: 0.06)),
-                                _ingredientRow(state.intakeList[i]),
-                              ],
-                            ]),
-                          ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                            key: const ValueKey('add-recipe-ingredient'),
-                            onPressed: () => _showAddItemScreen(
-                                context, AddMealType.snackType, DateTime.now()),
-                            icon: const Icon(Icons.add_rounded),
-                            label: Text(s.addIngredientLabel),
-                            style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                    color:
-                                        colors.primary.withValues(alpha: 0.25)),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)))),
-                        if (!editing && state.intakeList.isNotEmpty) ...[
-                          const SizedBox(height: 28),
-                          _nutritionSummary(state),
-                        ],
-                      ],
-                    ),
-                  ),
-                ]),
+                            const SizedBox(height: 16),
+                            if (state.intakeList.isEmpty)
+                              Container(
+                                padding: const EdgeInsets.all(24),
+                                decoration: BoxDecoration(
+                                    color: colors.surfaceContainerLowest,
+                                    borderRadius: BorderRadius.circular(22),
+                                    border: Border.all(
+                                        color: colors.onSurface
+                                            .withValues(alpha: 0.06))),
+                                child: Column(children: [
+                                  Container(
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                          color: colors.primary
+                                              .withValues(alpha: 0.07),
+                                          shape: BoxShape.circle),
+                                      child: Icon(Icons.restaurant_outlined,
+                                          color: colors.primary, size: 28)),
+                                  const SizedBox(height: 14),
+                                  Text(s.noFoodAddedLabel,
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.titleSmall
+                                          ?.copyWith(
+                                              fontWeight: FontWeight.w700)),
+                                  const SizedBox(height: 6),
+                                  Text(s.recipeEmptyHelp,
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                              color: colors.onSurfaceVariant)),
+                                ]),
+                              )
+                            else
+                              Container(
+                                clipBehavior: Clip.antiAlias,
+                                decoration: BoxDecoration(
+                                    color: colors.surfaceContainerLowest,
+                                    borderRadius: BorderRadius.circular(22),
+                                    border: Border.all(
+                                        color: colors.onSurface
+                                            .withValues(alpha: 0.06))),
+                                child: Column(children: [
+                                  for (var i = 0;
+                                      i < state.intakeList.length;
+                                      i++) ...[
+                                    if (i > 0)
+                                      Divider(
+                                          height: 1,
+                                          indent: 16,
+                                          endIndent: 16,
+                                          color: colors.onSurface
+                                              .withValues(alpha: 0.06)),
+                                    _ingredientRow(state.intakeList[i]),
+                                  ],
+                                ]),
+                              ),
+                            const SizedBox(height: 12),
+                            OutlinedButton.icon(
+                                key: const ValueKey('add-recipe-ingredient'),
+                                onPressed: () => _showAddItemScreen(context,
+                                    AddMealType.snackType, DateTime.now()),
+                                icon: const Icon(Icons.add_rounded),
+                                label: Text(s.addIngredientLabel),
+                                style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        color: colors.primary
+                                            .withValues(alpha: 0.25)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(16)))),
+                            if (!editing && state.intakeList.isNotEmpty) ...[
+                              const SizedBox(height: 28),
+                              _nutritionSummary(state),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ]),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        ));
+  }
+
+  Future<void> _confirmLeave() async {
+    if (_confirmingLeave || _saving) return;
+    _confirmingLeave = true;
+    final changed = _nameTextController.text != _initialName ||
+        _imagePath != _initialImage ||
+        !listEquals(_createMealBloc.getListOfIntakeForRecipeEntity(),
+            _initialIngredients);
+    final discard = !changed ||
+        await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                        scrollable: true,
+                        title: Text(S.of(context).unsavedRecipeTitle),
+                        content: Text(S.of(context).unsavedRecipeMessage),
+                        actions: [
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: Text(S.of(context).dialogCancelLabel)),
+                          TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: Text(S.of(context).discardChangesLabel)),
+                        ])) ==
+            true;
+    _confirmingLeave = false;
+    if (discard && mounted) {
+      setState(() => _allowLeave = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+    }
   }
 
   Widget _ingredientRow(IntakeForRecipeEntity ingredient) {
@@ -294,7 +352,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
       color: Colors.transparent,
       child: InkWell(
         key: ValueKey('recipe-ingredient-${intake.id}'),
-        onTap: () => onIntakeItemTapped(context, intake, false),
+        onTap: () => onIntakeItemTapped(context, intake),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
           child: Row(children: [
@@ -319,13 +377,12 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                       value: intake.amount,
                       meal: meal,
                       displayUnit: intake.unit,
-                      usesImperialUnits: false,
                       textStyle: theme.textTheme.bodySmall
                           ?.copyWith(color: colors.onSurfaceVariant)),
                 ])),
             IconButton(
                 tooltip: S.of(context).editItemDialogTitle,
-                onPressed: () => onIntakeItemTapped(context, intake, false),
+                onPressed: () => onIntakeItemTapped(context, intake),
                 icon: Icon(Icons.tune_rounded,
                     color: colors.onSurfaceVariant, size: 20)),
           ]),
@@ -389,13 +446,11 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
   void onIntakeItemTapped(
     BuildContext context,
     IntakeEntity intakeEntity,
-    bool usesImperialUnits,
   ) async {
     final dialogResult = await showDialog<EditDialogResult>(
       context: context,
       builder: (context) => EditDialog(
         intakeEntity: intakeEntity,
-        usesImperialUnits: usesImperialUnits,
       ),
     );
 
@@ -415,7 +470,13 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
         );
         break;
       case EditDialogAction.deleteItem:
+        final ingredients = _createMealBloc.getListOfIntakeForRecipeEntity();
         locator<CreateMealBloc>().removeIntake(intakeEntity.id);
+        if (context.mounted) {
+          showUndo(context, () async {
+            _createMealBloc.add(SetIntakeListFromRecipeEvent(ingredients));
+          });
+        }
         break;
       case EditDialogAction.viewProduct:
         if (!context.mounted) {
@@ -427,7 +488,6 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
             intakeEntity.meal,
             intakeEntity.type,
             intakeEntity.dateTime,
-            usesImperialUnits,
           ),
         );
         break;
@@ -449,19 +509,43 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     );
   }
 
-  void _onSavePressed() {
+  Future<void> _onSavePressed() async {
+    if (_saving) return;
     final recipeName = _nameTextController.text;
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is CreateRecipeFromMealArguments) {
-      args.deleteSourceIntakes();
-      saveRecipe(
+      await saveRecipe(
         context,
         mealName: recipeName,
         imagePath: _imagePath,
         idOfRecipeToModify: null,
         type: args.type,
         day: args.day,
+        addToDiary: true,
       );
+      args.deleteSourceIntakes();
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
+    if (args is CreateMealScreenArguments) {
+      setState(() => _saving = true);
+      try {
+        await saveRecipe(context,
+            mealName: recipeName,
+            imagePath: _imagePath,
+            idOfRecipeToModify: _id,
+            type: IntakeTypeEntity.breakfast,
+            day: DateTime.now(),
+            addToDiary: false);
+        if (mounted) Navigator.of(context).pop();
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(S.of(context).recipeSaveError)));
+        }
+      } finally {
+        if (mounted) setState(() => _saving = false);
+      }
       return;
     }
     showModalBottomSheet(
@@ -477,8 +561,10 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
         return CalendarMealTypeSelector(
           onDateSelected: (date) {},
           mealName: recipeName,
-          idOfRecipeToModify: _id,
+          idOfRecipeToModify: null,
           imagePath: _imagePath,
+          initialDay: args is CreateMealContext ? args.day : null,
+          initialType: args is CreateMealContext ? args.type : null,
         );
       },
     );
@@ -491,6 +577,12 @@ class CreateMealScreenArguments {
   final RecipeEntity recipe;
   final String? imagePath;
   CreateMealScreenArguments(this.id, this.name, this.recipe, this.imagePath);
+}
+
+class CreateMealContext {
+  final DateTime day;
+  final IntakeTypeEntity type;
+  const CreateMealContext(this.day, this.type);
 }
 
 /// Opened from a logged meal: saving replaces that meal's foods by one serving

@@ -20,9 +20,9 @@ class ConfigDBOAdapter extends TypeAdapter<ConfigDBO> {
       fields[0] as bool,
       fields[1] as bool,
       fields[2] as bool,
-      usesImperialUnits: fields[3] as bool?,
       userKcalAdjustment: fields[4] as double?,
       lastDataUpdate: fields[8] as DateTime?,
+      hasExplicitCrashConsent: fields[10] == null ? false : fields[10] as bool,
       supabaseSyncEnabled: fields[9] as bool,
     )
       ..userCarbGoal = fields[5] as double?
@@ -40,8 +40,6 @@ class ConfigDBOAdapter extends TypeAdapter<ConfigDBO> {
       ..write(obj.hasAcceptedPolicy)
       ..writeByte(2)
       ..write(obj.hasAcceptedSendAnonymousData)
-      ..writeByte(3)
-      ..write(obj.usesImperialUnits)
       ..writeByte(4)
       ..write(obj.userKcalAdjustment)
       ..writeByte(5)
@@ -53,7 +51,9 @@ class ConfigDBOAdapter extends TypeAdapter<ConfigDBO> {
       ..writeByte(8)
       ..write(obj.lastDataUpdate)
       ..writeByte(9)
-      ..write(obj.supabaseSyncEnabled);
+      ..write(obj.supabaseSyncEnabled)
+      ..writeByte(10)
+      ..write(obj.hasExplicitCrashConsent);
   }
 
   @override
@@ -75,11 +75,12 @@ ConfigDBO _$ConfigDBOFromJson(Map<String, dynamic> json) => ConfigDBO(
       json['hasAcceptedDisclaimer'] as bool,
       json['hasAcceptedPolicy'] as bool,
       json['hasAcceptedSendAnonymousData'] as bool,
-      usesImperialUnits: json['usesImperialUnits'] as bool? ?? false,
       userKcalAdjustment: (json['userKcalAdjustment'] as num?)?.toDouble(),
       lastDataUpdate: json['lastDataUpdate'] == null
           ? null
           : DateTime.parse(json['lastDataUpdate'] as String),
+      hasExplicitCrashConsent:
+          json['hasExplicitCrashConsent'] as bool? ?? false,
       supabaseSyncEnabled: json['supabaseSyncEnabled'] as bool? ?? true,
     )
       ..userCarbGoal = (json['userCarbGoal'] as num?)?.toDouble()
@@ -90,11 +91,11 @@ Map<String, dynamic> _$ConfigDBOToJson(ConfigDBO instance) => <String, dynamic>{
       'hasAcceptedDisclaimer': instance.hasAcceptedDisclaimer,
       'hasAcceptedPolicy': instance.hasAcceptedPolicy,
       'hasAcceptedSendAnonymousData': instance.hasAcceptedSendAnonymousData,
-      'usesImperialUnits': instance.usesImperialUnits,
       'userKcalAdjustment': instance.userKcalAdjustment,
       'userCarbGoal': instance.userCarbGoal,
       'userProteinGoal': instance.userProteinGoal,
       'userFatGoal': instance.userFatGoal,
       'lastDataUpdate': instance.lastDataUpdate?.toIso8601String(),
       'supabaseSyncEnabled': instance.supabaseSyncEnabled,
+      'hasExplicitCrashConsent': instance.hasExplicitCrashConsent,
     };

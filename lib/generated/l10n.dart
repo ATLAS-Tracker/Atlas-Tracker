@@ -311,10 +311,10 @@ class S {
     );
   }
 
-  /// `Requests can take up to 20 seconds. After that only Atlas Tracker results are shown.`
+  /// `Searching…`
   String get productSearchMayTakeLongerMessage {
     return Intl.message(
-      'Requests can take up to 20 seconds. After that only Atlas Tracker results are shown.',
+      'Searching…',
       name: 'productSearchMayTakeLongerMessage',
       desc: '',
       args: [],
@@ -341,10 +341,10 @@ class S {
     );
   }
 
-  /// `Recent`
+  /// `My foods`
   String get searchRecentTabLabel {
     return Intl.message(
-      'Recent',
+      'My foods',
       name: 'searchRecentTabLabel',
       desc: '',
       args: [],
@@ -436,16 +436,6 @@ class S {
     return Intl.message(
       'Reset',
       name: 'buttonResetLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Units`
-  String get settingsUnitsLabel {
-    return Intl.message(
-      'Units',
-      name: 'settingsUnitsLabel',
       desc: '',
       args: [],
     );
@@ -561,36 +551,6 @@ class S {
     );
   }
 
-  /// `System`
-  String get settingsSystemLabel {
-    return Intl.message(
-      'System',
-      name: 'settingsSystemLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Metric (kg, cm, ml)`
-  String get settingsMetricLabel {
-    return Intl.message(
-      'Metric (kg, cm, ml)',
-      name: 'settingsMetricLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Imperial (lbs, ft, oz)`
-  String get settingsImperialLabel {
-    return Intl.message(
-      'Imperial (lbs, ft, oz)',
-      name: 'settingsImperialLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Distance`
   String get settingsDistanceLabel {
     return Intl.message(
@@ -621,11 +581,111 @@ class S {
     );
   }
 
-  /// `Send anonymous usage data`
+  /// `Send crash reports`
   String get sendAnonymousUserData {
     return Intl.message(
-      'Send anonymous usage data',
+      'Send crash reports',
       name: 'sendAnonymousUserData',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Optional. Share technical reports with Firebase Crashlytics to help fix errors. You can withdraw your consent here.`
+  String get crashReportsConsentHelp {
+    return Intl.message(
+      'Optional. Share technical reports with Firebase Crashlytics to help fix errors. You can withdraw your consent here.',
+      name: 'crashReportsConsentHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Show password`
+  String get showPasswordLabel {
+    return Intl.message(
+      'Show password',
+      name: 'showPasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hide password`
+  String get hidePasswordLabel {
+    return Intl.message(
+      'Hide password',
+      name: 'hidePasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password rules`
+  String get passwordRulesHelpLabel {
+    return Intl.message(
+      'Password rules',
+      name: 'passwordRulesHelpLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Previous`
+  String get previousLabel {
+    return Intl.message(
+      'Previous',
+      name: 'previousLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Next`
+  String get nextLabel {
+    return Intl.message(
+      'Next',
+      name: 'nextLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Increase weight`
+  String get increaseWeightLabel {
+    return Intl.message(
+      'Increase weight',
+      name: 'increaseWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Decrease weight`
+  String get decreaseWeightLabel {
+    return Intl.message(
+      'Decrease weight',
+      name: 'decreaseWeightLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Toggle flash`
+  String get toggleFlashLabel {
+    return Intl.message(
+      'Toggle flash',
+      name: 'toggleFlashLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch camera`
+  String get switchCameraLabel {
+    return Intl.message(
+      'Switch camera',
+      name: 'switchCameraLabel',
       desc: '',
       args: [],
     );
@@ -1773,6 +1833,386 @@ class S {
     );
   }
 
+  /// `Enter a quantity greater than zero`
+  String get positiveQuantityError {
+    return Intl.message(
+      'Enter a quantity greater than zero',
+      name: 'positiveQuantityError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Undo`
+  String get undoLabel {
+    return Intl.message(
+      'Undo',
+      name: 'undoLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not restore. Please try again.`
+  String get restoreFailedLabel {
+    return Intl.message(
+      'Could not restore. Please try again.',
+      name: 'restoreFailedLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy`
+  String get copyIntakeLabel {
+    return Intl.message(
+      'Copy',
+      name: 'copyIntakeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Move`
+  String get moveIntakeLabel {
+    return Intl.message(
+      'Move',
+      name: 'moveIntakeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Package`
+  String get packageLabel {
+    return Intl.message(
+      'Package',
+      name: 'packageLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The recipe could not be saved. Your draft is preserved.`
+  String get recipeSaveError {
+    return Intl.message(
+      'The recipe could not be saved. Your draft is preserved.',
+      name: 'recipeSaveError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The recipe is saved in your library. The whole recipe counts as one serving.`
+  String get recipeLibraryHelp {
+    return Intl.message(
+      'The recipe is saved in your library. The whole recipe counts as one serving.',
+      name: 'recipeLibraryHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Also add one serving to the diary`
+  String get addRecipeToDiary {
+    return Intl.message(
+      'Also add one serving to the diary',
+      name: 'addRecipeToDiary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unsaved changes`
+  String get unsavedRecipeTitle {
+    return Intl.message(
+      'Unsaved changes',
+      name: 'unsavedRecipeTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Leave and lose the changes to this recipe?`
+  String get unsavedRecipeMessage {
+    return Intl.message(
+      'Leave and lose the changes to this recipe?',
+      name: 'unsavedRecipeMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Leave without saving`
+  String get discardChangesLabel {
+    return Intl.message(
+      'Leave without saving',
+      name: 'discardChangesLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your coach creates your account. Sign in with the credentials you received.`
+  String get loginCoachAccountHelp {
+    return Intl.message(
+      'Your coach creates your account. Sign in with the credentials you received.',
+      name: 'loginCoachAccountHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The email address or password is incorrect.`
+  String get loginInvalidCredentials {
+    return Intl.message(
+      'The email address or password is incorrect.',
+      name: 'loginInvalidCredentials',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your profile is not available yet. Please contact your coach.`
+  String get loginProfileUnavailable {
+    return Intl.message(
+      'Your profile is not available yet. Please contact your coach.',
+      name: 'loginProfileUnavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Too many attempts. Please wait before trying again.`
+  String get authRateLimit {
+    return Intl.message(
+      'Too many attempts. Please wait before trying again.',
+      name: 'authRateLimit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The request failed. Check your connection and try again.`
+  String get authRetryError {
+    return Intl.message(
+      'The request failed. Check your connection and try again.',
+      name: 'authRetryError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This code is invalid or expired. Request a new code.`
+  String get resetCodeInvalid {
+    return Intl.message(
+      'This code is invalid or expired. Request a new code.',
+      name: 'resetCodeInvalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send a code`
+  String get sendCodeLabel {
+    return Intl.message(
+      'Send a code',
+      name: 'sendCodeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verification code`
+  String get enterCodeLabel {
+    return Intl.message(
+      'Verification code',
+      name: 'enterCodeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verify code`
+  String get verifyCodeLabel {
+    return Intl.message(
+      'Verify code',
+      name: 'verifyCodeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Resend code`
+  String get resendCodeLabel {
+    return Intl.message(
+      'Resend code',
+      name: 'resendCodeLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A new code has been sent.`
+  String get codeSentLabel {
+    return Intl.message(
+      'A new code has been sent.',
+      name: 'codeSentLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You can resend a code after 30 seconds.`
+  String get codeCooldownHelp {
+    return Intl.message(
+      'You can resend a code after 30 seconds.',
+      name: 'codeCooldownHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The student's data could not be loaded. Please retry.`
+  String get studentLoadError {
+    return Intl.message(
+      'The student\'s data could not be loaded. Please retry.',
+      name: 'studentLoadError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Goals saved.`
+  String get macroGoalsSaved {
+    return Intl.message(
+      'Goals saved.',
+      name: 'macroGoalsSaved',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter all three macros (0–1,000 g). Total energy must be greater than zero and at most 10,000 kcal.`
+  String get enterValidMacrosHelp {
+    return Intl.message(
+      'Enter all three macros (0–1,000 g). Total energy must be greater than zero and at most 10,000 kcal.',
+      name: 'enterValidMacrosHelp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sort students`
+  String get studentSortLabel {
+    return Intl.message(
+      'Sort students',
+      name: 'studentSortLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `By name`
+  String get studentSortName {
+    return Intl.message(
+      'By name',
+      name: 'studentSortName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No entry or outside goal first`
+  String get studentSortAttention {
+    return Intl.message(
+      'No entry or outside goal first',
+      name: 'studentSortAttention',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unnamed student`
+  String get unnamedStudentLabel {
+    return Intl.message(
+      'Unnamed student',
+      name: 'unnamedStudentLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your data could not be loaded. Please retry.`
+  String get journalLoadError {
+    return Intl.message(
+      'Your data could not be loaded. Please retry.',
+      name: 'journalLoadError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Save quantity`
+  String get saveQuantityLabel {
+    return Intl.message(
+      'Save quantity',
+      name: 'saveQuantityLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The food could not be saved. Please retry.`
+  String get intakeSaveError {
+    return Intl.message(
+      'The food could not be saved. Please retry.',
+      name: 'intakeSaveError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy from yesterday`
+  String get copyFromYesterdayLabel {
+    return Intl.message(
+      'Copy from yesterday',
+      name: 'copyFromYesterdayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No food was logged for this meal yesterday.`
+  String get noFoodYesterdayLabel {
+    return Intl.message(
+      'No food was logged for this meal yesterday.',
+      name: 'noFoodYesterdayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Do you want to sign out of your account?`
+  String get signOutConfirmMessage {
+    return Intl.message(
+      'Do you want to sign out of your account?',
+      name: 'signOutConfirmMessage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter a value between {min} and {max} {unit}.`
+  String profileValueRange(String min, String max, String unit) {
+    return Intl.message(
+      'Enter a value between $min and $max $unit.',
+      name: 'profileValueRange',
+      desc: '',
+      args: [min, max, unit],
+    );
+  }
+
   /// `Base quantity (g/ml)`
   String get baseQuantityLabel {
     return Intl.message(
@@ -1828,26 +2268,6 @@ class S {
     return Intl.message(
       'g/ml',
       name: 'gramMilliliterUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `oz`
-  String get ozUnit {
-    return Intl.message(
-      'oz',
-      name: 'ozUnit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `fl.oz`
-  String get flOzUnit {
-    return Intl.message(
-      'fl.oz',
-      name: 'flOzUnit',
       desc: '',
       args: [],
     );
@@ -1993,16 +2413,6 @@ class S {
     );
   }
 
-  /// `Meal size (oz/fl oz)`
-  String get mealSizeLabelImperial {
-    return Intl.message(
-      'Meal size (oz/fl oz)',
-      name: 'mealSizeLabelImperial',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Serving`
   String get servingLabel {
     return Intl.message(
@@ -2028,16 +2438,6 @@ class S {
     return Intl.message(
       'Serving size (g/ml)',
       name: 'servingSizeLabelMetric',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Serving size (oz/fl oz)`
-  String get servingSizeLabelImperial {
-    return Intl.message(
-      'Serving size (oz/fl oz)',
-      name: 'servingSizeLabelImperial',
       desc: '',
       args: [],
     );
@@ -2323,16 +2723,6 @@ class S {
     );
   }
 
-  /// `ft`
-  String get ftLabel {
-    return Intl.message(
-      'ft',
-      name: 'ftLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Select Weight`
   String get selectWeightDialogLabel {
     return Intl.message(
@@ -2358,16 +2748,6 @@ class S {
     return Intl.message(
       'kg',
       name: 'kgLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `lbs`
-  String get lbsLabel {
-    return Intl.message(
-      'lbs',
-      name: 'lbsLabel',
       desc: '',
       args: [],
     );
@@ -6045,6 +6425,26 @@ class S {
       name: 'bodyGoalPreviewDescription',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `+{amount} kcal above goal`
+  String caloriesAboveGoal(Object amount) {
+    return Intl.message(
+      '+$amount kcal above goal',
+      name: 'caloriesAboveGoal',
+      desc: '',
+      args: [amount],
+    );
+  }
+
+  /// `Last logged day: {date}`
+  String lastJournalDay(Object date) {
+    return Intl.message(
+      'Last logged day: $date',
+      name: 'lastJournalDay',
+      desc: '',
+      args: [date],
     );
   }
 }

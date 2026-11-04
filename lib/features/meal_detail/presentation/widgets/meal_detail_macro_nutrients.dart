@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/utils/extensions.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 
@@ -33,7 +33,7 @@ class MealDetailMacroNutrients extends StatelessWidget {
         FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text('${value?.roundToPrecision(1) ?? "?"} g',
+            child: Text('${value == null ? "?" : formatQuantity(value!)} g',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Colors.white, fontWeight: FontWeight.w800))),
         const SizedBox(height: 4),

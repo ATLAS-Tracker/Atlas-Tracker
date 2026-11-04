@@ -6,25 +6,20 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:app_links/app_links.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:opennutritracker/features/auth/validate_password.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'reset_password_screen.dart';
 import 'otp_password_reset_email_screen.dart';
 import 'check_subscription.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
-import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
-import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
-import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
-import 'package:opennutritracker/features/sync/startup_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
 import 'package:opennutritracker/services/firebase_messaging_service.dart';
 import 'package:opennutritracker/services/local_notifications_service.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
-import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
-import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
 //import 'package:url_launcher/url_launcher.dart';
 import 'auth_safe_sign_out.dart';
+import 'auth_error_message.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -45,6 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // Deep-link / auth
   StreamSubscription<Uri?>? _linksSub;
+  StreamSubscription<AuthState>? _authSub;
   bool _handledDeepLink = false; // évite de consommer le flow PKCE 2x
   bool _navigatedToReset = false; // évite la navigation multiple
 
@@ -107,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Écoute les changements d’état auth (dont passwordRecovery).
   void _listenAuthEvents() {
-    supabase.auth.onAuthStateChange.listen((data) {
+    _authSub = supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (!mounted) return;
 
@@ -127,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
 
     final email = _emailCtrl.text.trim();
-    final pass = _passwordCtrl.text.trim();
+    final pass = _passwordCtrl.text;
 
     // Capture tout ce qui touche au context avant l'async gap
     final l10n = S.of(context);
@@ -157,70 +153,14 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
 
-        // ── 2. Tente l’import
-        final importData = locator<ImportDataSupabaseUsecase>();
-        final importSuccessful = await importData.importData(
-          ExportImportBloc.exportZipFileName,
-          ExportImportBloc.userActivityJsonFileName,
-          ExportImportBloc.userIntakeJsonFileName,
-          ExportImportBloc.trackedDayJsonFileName,
-          ExportImportBloc.userWeightJsonFileName,
-          ExportImportBloc.recipesJsonFileName,
-          ExportImportBloc.userJsonFileName,
-        );
-
-        // ── 3. ERREUR D’IMPORT  →  on déconnecte la session
-        if (!importSuccessful) {
-          try {
-            await supabase.auth.signOut(); // libère le « verrou »
-          } catch (e, s) {
-            Logger('LoginScreen').warning('Forced sign-out failed', e, s);
-          }
-
-          // Nettoie la base locale (facultatif mais recommandé)
-          await hive.initForUser(null);
-          await registerUserScope(hive);
-
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(S.of(context).exportImportErrorLabel)),
-            );
-          }
-          return; // reste sur l’écran de login
-        }
-
-        // ── 4. Rafraîchit le profil depuis Supabase pour annuler un import obsolète
-        await locator<JournalRemoteSyncService>().syncAtStartup();
-        await locator<StartupRemoteSyncService>().syncAtStartup();
-
         final getUser = locator<GetUserUsecase>();
         final hasProfile = await getUser.hasUserData();
-        final isUserProfileSync = await syncProfileFromSupabase(supabase);
+        final isUserProfileSync =
+            hasProfile || await syncProfileFromSupabase(supabase);
         if (!hasProfile && !isUserProfileSync && mounted) {
+          _showError(S.of(context).loginProfileUnavailable);
           await safeSignOut(context);
           return;
-        }
-
-        // Récupérer les objectifs si student
-        final user = await getUser.getUserData();
-        if (user.role == UserRoleEntity.student) {
-          try {
-            final user = await locator.get<GetUserUsecase>().getUserData();
-            if (user.role == UserRoleEntity.student) {
-              await locator.get<AddMacroGoalUsecase>().addMacroGoalFromCoach();
-              Logger(
-                'LoginScreen',
-              ).fine('[✅] Objectifs macro mis à jour depuis Supabase');
-            }
-          } catch (e, stack) {
-            Logger(
-              'LoginScreen',
-            ).warning('[❌] Erreur lors de la mise à jour des macros : $e');
-            Logger('LoginScreen').warning(stack.toString());
-            if (!mounted) return;
-            await safeSignOut(context);
-            return;
-          }
         }
 
         // ✅ Init Firebase Messaging & Local Notifications après login
@@ -234,6 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // ── 5. Tout est OK  →  on passe à l’app
         _navigateHome();
+        unawaited(synchronizeUserData(supabase));
       }
     } on AuthException catch (e) {
       final message = e.message.toLowerCase();
@@ -243,10 +184,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (message.contains('error granting user')) {
         _showError(l10n.loginAlreadySignedIn);
       } else {
-        _showError(e.message);
+        _showError(authErrorMessage(context, e));
       }
     } catch (e) {
-      if (mounted) _showError(e.toString());
+      if (mounted) _showError(authErrorMessage(context, e));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -263,6 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _deepLinkDebounce?.cancel();
     _linksSub?.cancel();
+    _authSub?.cancel();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
@@ -279,9 +221,13 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Text(S.of(context).loginCoachAccountHelp),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.username],
+                textInputAction: TextInputAction.next,
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.email_outlined),
                   labelText: S.of(context).loginEmailLabel,
@@ -296,10 +242,15 @@ class _LoginScreenState extends State<LoginScreen> {
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: _obscurePassword,
+                autofillHints: const [AutofillHints.password],
+                onFieldSubmitted: (_) => _submit(),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(Icons.lock_outline),
                   labelText: S.of(context).loginPasswordLabel,
                   suffixIcon: IconButton(
+                    tooltip: _obscurePassword
+                        ? S.of(context).showPasswordLabel
+                        : S.of(context).hidePasswordLabel,
                     icon: Icon(
                       _obscurePassword
                           ? Icons.visibility_off
@@ -309,7 +260,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-                validator: (value) => validatePassword(context, value),
+                validator: (value) => value == null || value.isEmpty
+                    ? S.of(context).passwordRequired
+                    : null,
               ),
               const SizedBox(height: 24),
               SizedBox(

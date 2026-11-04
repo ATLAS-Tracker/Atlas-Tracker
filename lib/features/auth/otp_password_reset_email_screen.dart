@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'otp_password_reset_verify_screen.dart';
+import 'package:opennutritracker/generated/l10n.dart';
+import 'auth_error_message.dart';
 
 class OtpPasswordResetEmailScreen extends StatefulWidget {
   const OtpPasswordResetEmailScreen({super.key});
@@ -25,11 +27,12 @@ class _OtpPasswordResetEmailScreenState
   }
 
   Future<void> _sendOtp() async {
+    if (_loading) return;
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     final email = _emailCtrl.text.trim();
     try {
-      await _supabase.auth.signInWithOtp(email: email);
+      await _supabase.auth.signInWithOtp(email: email, shouldCreateUser: false);
       if (!mounted) return;
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -38,7 +41,8 @@ class _OtpPasswordResetEmailScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authErrorMessage(context, e))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -47,8 +51,8 @@ class _OtpPasswordResetEmailScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reset password')),
-      body: Padding(
+      appBar: AppBar(title: Text(S.of(context).loginForgotPassword)),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
@@ -58,15 +62,16 @@ class _OtpPasswordResetEmailScreenState
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.email_outlined),
-                  labelText: 'Email',
+                autofillHints: const [AutofillHints.email],
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  labelText: S.of(context).loginEmailLabel,
                 ),
                 validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Email required'
+                    ? S.of(context).loginEmailRequired
                     : (EmailValidator.validate(v.trim())
                         ? null
-                        : 'Invalid email'),
+                        : S.of(context).loginEmailInvalid),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -75,7 +80,7 @@ class _OtpPasswordResetEmailScreenState
                   onPressed: _loading ? null : _sendOtp,
                   child: _loading
                       ? const CircularProgressIndicator()
-                      : const Text('Send OTP'),
+                      : Text(S.of(context).sendCodeLabel),
                 ),
               ),
             ],

@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.dart';
 import 'package:opennutritracker/core/presentation/widgets/image_full_screen.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -36,6 +38,7 @@ class MealDetailScreen extends StatefulWidget {
 
 class _MealDetailScreenState extends State<MealDetailScreen> {
   final _energyKey = GlobalKey();
+  final _bottomKey = GlobalKey();
 
   static const String _initialQuantityMetric = '100';
 
@@ -47,9 +50,9 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   late MealEntity meal;
   late DateTime _day;
   late IntakeTypeEntity intakeTypeEntity;
+  IntakeEntity? _intakeToEdit;
 
   final quantityTextController = TextEditingController();
-  late bool _usesImperialUnits;
 
   String _initialUnit = "";
   String _initialQuantity = "";
@@ -72,7 +75,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       meal = args.mealEntity;
       _day = args.day;
       intakeTypeEntity = args.intakeTypeEntity;
-      _usesImperialUnits = args.usesImperialUnits;
+      _intakeToEdit = args.intakeToEdit;
 
       if (args.postNavigationAction != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -91,49 +94,51 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: BlocBuilder<MealDetailBloc, MealDetailState>(
-        bloc: _mealDetailBloc,
-        builder: (context, state) {
-          if (state is MealDetailInitial) {
-            return Scaffold(
-              body: _getLoadedContent(
-                context,
-                state.totalQuantityConverted,
-                state.totalKcal,
-                state.totalCarbs,
-                state.totalFat,
-                state.totalProtein,
-                state.selectedUnit,
-              ),
-              bottomNavigationBar: Padding(
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.viewInsetsOf(context).bottom),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                      maxHeight: (MediaQuery.sizeOf(context).height -
-                              MediaQuery.viewInsetsOf(context).bottom) *
-                          0.5),
-                  child: SingleChildScrollView(
-                      child: MealDetailBottomSheet(
-                    product: meal,
-                    day: _day,
-                    intakeTypeEntity: intakeTypeEntity,
-                    selectedUnit: state.selectedUnit,
-                    mealDetailBloc: _mealDetailBloc,
-                    quantityTextController: quantityTextController,
-                    onQuantityOrUnitChanged: onQuantityOrUnitChanged,
-                  )),
-                ),
-              ),
-            );
-          } else {
-            return Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-        },
-      ),
+    return BlocBuilder<MealDetailBloc, MealDetailState>(
+      bloc: _mealDetailBloc,
+      builder: (context, state) {
+        if (state is MealDetailInitial) {
+          return Scaffold(
+            body: _getLoadedContent(
+              context,
+              state.totalQuantityConverted,
+              state.totalKcal,
+              state.totalCarbs,
+              state.totalFat,
+              state.totalProtein,
+              state.selectedUnit,
+            ),
+            bottomNavigationBar: SafeArea(
+                key: _bottomKey,
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.viewInsetsOf(context).bottom),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxHeight: (MediaQuery.sizeOf(context).height -
+                                MediaQuery.viewInsetsOf(context).bottom) *
+                            0.5),
+                    child: SingleChildScrollView(
+                        child: MealDetailBottomSheet(
+                      product: meal,
+                      intakeToEdit: _intakeToEdit,
+                      day: _day,
+                      intakeTypeEntity: intakeTypeEntity,
+                      selectedUnit: state.selectedUnit,
+                      mealDetailBloc: _mealDetailBloc,
+                      quantityTextController: quantityTextController,
+                      onQuantityOrUnitChanged: onQuantityOrUnitChanged,
+                    )),
+                  ),
+                )),
+          );
+        } else {
+          return Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+      },
     );
   }
 
@@ -164,6 +169,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             actions: [
               if (meal.mealOrRecipe == MealOrRecipeEntity.recipe)
                 IconButton(
+                  tooltip: S.of(context).editRecipeLabel,
                   onPressed: () async {
                     final recipe = await locator<GetRecipeUsecase>()
                         .getRecipeById(meal.code!);
@@ -176,7 +182,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                     }
 
                     if (!context.mounted) return;
-                    Navigator.of(context).pushNamed(
+                    await Navigator.of(context).pushNamed(
                       NavigationOptions.createMealRoute,
                       arguments: CreateMealScreenArguments(
                         meal.code!,
@@ -185,11 +191,22 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                         meal.url,
                       ),
                     );
+                    if (!mounted) return;
+                    final updated = await locator<GetRecipeUsecase>()
+                        .getRecipeById(meal.code!);
+                    if (mounted && updated != null) {
+                      setState(() => meal = updated.meal);
+                      _mealDetailBloc.add(UpdateKcalEvent(
+                          meal: meal,
+                          totalQuantity: quantityTextController.text,
+                          selectedUnit: _mealDetailBloc.state.selectedUnit));
+                    }
                   },
                   icon: const Icon(Icons.edit_outlined),
                 )
               else
                 IconButton(
+                  tooltip: S.of(context).editLabel,
                   onPressed: () {
                     Navigator.of(context).pushNamed(
                       NavigationOptions.editMealRoute,
@@ -197,7 +214,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                         _day,
                         meal,
                         intakeTypeEntity,
-                        _usesImperialUnits,
+                        intakeToEdit: _intakeToEdit,
                       ),
                     );
                   },
@@ -236,13 +253,16 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
                               child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.of(context).pushNamed(
-                                      NavigationOptions.imageFullScreenRoute,
-                                      arguments: ImageFullScreenArguments(
-                                          meal.mainImageUrl ?? ""),
-                                    );
-                                  },
+                                  onTap: hasPhoto
+                                      ? () {
+                                          Navigator.of(context).pushNamed(
+                                            NavigationOptions
+                                                .imageFullScreenRoute,
+                                            arguments: ImageFullScreenArguments(
+                                                meal.mainImageUrl ?? ""),
+                                          );
+                                        }
+                                      : null,
                                   child: hasPhoto
                                       ? !meal.mainImageUrl!.startsWith('http')
                                           ? Hero(
@@ -335,7 +355,8 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                           ),
                         ]),
                         const SizedBox(height: 8),
-                        Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                        Text(
+                            '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
                             style: Theme.of(context)
                                 .textTheme
                                 .displaySmall
@@ -355,7 +376,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                                 ? double.tryParse(quantityTextController.text
                                     .replaceAll(',', '.'))
                                 : null,
-                            usesImperialUnits: _usesImperialUnits,
                             textStyle: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -426,7 +446,6 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: MealDetailNutrimentsTable(
                           product: meal,
-                          usesImperialUnits: _usesImperialUnits,
                           servingQuantity: meal.servingQuantity,
                           servingUnit: meal.servingUnit,
                           embedded: true),
@@ -445,15 +464,16 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   /// a portion), else the quantity of custom foods. Only metric
   /// units are offered (the app targets France).
   void _applyInitialUnitAndQuantity() {
-    if (meal.hasServingValues) {
+    if (_intakeToEdit != null) {
+      _initialUnit = MealEntity.metricUnit(_intakeToEdit!.unit);
+      _initialQuantity =
+          formatQuantity(_intakeToEdit!.amount).replaceAll('\u202f', '');
+    } else if (meal.hasServingValues) {
       _initialUnit = UnitDropdownItem.serving.toString();
       _initialQuantity = "1";
     } else {
-      _initialUnit = switch (UnitDropdownItem.g.fromString(meal.mealUnit ?? '')) {
-        UnitDropdownItem.oz => UnitDropdownItem.g.toString(),
-        UnitDropdownItem.flOz => UnitDropdownItem.ml.toString(),
-        final unit => unit.toString(),
-      };
+      _initialUnit =
+          UnitDropdownItem.g.fromString(meal.mealUnit ?? '').toString();
       _initialQuantity = meal.source == MealSourceEntity.off
           ? _initialQuantityMetric
           : meal.mealQuantity ?? _initialQuantityMetric;
@@ -469,14 +489,15 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   /// product in the background. The screen is usable meanwhile.
   Future<void> _loadFullOffProduct() async {
     final code = meal.code;
-    if (meal.source != MealSourceEntity.off ||
+    if (_intakeToEdit != null ||
+        meal.source != MealSourceEntity.off ||
         meal.hasServingValues ||
         code == null) {
       return;
     }
     try {
-      final fullProduct =
-          await locator<SearchProductByBarcodeUseCase>().searchProductByBarcode(code);
+      final fullProduct = await locator<SearchProductByBarcodeUseCase>()
+          .searchProductByBarcode(code);
       if (!mounted || !fullProduct.hasNutriments) return;
       setState(() => meal = fullProduct);
       if (!_userChangedQuantityOrUnit) _applyInitialUnitAndQuantity();
@@ -490,6 +511,15 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       return;
     }
     _userChangedQuantityOrUnit = true;
+    final oldUnit = _mealDetailBloc.state.selectedUnit;
+    final enteredQuantity = parsePositiveQuantity(quantityString);
+    if (unit != oldUnit && enteredQuantity != null) {
+      double factor(String value) =>
+          value == 'serving' ? meal.servingQuantity ?? 1 : 1;
+      final converted = enteredQuantity * factor(oldUnit) / factor(unit);
+      quantityString = formatQuantity(converted).replaceAll('\u202f', '');
+      quantityTextController.text = quantityString;
+    }
     _mealDetailBloc.add(UpdateKcalEvent(
         meal: meal, totalQuantity: quantityString, selectedUnit: unit));
     _scrollToCalorieText();
@@ -498,6 +528,18 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   void _scrollToCalorieText() {
     final target = _energyKey.currentContext;
     if (target != null) {
+      final box = target.findRenderObject() as RenderBox?;
+      if (box == null || !box.hasSize) return;
+      final top = box.localToGlobal(Offset.zero).dy;
+      final bottomBox =
+          _bottomKey.currentContext?.findRenderObject() as RenderBox?;
+      final visibleBottom = bottomBox?.localToGlobal(Offset.zero).dy ??
+          MediaQuery.sizeOf(context).height -
+              MediaQuery.viewInsetsOf(context).bottom;
+      if (top >= MediaQuery.paddingOf(context).top &&
+          top + box.size.height <= visibleBottom) {
+        return;
+      }
       Scrollable.ensureVisible(target,
           alignment: 0.1,
           duration: const Duration(milliseconds: 300),
@@ -507,6 +549,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
   @override
   void dispose() {
+    _mealDetailBloc.close();
     _scrollController.dispose();
     quantityTextController.dispose();
     super.dispose();
@@ -517,10 +560,9 @@ class MealDetailScreenArguments {
   final MealEntity mealEntity;
   final IntakeTypeEntity intakeTypeEntity;
   final DateTime day;
-  final bool usesImperialUnits;
   final void Function(BuildContext)? postNavigationAction;
+  final IntakeEntity? intakeToEdit;
 
-  MealDetailScreenArguments(
-      this.mealEntity, this.intakeTypeEntity, this.day, this.usesImperialUnits,
-      {this.postNavigationAction});
+  MealDetailScreenArguments(this.mealEntity, this.intakeTypeEntity, this.day,
+      {this.postNavigationAction, this.intakeToEdit});
 }

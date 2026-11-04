@@ -26,8 +26,10 @@ class StartupRemoteSyncService {
         _userWeightRepository = userWeightRepository,
         _configRepository = configRepository,
         _client = client,
-        _trackedDayService = trackedDayService ?? SupabaseTrackedDayService(client: client),
-        _userWeightService = userWeightService ?? SupabaseUserWeightService(client: client);
+        _trackedDayService =
+            trackedDayService ?? SupabaseTrackedDayService(client: client),
+        _userWeightService =
+            userWeightService ?? SupabaseUserWeightService(client: client);
 
   final TrackedDayRepository _trackedDayRepository;
   final UserWeightRepository _userWeightRepository;
@@ -57,7 +59,8 @@ class StartupRemoteSyncService {
         _syncUserWeights(),
       ]);
     } catch (error, stack) {
-      _log.warning('Startup sync failed; app will continue with local data.', error, stack);
+      _log.warning('Startup sync failed; app will continue with local data.',
+          error, stack);
     } finally {
       _running = false;
     }
@@ -79,7 +82,8 @@ class StartupRemoteSyncService {
       );
     }
 
-    _log.fine('Startup tracked_days sync: pulled=${toSave.length}, pushed=${toUpload.length}.');
+    _log.fine(
+        'Startup tracked_days sync: pulled=${toSave.length}, pushed=${toUpload.length}.');
   }
 
   Future<void> _syncUserWeights() async {
@@ -98,19 +102,35 @@ class StartupRemoteSyncService {
       );
     }
 
-    _log.fine('Startup user_weight sync: pulled=${toSave.length}, pushed=${toUpload.length}.');
+    _log.fine(
+        'Startup user_weight sync: pulled=${toSave.length}, pushed=${toUpload.length}.');
   }
 
   Future<List<TrackedDayDBO>> _fetchRemoteTrackedDays() async {
-    final rows = await _client.from('tracked_days').select();
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
+    final rows = await _client
+        .from('tracked_days')
+        .select()
+        .eq('user_id', uid)
+        .isFilter('deleted_at', null)
+        .timeout(const Duration(seconds: 8));
     return rows
-        .map<Map<String, dynamic>>((row) => Map<String, dynamic>.from(row as Map))
+        .map<Map<String, dynamic>>(
+            (row) => Map<String, dynamic>.from(row as Map))
         .map(TrackedDayDBO.fromJson)
         .toList();
   }
 
   Future<List<UserWeightDbo>> _fetchRemoteUserWeights() async {
-    final rows = await _client.from('user_weight').select();
+    final uid = _client.auth.currentUser?.id;
+    if (uid == null) return [];
+    final rows = await _client
+        .from('user_weight')
+        .select()
+        .eq('user_id', uid)
+        .isFilter('deleted_at', null)
+        .timeout(const Duration(seconds: 8));
     return rows
         .map<Map<String, dynamic>>((row) {
           final json = Map<String, dynamic>.from(row as Map);
@@ -130,7 +150,8 @@ class StartupRemoteSyncService {
     final localByDay = {for (final day in local) _dayKey(day.day): day};
     return remote.where((remoteDay) {
       final localDay = localByDay[_dayKey(remoteDay.day)];
-      return localDay == null || remoteDay.updatedAt.isAfter(localDay.updatedAt);
+      return localDay == null ||
+          remoteDay.updatedAt.isAfter(localDay.updatedAt);
     }).toList();
   }
 
@@ -141,7 +162,8 @@ class StartupRemoteSyncService {
     final remoteByDay = {for (final day in remote) _dayKey(day.day): day};
     return local.where((localDay) {
       final remoteDay = remoteByDay[_dayKey(localDay.day)];
-      return remoteDay == null || localDay.updatedAt.isAfter(remoteDay.updatedAt);
+      return remoteDay == null ||
+          localDay.updatedAt.isAfter(remoteDay.updatedAt);
     }).toList();
   }
 
@@ -149,10 +171,13 @@ class StartupRemoteSyncService {
     required List<UserWeightDbo> local,
     required List<UserWeightDbo> remote,
   }) {
-    final localByDate = {for (final weight in local) _dayKey(weight.date): weight};
+    final localByDate = {
+      for (final weight in local) _dayKey(weight.date): weight
+    };
     return remote.where((remoteWeight) {
       final localWeight = localByDate[_dayKey(remoteWeight.date)];
-      return localWeight == null || remoteWeight.updatedat.isAfter(localWeight.updatedat);
+      return localWeight == null ||
+          remoteWeight.updatedat.isAfter(localWeight.updatedat);
     }).toList();
   }
 
@@ -160,16 +185,20 @@ class StartupRemoteSyncService {
     required List<UserWeightDbo> local,
     required List<UserWeightDbo> remote,
   }) {
-    final remoteByDate = {for (final weight in remote) _dayKey(weight.date): weight};
+    final remoteByDate = {
+      for (final weight in remote) _dayKey(weight.date): weight
+    };
     return local.where((localWeight) {
       final remoteWeight = remoteByDate[_dayKey(localWeight.date)];
-      return remoteWeight == null || localWeight.updatedat.isAfter(remoteWeight.updatedat);
+      return remoteWeight == null ||
+          localWeight.updatedat.isAfter(remoteWeight.updatedat);
     }).toList();
   }
 
   static String _dayKey(DateTime date) {
     final localDate = date.toLocal();
-    return DateTime(localDate.year, localDate.month, localDate.day).toIso8601String();
+    return DateTime(localDate.year, localDate.month, localDate.day)
+        .toIso8601String();
   }
 
   static Map<String, dynamic> _trackedDayJsonForSupabase(TrackedDayDBO dbo) {

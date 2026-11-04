@@ -1,3 +1,7 @@
+import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
+import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
+import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -5,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_tab_bar.dart';
+import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -25,6 +30,17 @@ DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 double? _num(Map<String, dynamic>? data, String key) =>
     (data?[key] as num?)?.toDouble();
+
+WeightSnapshot _studentWeightSnapshot(
+        Map<String, Map<String, dynamic>> macros, DateTime day) =>
+    WeightSnapshot.at(day, [
+      for (final entry in macros.entries)
+        if (_num(entry.value, 'weight') != null)
+          UserWeightEntity(
+              id: entry.key,
+              date: DateTime.parse(entry.key),
+              weight: _num(entry.value, 'weight')!),
+    ]);
 
 class StudentMacrosPage extends StatelessWidget {
   final String studentId;
@@ -79,7 +95,11 @@ class _StudentMacrosViewState extends State<_StudentMacrosView> {
       body: BlocBuilder<StudentMacrosBloc, StudentMacrosState>(
         builder: (context, state) {
           if (state is StudentMacrosError) {
-            return Center(child: Text('${s.errorPrefix} ${state.message}'));
+            return ErrorDialog(
+                errorText: s.studentLoadError,
+                onRefreshPressed: () => context
+                    .read<StudentMacrosBloc>()
+                    .add(LoadStudentMacrosEvent(widget.studentId)));
           }
           if (state is! StudentMacrosLoaded) {
             return const Center(child: CircularProgressIndicator());
@@ -137,14 +157,18 @@ class _StudentMacrosViewState extends State<_StudentMacrosView> {
       MaterialPageRoute(
         builder: (_) => SetStudentMacrosPage(
           studentId: widget.studentId,
-          initialCarbs: (data?['carbsGoal'] as num?)?.toInt() ?? 0,
-          initialFat: (data?['fatGoal'] as num?)?.toInt() ?? 0,
-          initialProtein: (data?['proteinGoal'] as num?)?.toInt() ?? 0,
+          initialCarbs: (data?['carbsGoal'] as num?)?.round() ?? 0,
+          initialFat: (data?['fatGoal'] as num?)?.round() ?? 0,
+          initialProtein: (data?['proteinGoal'] as num?)?.round() ?? 0,
         ),
       ),
     );
 
     if (result != null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).macroGoalsSaved)));
+      }
       final startDate = result['startDate'] as String?;
       if (startDate != null) {
         bloc.add(
@@ -415,7 +439,7 @@ class _DayWeightCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                   s.trendVsGoal(
-                      '${_signedNum(weight! - target, 1, locale)} ${s.kgLabel}'),
+                      '${formatNumber(weight! - target, decimals: 1, signed: true)} ${s.kgLabel}'),
                   style: theme.textTheme.labelMedium?.copyWith(
                       color: colors.primary, fontWeight: FontWeight.w700)),
             ],
@@ -503,13 +527,15 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
           child: AspectRatio(
             aspectRatio: 1,
             child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0, end: progress.clamp(0.0, 1.0)),
+              tween: Tween(begin: 0, end: progress),
               duration: const Duration(milliseconds: 700),
               curve: Curves.easeOutCubic,
               builder: (context, value, child) => CustomPaint(
                 painter: _RingPainter(
                   progress: value,
-                  color: colors.primary,
+                  color: consumed.round() > goal.round() * 1.1
+                      ? colors.error
+                      : colors.primary,
                   track: colors.primary.withValues(alpha: 0.12),
                 ),
                 child: child,
@@ -528,7 +554,11 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
                           first: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('${consumed.round()}', style: numberStyle),
+                              Text(formatNumber(consumed), style: numberStyle),
+                              if (consumed.round() > goal.round())
+                                Text(calorieBalanceLabel(s, goal, consumed),
+                                    style: theme.textTheme.labelSmall
+                                        ?.copyWith(color: colors.error)),
                               Text(s.kcalLabel,
                                   style: theme.textTheme.labelSmall?.copyWith(
                                       color: colors.onSurfaceVariant,
@@ -570,8 +600,16 @@ class _RingPainter extends CustomPainter {
       ..strokeWidth = stroke;
     canvas.drawArc(arcRect, 0, 2 * math.pi, false, paint..color = track);
     if (progress <= 0) return;
-    canvas.drawArc(arcRect, -math.pi / 2, 2 * math.pi * progress, false,
-        paint..color = color);
+    canvas.drawArc(arcRect, -math.pi / 2,
+        2 * math.pi * progress.clamp(0.0, 1.0), false, paint..color = color);
+    if (progress > 1) {
+      canvas.drawArc(
+          arcRect.deflate(stroke + 3),
+          -math.pi / 2,
+          2 * math.pi * (progress - 1).clamp(0.0, 1.0),
+          false,
+          paint..color = color);
+    }
   }
 
   @override
@@ -686,9 +724,9 @@ class _MacroProgressRow extends StatelessWidget {
                     showSecond: showPercent,
                     alignment: Alignment.centerRight,
                     first: Text.rich(TextSpan(children: [
-                      TextSpan(text: '${tracked.round()}', style: valueStyle),
+                      TextSpan(text: formatNumber(tracked), style: valueStyle),
                       TextSpan(
-                          text: ' / ${goal.round()} $gram',
+                          text: ' / ${formatNumber(goal)} $gram',
                           style: theme.textTheme.bodySmall?.copyWith(
                               color: colors.onSurfaceVariant,
                               fontWeight: FontWeight.w600)),
@@ -697,6 +735,13 @@ class _MacroProgressRow extends StatelessWidget {
                   ),
                 ],
               ),
+              if (goal > 0 && tracked > goal)
+                Text(_percent(tracked, goal),
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                        color: tracked.round() > goal.round() * 1.1
+                            ? colors.error
+                            : colors.onSurfaceVariant)),
               const SizedBox(height: 6),
               ClipRRect(
                 borderRadius: BorderRadius.circular(999),
@@ -709,7 +754,9 @@ class _MacroProgressRow extends StatelessWidget {
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
                     minHeight: 6,
-                    color: visual.color,
+                    color: goal > 0 && tracked.round() > goal.round() * 1.1
+                        ? colors.error
+                        : visual.color,
                     backgroundColor: visual.color.withValues(alpha: 0.14),
                   ),
                 ),

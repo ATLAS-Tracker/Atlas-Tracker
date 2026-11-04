@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:logging/logging.dart';
+import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/domain/entity/user_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_gender_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_pal_entity.dart';
@@ -9,19 +11,45 @@ import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-/// Supabase is the source of truth for the profile: non-null remote fields
-/// overwrite the local profile. Returns false if the remote row is missing.
+const _pendingProfile = 'profile_pending';
+const _requestTimeout = Duration(seconds: 8);
+
+bool _owns(SupabaseClient client, HiveDBProvider hive, String owner) =>
+    client.auth.currentUser?.id == owner && hive.activeUserId == owner;
+
+Future<void> _sendPending(SupabaseClient client, HiveDBProvider hive,
+    String owner, String pending) async {
+  await client
+      .from('users')
+      .update(Map<String, dynamic>.from(jsonDecode(pending) as Map))
+      .eq('id', owner)
+      .timeout(_requestTimeout);
+  if (_owns(client, hive, owner) &&
+      hive.syncMetadataBox?.get(_pendingProfile) == pending) {
+    await hive.syncMetadataBox?.delete(_pendingProfile);
+  }
+}
+
+/// Retry local edits before reading the server so offline changes survive.
 Future<bool> syncProfileFromSupabase(SupabaseClient client) async {
   final userId = client.auth.currentUser?.id;
   if (userId == null) return false;
+  final hive = locator<HiveDBProvider>();
+  if (!_owns(client, hive, userId)) return false;
   try {
+    final pending = hive.syncMetadataBox?.get(_pendingProfile);
+    if (pending != null) await _sendPending(client, hive, userId, pending);
+    if (!_owns(client, hive, userId)) return false;
     final row = await client
         .from('users')
         .select(
           'display_name, role, height_cm, weight_kg, gender, goal, birthday, pal',
         )
         .eq('id', userId)
-        .maybeSingle();
+        .maybeSingle()
+        .timeout(_requestTimeout);
+    if (!_owns(client, hive, userId)) return false;
+    if (hive.syncMetadataBox?.get(_pendingProfile) != null) return true;
     if (row == null) {
       Logger('ProfileRemoteSync').warning('No users row for $userId');
       return false;
@@ -41,6 +69,10 @@ Future<bool> syncProfileFromSupabase(SupabaseClient client) async {
             role: UserRoleEntity.student,
           );
 
+    if (!_owns(client, hive, userId) ||
+        hive.syncMetadataBox?.get(_pendingProfile) != null) {
+      return false;
+    }
     await locator<AddUserUsecase>().addUser(mergeRemoteProfile(local, row));
     return true;
   } catch (e, s) {
@@ -51,13 +83,28 @@ Future<bool> syncProfileFromSupabase(SupabaseClient client) async {
 
 /// Writes the fields edited on the profile page back to Supabase, otherwise
 /// [syncProfileFromSupabase] reverts them at the next startup.
-// ponytail: offline edits are lost at next startup, queue them if that matters.
 Future<void> pushProfileToSupabase(
     SupabaseClient client, UserEntity user) async {
   final userId = client.auth.currentUser?.id;
   if (userId == null) return;
+  final hive = locator<HiveDBProvider>();
+  if (!_owns(client, hive, userId)) return;
+  if (!user.heightCM.isFinite ||
+      user.heightCM <= 0 ||
+      user.heightCM > 300 ||
+      !user.weightKG.isFinite ||
+      user.weightKG <= 0 ||
+      user.weightKG > 400 ||
+      user.birthday.isAfter(DateTime.now()) ||
+      user.birthday.year < 1900) {
+    throw ArgumentError('Invalid profile values');
+  }
+  final pending = jsonEncode(remoteProfileRow(user));
+  await hive.syncMetadataBox?.put(_pendingProfile, pending);
   try {
-    await client.from('users').update(remoteProfileRow(user)).eq('id', userId);
+    if (_owns(client, hive, userId)) {
+      await _sendPending(client, hive, userId, pending);
+    }
   } catch (e, s) {
     Logger('ProfileRemoteSync').warning('Profile push failed', e, s);
   }

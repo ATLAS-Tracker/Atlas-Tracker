@@ -30,7 +30,8 @@ class CreateMealBloc extends Bloc<CreateMealEvent, CreateMealState> {
     });
   }
 
-  List<IntakeForRecipeEntity> getListOfIntakeForRecipeEntity() => _intakeList;
+  List<IntakeForRecipeEntity> getListOfIntakeForRecipeEntity() =>
+      List.of(_intakeList);
 
   void setListOfIntakeForRecipeEntity(List<IntakeForRecipeEntity> list) {
     _intakeList = list;
@@ -67,7 +68,7 @@ class CreateMealBloc extends Bloc<CreateMealEvent, CreateMealState> {
     } else {
       final intakeEntity = IntakeForRecipeEntity(
         code: IdGenerator.getUniqueID(),
-        unit: unit,
+        unit: unit == 'serving' ? 'g' : unit,
         amount: quantity,
         meal: meal,
       );

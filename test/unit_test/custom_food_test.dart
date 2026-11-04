@@ -12,8 +12,30 @@ class MockGetConfigUsecase extends Mock implements GetConfigUsecase {}
 
 void main() {
   late EditMealBloc bloc;
-  setUp(() => bloc = EditMealBloc(MockGetConfigUsecase()));
+  setUp(() => bloc = EditMealBloc());
   tearDown(() => bloc.close());
+
+  test('editing an OFF product creates a custom food', () {
+    final original = MealEntity.empty().copyWith(source: MealSourceEntity.off);
+    final edited = bloc.createCustomFood(
+        original: original,
+        name: 'Correction',
+        brands: '',
+        perPortion: false,
+        unit: 'g',
+        portionName: '',
+        kcal: 100,
+        carbs: 10,
+        fat: 2,
+        protein: 4);
+    expect(edited.source, MealSourceEntity.custom);
+    expect(
+        bloc
+            .createNewMealEntity(original, 'Correction', '', '100', '', '100',
+                'g', '100', '10', '2', '4')
+            .source,
+        MealSourceEntity.custom);
+  });
 
   MealEntity create(bool portion, String unit) => bloc.createCustomFood(
       original: MealEntity.empty(),

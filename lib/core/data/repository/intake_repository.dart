@@ -1,6 +1,8 @@
 import 'package:opennutritracker/core/data/data_source/intake_data_source.dart';
 import 'package:opennutritracker/core/data/dbo/intake_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/intake_type_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 
@@ -19,13 +21,28 @@ class IntakeRepository {
     await _intakeDataSource.addAllIntakes(intakeDBOs);
   }
 
+  Future<void> addIntakes(List<IntakeEntity> intakes) =>
+      _intakeDataSource.addAllIntakes(
+          intakes.map(IntakeDBO.fromIntakeEntity).toList(),
+          localWrite: true);
+
   Future<void> deleteIntake(IntakeEntity intakeEntity) async {
     await _intakeDataSource.deleteIntakeFromId(intakeEntity.id);
   }
 
+  Future<void> deleteIntakeById(String id, {DateTime? deletedAt}) =>
+      _intakeDataSource.deleteIntakeFromId(id, deletedAt: deletedAt);
+
   Future<IntakeEntity?> updateIntake(
       String intakeId, Map<String, dynamic> fields) async {
-    var result = await _intakeDataSource.updateIntake(intakeId, fields);
+    final dboFields = Map<String, dynamic>.of(fields);
+    if (dboFields['type'] is IntakeTypeEntity) {
+      dboFields['type'] = IntakeTypeDBO.fromIntakeTypeEntity(dboFields['type']);
+    }
+    if (dboFields['meal'] is MealEntity) {
+      dboFields['meal'] = MealDBO.fromMealEntity(dboFields['meal']);
+    }
+    var result = await _intakeDataSource.updateIntake(intakeId, dboFields);
     return result == null ? null : IntakeEntity.fromIntakeDBO(result);
   }
 

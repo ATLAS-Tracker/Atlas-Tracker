@@ -14,6 +14,11 @@ class HomeLoadingState extends HomeState {
   List<Object?> get props => [];
 }
 
+class HomeErrorState extends HomeState {
+  @override
+  List<Object?> get props => [];
+}
+
 class HomeLoadedState extends HomeState {
   final String userName;
   final String? coachName;
@@ -36,7 +41,6 @@ class HomeLoadedState extends HomeState {
   final List<IntakeEntity> lunchIntakeList;
   final List<IntakeEntity> dinnerIntakeList;
   final List<IntakeEntity> snackIntakeList;
-  final bool usesImperialUnits;
 
   const HomeLoadedState({
     required this.userName,
@@ -60,7 +64,6 @@ class HomeLoadedState extends HomeState {
     required this.lunchIntakeList,
     required this.dinnerIntakeList,
     required this.snackIntakeList,
-    required this.usesImperialUnits,
   });
 
   @override
@@ -69,7 +72,6 @@ class HomeLoadedState extends HomeState {
         lunchIntakeList,
         dinnerIntakeList,
         snackIntakeList,
-        usesImperialUnits,
         weeklyWeightDelta,
         targetWeight,
         userWeightGoal,

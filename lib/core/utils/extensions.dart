@@ -58,6 +58,9 @@ extension DisplayDouble on double? {
 }
 
 extension FormatString on DateTime {
+  /// Civil date key for storage, independent of the display locale.
+  String toDayKey() => toIso8601String().split('T').first;
+
   String toParsedDay() => DateFormat.yMd().format(this);
 }
 

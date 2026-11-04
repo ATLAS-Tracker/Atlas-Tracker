@@ -1,3 +1,5 @@
+import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_energy_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
@@ -6,7 +8,6 @@ import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dar
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/styles/color_schemes.dart';
-import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_weight/presentation/add_weight_screen.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -26,7 +27,6 @@ class DashboardWidget extends StatelessWidget {
   final double? weeklyWeightDelta;
   final double targetWeight;
   final UserWeightGoalEntity userWeightGoal;
-  final bool usesImperialUnits;
 
   const DashboardWidget({
     super.key,
@@ -44,23 +44,7 @@ class DashboardWidget extends StatelessWidget {
     required this.weeklyWeightDelta,
     required this.targetWeight,
     required this.userWeightGoal,
-    required this.usesImperialUnits,
   });
-
-  double _displayWeight(double weightKg) {
-    return usesImperialUnits ? UnitCalc.kgToLbs(weightKg) : weightKg;
-  }
-
-  String _goalTitle(S s) {
-    switch (userWeightGoal) {
-      case UserWeightGoalEntity.loseWeight:
-        return s.goalLoseWeightDashboard;
-      case UserWeightGoalEntity.maintainWeight:
-        return s.goalMaintainWeightDashboard;
-      case UserWeightGoalEntity.gainWeight:
-        return s.goalGainWeightDashboard;
-    }
-  }
 
   void _openWeightScreen(BuildContext context) {
     Navigator.of(context).pushNamed(
@@ -82,17 +66,6 @@ class DashboardWidget extends StatelessWidget {
         : colorScheme.onPrimary;
     final brandSecondary = brandOnSurface.withValues(alpha: 0.74);
     final brandTertiary = brandOnSurface.withValues(alpha: 0.58);
-    final kcalLeftLabel = totalKcalLeft.clamp(0, totalKcalDaily).toDouble();
-    final weightUnit = usesImperialUnits ? s.lbsLabel : s.kgLabel;
-    final targetWeightLabel = _displayWeight(targetWeight);
-    final currentWeightLabel =
-        userWeight == null ? null : _displayWeight(userWeight!.weight);
-    final remainingWeightLabel = currentWeightLabel == null
-        ? null
-        : (targetWeightLabel - currentWeightLabel).abs().toStringAsFixed(1);
-    final remainingWeightText = remainingWeightLabel == null
-        ? null
-        : '${remainingWeightLabel.replaceAll(' ', '\u00A0')}\u00A0$weightUnit\u00A0${s.remainingWeightLabel}';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 10),
@@ -108,7 +81,7 @@ class DashboardWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        s.coachObjectiveLabel,
+                        s.goalLabel,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: brandTertiary,
                           fontWeight: FontWeight.w700,
@@ -116,21 +89,11 @@ class DashboardWidget extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _goalTitle(s),
+                        userWeightGoal.getName(context),
                         style: theme.textTheme.headlineSmall?.copyWith(
                           color: brandOnSurface,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.6,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        remainingWeightText == null
-                            ? '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit'
-                            : '${s.targetShortLabel} ${targetWeightLabel.toStringAsFixed(1)} $weightUnit\n$remainingWeightText',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: brandSecondary,
-                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
@@ -138,7 +101,6 @@ class DashboardWidget extends StatelessWidget {
                   final weightCard = _WeightSummaryCard(
                     userWeight: userWeight,
                     weeklyWeightDelta: weeklyWeightDelta,
-                    usesImperialUnits: usesImperialUnits,
                     userWeightGoal: userWeightGoal,
                     onTap: () => _openWeightScreen(context),
                   );
@@ -171,7 +133,7 @@ class DashboardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  '${kcalLeftLabel.toInt()} ${s.kcalLeftLabel}',
+                  calorieBalanceLabel(s, totalKcalDaily, totalKcalSupplied),
                   style: theme.textTheme.titleLarge?.copyWith(
                     color: brandOnSurface,
                     fontWeight: FontWeight.w800,
@@ -179,7 +141,7 @@ class DashboardWidget extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${totalKcalSupplied.toInt()} / ${totalKcalDaily.toInt()} ${s.kcalLabel} ${s.consumedLabel}',
+                  '${formatNumber(totalKcalSupplied)} / ${formatNumber(totalKcalDaily)} ${s.kcalLabel} ${s.consumedLabel}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: brandSecondary,
                     fontWeight: FontWeight.w600,
@@ -241,65 +203,30 @@ class DashboardWidget extends StatelessWidget {
 class _WeightSummaryCard extends StatelessWidget {
   final UserWeightEntity? userWeight;
   final double? weeklyWeightDelta;
-  final bool usesImperialUnits;
   final UserWeightGoalEntity userWeightGoal;
   final VoidCallback onTap;
 
   const _WeightSummaryCard({
     required this.userWeight,
     required this.weeklyWeightDelta,
-    required this.usesImperialUnits,
     required this.userWeightGoal,
     required this.onTap,
   });
-
-  Color _trendColor(BuildContext context, double delta) {
-    const maintainTolerance = 0.2;
-
-    switch (userWeightGoal) {
-      case UserWeightGoalEntity.loseWeight:
-        if (delta < 0) return lunchColor;
-        if (delta > 0) return Theme.of(context).colorScheme.error;
-        return Colors.orange;
-      case UserWeightGoalEntity.maintainWeight:
-        if (delta.abs() <= maintainTolerance) return lunchColor;
-        return Theme.of(context).colorScheme.error;
-      case UserWeightGoalEntity.gainWeight:
-        if (delta > 0) return lunchColor;
-        if (delta < 0) return Theme.of(context).colorScheme.error;
-        return Colors.orange;
-    }
-  }
-
-  String _trendLabel(double? delta, String unit) {
-    if (delta == null) return '—';
-    final sign = delta > 0
-        ? '+ '
-        : delta < 0
-            ? '- '
-            : '';
-    return '$sign${delta.abs().toStringAsFixed(1)} $unit';
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final s = S.of(context);
-    final weight = userWeight?.weight == null
-        ? null
-        : usesImperialUnits
-            ? UnitCalc.kgToLbs(userWeight!.weight)
-            : userWeight!.weight;
-    final unit = usesImperialUnits ? s.lbsLabel : s.kgLabel;
-    final delta = weeklyWeightDelta == null
-        ? null
-        : usesImperialUnits
-            ? UnitCalc.kgToLbs(weeklyWeightDelta!)
-            : weeklyWeightDelta;
+    final weight = userWeight?.weight;
+    final unit = s.kgLabel;
+    final delta = weeklyWeightDelta;
     final deltaColor = weeklyWeightDelta == null
         ? theme.colorScheme.onSurface.withValues(alpha: 0.48)
-        : _trendColor(context, weeklyWeightDelta!);
+        : weightTrendColor(
+            deltaKg: weeklyWeightDelta!,
+            goal: userWeightGoal,
+            colors: colorScheme);
 
     return Semantics(
       button: true,
@@ -326,7 +253,9 @@ class _WeightSummaryCard extends StatelessWidget {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          weight == null ? '—' : weight.toStringAsFixed(1),
+                          weight == null
+                              ? '—'
+                              : formatNumber(weight, decimals: 1),
                           style: theme.textTheme.headlineSmall?.copyWith(
                             color: theme.colorScheme.onSurface,
                             fontWeight: FontWeight.w800,
@@ -367,7 +296,9 @@ class _WeightSummaryCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      _trendLabel(delta, unit),
+                      delta == null
+                          ? '—'
+                          : '${formatNumber(delta, decimals: 1, signed: true)} $unit',
                       textAlign: TextAlign.center,
                       maxLines: 1,
                       softWrap: false,
@@ -501,7 +432,7 @@ class _MacroSummaryCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              '${intake.toInt()} / ${goal.toInt()} g',
+              '${formatNumber(intake)} / ${formatNumber(goal)} g',
               maxLines: 1,
               softWrap: false,
               style: theme.textTheme.titleSmall?.copyWith(

@@ -1,3 +1,11 @@
+import 'package:opennutritracker/core/data/data_source/macro_goal_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/intake_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/intake_type_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/meal_nutriments_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/meal_or_recipe_dbo.dart';
+import 'package:opennutritracker/core/data/data_source/intake_data_source.dart';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,7 +25,15 @@ void main() {
     if (!Hive.isAdapterRegistered(trackedDayDBOTypeId)) {
       Hive.registerAdapter(TrackedDayDBOAdapter());
     }
+    Hive.registerAdapter(IntakeDBOAdapter());
+    Hive.registerAdapter(IntakeTypeDBOAdapter());
+    Hive.registerAdapter(MealDBOAdapter());
+    Hive.registerAdapter(MealSourceDBOAdapter());
+    Hive.registerAdapter(MealNutrimentsDBOAdapter());
+    Hive.registerAdapter(MealOrRecipeDBOAdapter());
     final hive = HiveDBProvider()
+      ..macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals')
+      ..intakeBox = await Hive.openBox<IntakeDBO>('intakes')
       ..trackedDayBox = await Hive.openBox<TrackedDayDBO>('plan_test');
     final repo = TrackedDayRepository(TrackedDayDataSource(hive));
     final usecase = AddTrackedDayUsecase(repo);
@@ -27,21 +43,48 @@ void main() {
         DateUtils.dateOnly(DateTime.now().add(const Duration(days: 1)));
     expect(await usecase.hasTrackedDay(tomorrow), isFalse);
     await usecase.addNewTrackedDay(tomorrow, 1700, 180, 60, 110);
-    await usecase.addDayCaloriesTracked(tomorrow, 400);
-    await usecase.addDayMacrosTracked(tomorrow,
-        carbsTracked: 50, fatTracked: 10, proteinTracked: 20);
+    await IntakeDataSource(hive).addIntake(IntakeDBO(
+        id: 'planned',
+        unit: 'g',
+        amount: 100,
+        type: IntakeTypeDBO.lunch,
+        dateTime: tomorrow,
+        updatedAt: DateTime.now().toUtc(),
+        meal: MealDBO(
+            code: 'food',
+            name: 'Aliment',
+            brands: null,
+            thumbnailImageUrl: null,
+            mainImageUrl: null,
+            url: null,
+            mealQuantity: null,
+            mealUnit: 'g',
+            servingQuantity: null,
+            servingUnit: null,
+            servingSize: null,
+            source: MealSourceDBO.custom,
+            nutriments: MealNutrimentsDBO(
+                energyKcalPerQuantity: 400,
+                carbohydratesPerQuantity: 50,
+                fatPerQuantity: 10,
+                proteinsPerQuantity: 20,
+                sugarsPerQuantity: null,
+                saturatedFatPerQuantity: null,
+                fiberPerQuantity: null,
+                mealOrRecipe: MealOrRecipeDBO.meal))));
 
     // Same query and key as DiaryBloc / DiaryPage.
     final now = DateTime.now();
     const year = Duration(days: 356);
-    final days = await repo.getTrackedDayByRange(
-        now.subtract(year), now.add(year));
+    final days =
+        await repo.getTrackedDayByRange(now.subtract(year), now.add(year));
     final map = {for (final d in days) d.day.toParsedDay(): d};
     final day = map[tomorrow.toParsedDay()];
 
     expect(day?.caloriesTracked, 400);
     expect(day?.carbsTracked, 50);
 
+    await hive.intakeBox.close();
     await hive.trackedDayBox.close();
     await Hive.deleteFromDisk();
   });

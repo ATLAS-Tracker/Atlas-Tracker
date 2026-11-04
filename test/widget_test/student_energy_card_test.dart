@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -57,7 +58,7 @@ void main() {
           await tester.pumpAndSettle();
 
           expect(tester.takeException(), isNull);
-          expect(find.text('${consumed.round()}'), findsOneWidget);
+          expect(find.text(formatNumber(consumed)), findsOneWidget);
 
           await tester.tap(find.byType(StudentEnergyCard));
           await tester.pumpAndSettle();

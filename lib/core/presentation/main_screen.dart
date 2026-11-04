@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/diary_page.dart';
@@ -11,10 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/features/auth/check_subscription.dart';
 // Added for resume macro refresh
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
-import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
+import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 
 class MainScreen extends StatefulWidget {
@@ -66,20 +64,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return;
     }
 
-    // 2) Refresh macro goals from coach and update tracked days
-    try {
-      final user = await locator.get<GetUserUsecase>().getUserData();
-      if (user.role == UserRoleEntity.student) {
-        await locator.get<AddMacroGoalUsecase>().addMacroGoalFromCoach();
-
-        // Notify key views to refresh
-        locator<HomeBloc>().add(const LoadItemsEvent());
-        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
-      }
-    } catch (_) {
-      // Silently ignore on resume to avoid disrupting UX
-    }
+    unawaited(synchronizeUserData(locator<SupabaseClient>()));
   }
 
   @override
@@ -98,13 +83,11 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       _isCoach
           ? null
           : MainAppbar(
-              title: S.of(context).profileLabel,
-              iconData: Icons.account_circle)
+              title: S.of(context).profileLabel, iconData: Icons.account_circle)
     ];
     return Scaffold(
       appBar: appbarPages[_selectedPageIndex],
-      body: bodyPages[_selectedPageIndex],
-      floatingActionButton: null,
+      body: IndexedStack(index: _selectedPageIndex, children: bodyPages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedPageIndex,
         onDestinationSelected: _setPage,

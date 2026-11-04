@@ -35,15 +35,14 @@ void main() {
           weeklyWeightDelta: null,
           targetWeight: 84,
           userWeightGoal: UserWeightGoalEntity.gainWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('1000'), findsOneWidget);
-    expect(find.textContaining('84.0'), findsOneWidget);
-    expect(find.text(S.current.goalGainWeightDashboard), findsOneWidget);
+    expect(find.textContaining('500'), findsNWidgets(2));
+    expect(find.textContaining('84'), findsNothing);
+    expect(find.text(S.current.goalGainWeight), findsOneWidget);
     expect(find.text('200 / 250 g'), findsOneWidget);
     expect(find.text('50 / 60 g'), findsOneWidget);
     expect(find.text('100 / 120 g'), findsOneWidget);
@@ -75,13 +74,12 @@ void main() {
           weeklyWeightDelta: -0.199,
           targetWeight: 80,
           userWeightGoal: UserWeightGoalEntity.loseWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    final trendFinder = find.text('- 0.2 kg');
+    final trendFinder = find.text('-0,2 kg');
     expect(trendFinder, findsOneWidget);
 
     final trendText = tester.widget<Text>(trendFinder);
@@ -124,25 +122,13 @@ void main() {
           weeklyWeightDelta: null,
           targetWeight: 4,
           userWeightGoal: UserWeightGoalEntity.loseWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    final textValues = tester
-        .widgetList<Text>(find.byType(Text))
-        .map((text) => text.data ?? '')
-        .toList();
-    final targetText = textValues.singleWhere(
-      (text) => text.contains('Target 4.0 kg'),
-    );
-
-    expect(targetText, contains('1.0'));
-    expect(targetText, contains('kg'));
-    expect(targetText, contains('remaining'));
-    expect(targetText, isNot(contains('- 1.0')));
-    expect(targetText, isNot(contains('-\u00A01.0')));
+    expect(find.textContaining('Target'), findsNothing);
+    expect(find.textContaining(S.current.remainingWeightLabel), findsNothing);
   });
 
   testWidgets('DashboardWidget uses trend sign only for weight loss goal',
@@ -171,13 +157,12 @@ void main() {
           weeklyWeightDelta: 0.1,
           targetWeight: 80,
           userWeightGoal: UserWeightGoalEntity.loseWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    final trendFinder = find.text('+ 0.1 kg');
+    final trendFinder = find.text('+0,1 kg');
     expect(trendFinder, findsOneWidget);
 
     final trendText = tester.widget<Text>(trendFinder);
@@ -213,13 +198,12 @@ void main() {
           weeklyWeightDelta: 0.1,
           targetWeight: 90,
           userWeightGoal: UserWeightGoalEntity.gainWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    final trendFinder = find.text('+ 0.1 kg');
+    final trendFinder = find.text('+0,1 kg');
     expect(trendFinder, findsOneWidget);
 
     final trendText = tester.widget<Text>(trendFinder);
@@ -252,13 +236,12 @@ void main() {
           weeklyWeightDelta: 0.1,
           targetWeight: 84,
           userWeightGoal: UserWeightGoalEntity.maintainWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));
     await tester.pumpAndSettle();
 
-    final trendFinder = find.text('+ 0.1 kg');
+    final trendFinder = find.text('+0,1 kg');
     expect(trendFinder, findsOneWidget);
 
     final trendText = tester.widget<Text>(trendFinder);
@@ -296,7 +279,6 @@ void main() {
           weeklyWeightDelta: null,
           targetWeight: 84,
           userWeightGoal: UserWeightGoalEntity.maintainWeight,
-          usesImperialUnits: false,
         ),
       ),
     ));

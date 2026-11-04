@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:opennutritracker/core/data/dbo/tracked_day_dbo.dart';
-import 'package:opennutritracker/core/utils/extensions.dart'; // toParsedDay()
+import 'package:opennutritracker/core/utils/extensions.dart'; // toDayKey()
 import 'package:opennutritracker/features/sync/change_isolate.dart';
 import 'package:opennutritracker/features/sync/supabase_client.dart';
 import 'package:opennutritracker/core/data/repository/config_repository.dart';
@@ -125,7 +125,7 @@ class TrackedDayChangeIsolate extends ChangeIsolate<DateTime> {
 
         // Convert each day to JSON
         for (final dayKey in batch) {
-          final dbo = box.get(dayKey.toParsedDay()) as TrackedDayDBO?;
+          final dbo = box.get(dayKey.toDayKey()) as TrackedDayDBO?;
           if (dbo == null) continue;
           final m = dbo.toJson();
           m['day'] = _toPgDate(dbo.day);

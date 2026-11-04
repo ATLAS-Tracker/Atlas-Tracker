@@ -15,7 +15,8 @@ void main() {
         (tester) async {
       final http = MockSupabaseHttpClient();
       final client = (await tester.runAsync(() async => SupabaseClient(
-          'https://mock.supabase.co', 'key', httpClient: http)))!;
+          'https://mock.supabase.co', 'key',
+          httpClient: http)))!;
       locator.registerSingleton<SupabaseClient>(client);
       addTearDown(() async {
         await locator.unregister<SupabaseClient>();
@@ -51,13 +52,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('2140 kcal'), findsOneWidget);
       final now = DateTime.now();
-      final tomorrow = DateTime(now.year, now.month, now.day + 1);
-      final date = find.text(DateFormat.yMMMMd('fr').format(tomorrow));
+      final today = DateTime(now.year, now.month, now.day);
+      final date = find.text(DateFormat.yMMMMd('fr').format(today));
       await tester.ensureVisible(date);
       await tester.pumpAndSettle();
       expect(date, findsOneWidget);
-      expect(find.text(S.current.buttonSaveLabel).hitTestable(),
-          findsOneWidget);
+      expect(
+          find.text(S.current.buttonSaveLabel).hitTestable(), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.enterText(find.byType(TextFormField).first, '');
       await tester.pumpAndSettle();
@@ -74,17 +75,27 @@ void main() {
     });
   }
 
-  testWidgets('history tab shows the latest saved goal', (tester) async {
+  testWidgets(
+      'history shows current and future goals without prefilling the future',
+      (tester) async {
     final http = MockSupabaseHttpClient();
     final client = (await tester.runAsync(() async {
-      final c = SupabaseClient('https://mock.supabase.co', 'key',
-          httpClient: http);
+      final c =
+          SupabaseClient('https://mock.supabase.co', 'key', httpClient: http);
       await c.from('coach_macro_goals').insert({
         'user_id': 'student',
         'start_date': '2026-10-01',
         'carb_goal': 180,
         'fat_goal': 70,
         'protein_goal': 160,
+      });
+      await c.from('coach_macro_goals').insert({
+        'user_id': 'student',
+        'start_date': DateFormat('yyyy-MM-dd')
+            .format(DateTime.now().add(const Duration(days: 3))),
+        'carb_goal': 300,
+        'fat_goal': 70,
+        'protein_goal': 150,
       });
       return c;
     }))!;
@@ -118,6 +129,7 @@ void main() {
     await tester.tap(find.text(S.current.historyLabel));
     await tester.pumpAndSettle();
     expect(find.text('1990 ${S.current.kcalLabel}'), findsOneWidget);
+    expect(find.text('2430 ${S.current.kcalLabel}'), findsOneWidget);
     expect(find.text(S.current.macroGoalHistoryEmpty), findsNothing);
   });
 }

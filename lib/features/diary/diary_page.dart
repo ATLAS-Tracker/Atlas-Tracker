@@ -5,7 +5,8 @@ import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
-import 'package:opennutritracker/core/utils/extensions.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
+import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
@@ -34,8 +35,9 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
   late CalendarDayBloc _calendarDayBloc;
   late HomeBloc _homeBloc;
   late MealDetailBloc _mealDetailBloc;
+  DiaryLoadedState? _lastDiaryState;
 
-  static const _calendarDurationDays = Duration(days: 356);
+  static const _calendarDurationDays = Duration(days: 365);
   final _currentDate = DateTime.now();
   var _selectedDate = DateTime.now();
   var _focusedDate = DateTime.now();
@@ -64,9 +66,17 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
         if (state is DiaryInitial) {
           _diaryBloc.add(const LoadDiaryYearEvent());
         } else if (state is DiaryLoadingState) {
+          if (_lastDiaryState != null) {
+            return _getLoadedContent(context, _lastDiaryState!.trackedDayMap);
+          }
           return _getLoadingContent();
         } else if (state is DiaryLoadedState) {
+          _lastDiaryState = state;
           return _getLoadedContent(context, state.trackedDayMap);
+        } else if (state is DiaryErrorState) {
+          return ErrorDialog(
+              errorText: S.of(context).journalLoadError,
+              onRefreshPressed: _refreshSelectedDay);
         }
         return const SizedBox();
       },
@@ -89,170 +99,185 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
     BuildContext context,
     Map<String, TrackedDayEntity> trackedDaysMap,
   ) {
-    final selectedTrackedDay = trackedDaysMap[_selectedDate.toParsedDay()];
-
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
-      children: [
-        DiaryTableCalendar(
-          trackedDaysMap: trackedDaysMap,
-          onDateSelected: _onDateSelected,
-          calendarDurationDays: _calendarDurationDays,
-          currentDate: _currentDate,
-          selectedDate: _selectedDate,
-          focusedDate: _focusedDate,
-        ),
-        const SizedBox(height: 18.0),
-        BlocBuilder<CalendarDayBloc, CalendarDayState>(
-          bloc: _calendarDayBloc,
-          builder: (context, calendarDayState) {
-            if (calendarDayState is CalendarDayInitial) {
-              _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
-            }
-
-            return BlocBuilder<HomeBloc, HomeState>(
-              bloc: _homeBloc,
-              builder: (context, homeState) {
-                if (homeState is HomeInitial) {
-                  _homeBloc.add(const LoadItemsEvent());
+    return RefreshIndicator(
+        onRefresh: () async {
+          final done = _diaryBloc.stream.firstWhere(
+              (state) => state is DiaryLoadedState || state is DiaryErrorState);
+          _refreshSelectedDay();
+          await done;
+        },
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 24.0),
+          children: [
+            DiaryTableCalendar(
+              trackedDaysMap: trackedDaysMap,
+              onDateSelected: _onDateSelected,
+              calendarDurationDays: _calendarDurationDays,
+              currentDate: _currentDate,
+              selectedDate: _selectedDate,
+              focusedDate: _focusedDate,
+            ),
+            const SizedBox(height: 18.0),
+            BlocBuilder<CalendarDayBloc, CalendarDayState>(
+              bloc: _calendarDayBloc,
+              builder: (context, calendarDayState) {
+                if (calendarDayState is CalendarDayError) {
+                  return ErrorDialog(
+                      errorText: S.of(context).journalLoadError,
+                      onRefreshPressed: _refreshSelectedDay);
+                }
+                if (calendarDayState is CalendarDayInitial) {
+                  _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
                 }
 
-                final loadedDay = calendarDayState is CalendarDayLoaded
-                    ? calendarDayState
-                    : null;
+                if (calendarDayState is! CalendarDayLoaded) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    DiarySummaryCard(
-                      // Same load as the meal lists below, so the bar and the
-                      // meals refresh together after adding a food.
-                      trackedDay:
-                          loadedDay?.trackedDayEntity ?? selectedTrackedDay,
-                      selectedDayWeight: loadedDay?.userWeightEntity,
-                      weeklyWeightDelta: loadedDay?.weeklyWeightDelta,
-                      homeState:
-                          homeState is HomeLoadedState ? homeState : null,
-                      onEditWeight: _openSelectedDayWeightScreen,
-                    ),
-                    if (loadedDay != null) ...[
-                      const SizedBox(height: 14),
-                      ExpansionTile(
-                        key: ValueKey(
-                            'diary-meals-${DateUtils.dateOnly(_selectedDate)}'),
-                        initiallyExpanded: false,
-                        tilePadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 4),
-                        childrenPadding: const EdgeInsets.only(top: 8),
-                        shape: const Border(),
-                        collapsedShape: const Border(),
-                        leading: Icon(Icons.restaurant_menu_rounded,
-                            color: Theme.of(context).colorScheme.primary),
-                        title: Text(S.of(context).mealsOfDayLabel,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w800)),
-                        children: [
-                          IntakeVerticalList(
-                            day: _selectedDate,
-                            title: S.of(context).breakfastLabel,
-                            listIcon: IntakeTypeEntity.breakfast.getIconData(),
-                            addMealType: AddMealType.breakfastType,
-                            intakeList: loadedDay.breakfastIntakeList,
-                            onDeleteIntakeCallback: onDeleteIntake,
-                            onItemLongPressedCallback: onIntakeItemLongPressed,
-                            onItemTappedCallback: onIntakeItemTapped,
-                            onCopyIntakeCallback: onCopyIntake,
-                            onCopyMealToDateCallback: onCopyMealToDate,
-                            usesImperialUnits: homeState is HomeLoadedState
-                                ? homeState.usesImperialUnits
-                                : false,
-                            trackedDayEntity: loadedDay.trackedDayEntity,
-                            isDropZone: false,
-                            isCollapsible: true,
-                            initiallyExpanded: false,
-                            compact: true,
-                            foodPreviewLimit: null,
-                            horizontalMargin: 0,
-                          ),
-                          IntakeVerticalList(
-                            day: _selectedDate,
-                            title: S.of(context).lunchLabel,
-                            listIcon: IntakeTypeEntity.lunch.getIconData(),
-                            addMealType: AddMealType.lunchType,
-                            intakeList: loadedDay.lunchIntakeList,
-                            onDeleteIntakeCallback: onDeleteIntake,
-                            onItemLongPressedCallback: onIntakeItemLongPressed,
-                            onItemTappedCallback: onIntakeItemTapped,
-                            onCopyIntakeCallback: onCopyIntake,
-                            onCopyMealToDateCallback: onCopyMealToDate,
-                            usesImperialUnits: homeState is HomeLoadedState
-                                ? homeState.usesImperialUnits
-                                : false,
-                            trackedDayEntity: loadedDay.trackedDayEntity,
-                            isDropZone: false,
-                            isCollapsible: true,
-                            initiallyExpanded: false,
-                            compact: true,
-                            foodPreviewLimit: null,
-                            horizontalMargin: 0,
-                          ),
-                          IntakeVerticalList(
-                            day: _selectedDate,
-                            title: S.of(context).dinnerLabel,
-                            listIcon: IntakeTypeEntity.dinner.getIconData(),
-                            addMealType: AddMealType.dinnerType,
-                            intakeList: loadedDay.dinnerIntakeList,
-                            onDeleteIntakeCallback: onDeleteIntake,
-                            onItemLongPressedCallback: onIntakeItemLongPressed,
-                            onItemTappedCallback: onIntakeItemTapped,
-                            onCopyIntakeCallback: onCopyIntake,
-                            onCopyMealToDateCallback: onCopyMealToDate,
-                            usesImperialUnits: homeState is HomeLoadedState
-                                ? homeState.usesImperialUnits
-                                : false,
-                            trackedDayEntity: loadedDay.trackedDayEntity,
-                            isDropZone: false,
-                            isCollapsible: true,
-                            initiallyExpanded: false,
-                            compact: true,
-                            foodPreviewLimit: null,
-                            horizontalMargin: 0,
-                          ),
-                          IntakeVerticalList(
-                            day: _selectedDate,
-                            title: S.of(context).snackLabel,
-                            listIcon: IntakeTypeEntity.snack.getIconData(),
-                            addMealType: AddMealType.snackType,
-                            intakeList: loadedDay.snackIntakeList,
-                            onDeleteIntakeCallback: onDeleteIntake,
-                            onItemLongPressedCallback: onIntakeItemLongPressed,
-                            onItemTappedCallback: onIntakeItemTapped,
-                            onCopyIntakeCallback: onCopyIntake,
-                            onCopyMealToDateCallback: onCopyMealToDate,
-                            usesImperialUnits: homeState is HomeLoadedState
-                                ? homeState.usesImperialUnits
-                                : false,
-                            trackedDayEntity: loadedDay.trackedDayEntity,
-                            isDropZone: false,
-                            isCollapsible: true,
-                            initiallyExpanded: false,
-                            compact: true,
-                            foodPreviewLimit: null,
-                            horizontalMargin: 0,
+                return BlocBuilder<HomeBloc, HomeState>(
+                  bloc: _homeBloc,
+                  builder: (context, homeState) {
+                    if (homeState is HomeInitial) {
+                      _homeBloc.add(const LoadItemsEvent());
+                    }
+
+                    final loadedDay = calendarDayState;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        DiarySummaryCard(
+                          intakes: [
+                            ...loadedDay.breakfastIntakeList,
+                            ...loadedDay.lunchIntakeList,
+                            ...loadedDay.dinnerIntakeList,
+                            ...loadedDay.snackIntakeList,
+                          ],
+                          // Same load as the meal lists below, so the bar and the
+                          // meals refresh together after adding a food.
+                          trackedDay: loadedDay.trackedDayEntity,
+                          selectedDayWeight: loadedDay.userWeightEntity,
+                          weeklyWeightDelta: loadedDay.weeklyWeightDelta,
+                          homeState:
+                              homeState is HomeLoadedState ? homeState : null,
+                          onEditWeight: _openSelectedDayWeightScreen,
+                        ),
+                        ...[
+                          const SizedBox(height: 14),
+                          ExpansionTile(
+                            key: ValueKey(
+                                'diary-meals-${DateUtils.dateOnly(_selectedDate)}'),
+                            initiallyExpanded: true,
+                            tilePadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                            childrenPadding: const EdgeInsets.only(top: 8),
+                            shape: const Border(),
+                            collapsedShape: const Border(),
+                            leading: Icon(Icons.restaurant_menu_rounded,
+                                color: Theme.of(context).colorScheme.primary),
+                            title: Text(S.of(context).mealsOfDayLabel,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w800)),
+                            children: [
+                              IntakeVerticalList(
+                                day: _selectedDate,
+                                title: S.of(context).breakfastLabel,
+                                listIcon:
+                                    IntakeTypeEntity.breakfast.getIconData(),
+                                addMealType: AddMealType.breakfastType,
+                                intakeList: loadedDay.breakfastIntakeList,
+                                onDeleteIntakeCallback: onDeleteIntake,
+                                onDeleteAllIntakesCallback: onDeleteIntakes,
+                                onItemLongPressedCallback:
+                                    onIntakeItemLongPressed,
+                                onItemTappedCallback: onIntakeItemTapped,
+                                onCopyIntakeCallback: onCopyIntake,
+                                onCopyMealToDateCallback: onCopyMealToDate,
+                                trackedDayEntity: loadedDay.trackedDayEntity,
+                                isDropZone: false,
+                                isCollapsible: true,
+                                initiallyExpanded: true,
+                                compact: true,
+                                foodPreviewLimit: null,
+                                horizontalMargin: 0,
+                              ),
+                              IntakeVerticalList(
+                                day: _selectedDate,
+                                title: S.of(context).lunchLabel,
+                                listIcon: IntakeTypeEntity.lunch.getIconData(),
+                                addMealType: AddMealType.lunchType,
+                                intakeList: loadedDay.lunchIntakeList,
+                                onDeleteIntakeCallback: onDeleteIntake,
+                                onDeleteAllIntakesCallback: onDeleteIntakes,
+                                onItemLongPressedCallback:
+                                    onIntakeItemLongPressed,
+                                onItemTappedCallback: onIntakeItemTapped,
+                                onCopyIntakeCallback: onCopyIntake,
+                                onCopyMealToDateCallback: onCopyMealToDate,
+                                trackedDayEntity: loadedDay.trackedDayEntity,
+                                isDropZone: false,
+                                isCollapsible: true,
+                                initiallyExpanded: true,
+                                compact: true,
+                                foodPreviewLimit: null,
+                                horizontalMargin: 0,
+                              ),
+                              IntakeVerticalList(
+                                day: _selectedDate,
+                                title: S.of(context).dinnerLabel,
+                                listIcon: IntakeTypeEntity.dinner.getIconData(),
+                                addMealType: AddMealType.dinnerType,
+                                intakeList: loadedDay.dinnerIntakeList,
+                                onDeleteIntakeCallback: onDeleteIntake,
+                                onDeleteAllIntakesCallback: onDeleteIntakes,
+                                onItemLongPressedCallback:
+                                    onIntakeItemLongPressed,
+                                onItemTappedCallback: onIntakeItemTapped,
+                                onCopyIntakeCallback: onCopyIntake,
+                                onCopyMealToDateCallback: onCopyMealToDate,
+                                trackedDayEntity: loadedDay.trackedDayEntity,
+                                isDropZone: false,
+                                isCollapsible: true,
+                                initiallyExpanded: true,
+                                compact: true,
+                                foodPreviewLimit: null,
+                                horizontalMargin: 0,
+                              ),
+                              IntakeVerticalList(
+                                day: _selectedDate,
+                                title: S.of(context).snackLabel,
+                                listIcon: IntakeTypeEntity.snack.getIconData(),
+                                addMealType: AddMealType.snackType,
+                                intakeList: loadedDay.snackIntakeList,
+                                onDeleteIntakeCallback: onDeleteIntake,
+                                onDeleteAllIntakesCallback: onDeleteIntakes,
+                                onItemLongPressedCallback:
+                                    onIntakeItemLongPressed,
+                                onItemTappedCallback: onIntakeItemTapped,
+                                onCopyIntakeCallback: onCopyIntake,
+                                onCopyMealToDateCallback: onCopyMealToDate,
+                                trackedDayEntity: loadedDay.trackedDayEntity,
+                                isDropZone: false,
+                                isCollapsible: true,
+                                initiallyExpanded: true,
+                                compact: true,
+                                foodPreviewLimit: null,
+                                horizontalMargin: 0,
+                              ),
+                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ],
+                      ],
+                    );
+                  },
                 );
               },
-            );
-          },
-        ),
-      ],
-    );
+            ),
+          ],
+        ));
   }
 
   void _onDateSelected(
@@ -269,13 +294,11 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
   void onIntakeItemTapped(
     BuildContext context,
     IntakeEntity intakeEntity,
-    bool usesImperialUnits,
   ) async {
     final dialogResult = await showDialog<EditDialogResult>(
       context: context,
       builder: (context) => EditDialog(
         intakeEntity: intakeEntity,
-        usesImperialUnits: usesImperialUnits,
       ),
     );
     if (dialogResult == null) {
@@ -305,18 +328,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
         if (!context.mounted) {
           return;
         }
-        await _calendarDayBloc.deleteIntakeItem(
-          context,
-          intakeEntity,
-          _selectedDate,
-        );
-        _refreshSelectedDay();
-        if (!context.mounted) {
-          return;
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
-        );
+        await onDeleteIntake(intakeEntity, null);
         break;
       case EditDialogAction.viewProduct:
         if (!context.mounted) {
@@ -328,7 +340,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
             intakeEntity.meal,
             intakeEntity.type,
             intakeEntity.dateTime,
-            usesImperialUnits,
+            intakeToEdit: intakeEntity,
           ),
         );
         break;
@@ -337,27 +349,19 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
 
   void onIntakeItemLongPressed(
       BuildContext context, IntakeEntity intakeEntity) async {
-    await _calendarDayBloc.deleteIntakeItem(
-      context,
-      intakeEntity,
-      _selectedDate,
-    );
-    _refreshSelectedDay();
-    if (!context.mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
-    );
+    await showIntakeActions(context, intakeEntity,
+        edit: () => onIntakeItemTapped(context, intakeEntity),
+        delete: () => onDeleteIntake(intakeEntity, null),
+        refresh: _refreshSelectedDay);
   }
 
-  void onCopyIntake(
+  Future<void> onCopyIntake(
     IntakeEntity intake,
     TrackedDayEntity? trackedDayEntity,
     AddMealType? type,
-  ) {
+  ) async {
     final targetMealType = type ?? _addMealTypeFromIntake(intake.type);
-    _mealDetailBloc.addIntake(
+    await _mealDetailBloc.addIntake(
       context,
       intake.unit,
       intake.amount.toString(),
@@ -405,9 +409,18 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
     }
   }
 
-  void onDeleteIntake(IntakeEntity intake, TrackedDayEntity? trackedDayEntity) {
-    _calendarDayBloc.deleteIntakeItem(context, intake, _selectedDate);
-    _refreshSelectedDay();
+  Future<void> onDeleteIntake(
+      IntakeEntity intake, TrackedDayEntity? trackedDayEntity) async {
+    await onDeleteIntakes([intake]);
+  }
+
+  Future<void> onDeleteIntakes(List<IntakeEntity> intakes) async {
+    final selectedDay = _selectedDate;
+    await deleteIntakesWithUndo(
+        context,
+        intakes,
+        (item) => _calendarDayBloc.deleteIntakeItem(context, item, selectedDay),
+        _refreshSelectedDay);
   }
 
   void _refreshSelectedDay() {

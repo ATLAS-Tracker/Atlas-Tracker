@@ -84,10 +84,10 @@ void main() {
       await tester.pumpWidget(app(
           SingleChildScrollView(
               child: MealItemCard(
-                  day: day,
-                  mealEntity: meal,
-                  addMealType: AddMealType.lunchType,
-                  usesImperialUnits: false)),
+            day: day,
+            mealEntity: meal,
+            addMealType: AddMealType.lunchType,
+          )),
           dark: dark, route: (settings) {
         requested = settings;
         return MaterialPageRoute<void>(builder: (_) => const Scaffold());

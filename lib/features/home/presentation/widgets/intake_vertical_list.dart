@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dart';
@@ -28,13 +30,15 @@ class IntakeVerticalList extends StatefulWidget {
   final IconData listIcon;
   final AddMealType addMealType;
   final List<IntakeEntity> intakeList;
-  final bool usesImperialUnits;
-  final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity)
+  final FutureOr<void> Function(
+          IntakeEntity intake, TrackedDayEntity? trackedDayEntity)
       onDeleteIntakeCallback;
+  final Future<void> Function(List<IntakeEntity>)? onDeleteAllIntakesCallback;
+  final Future<void> Function()? onCopyFromYesterday;
   final Function(BuildContext, IntakeEntity)? onItemLongPressedCallback;
   final Function(bool)? onItemDragCallback;
-  final Function(BuildContext, IntakeEntity, bool)? onItemTappedCallback;
-  final Function(
+  final Function(BuildContext, IntakeEntity)? onItemTappedCallback;
+  final FutureOr<void> Function(
     IntakeEntity intake,
     TrackedDayEntity? trackedDayEntity,
     AddMealType? type,
@@ -59,8 +63,9 @@ class IntakeVerticalList extends StatefulWidget {
     required this.listIcon,
     required this.addMealType,
     required this.intakeList,
-    required this.usesImperialUnits,
     required this.onDeleteIntakeCallback,
+    this.onDeleteAllIntakesCallback,
+    this.onCopyFromYesterday,
     this.onItemLongPressedCallback,
     this.onItemDragCallback,
     this.onItemTappedCallback,
@@ -340,6 +345,10 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                               }
                               final intakeEntity = widget.intakeList[index];
                               return LongPressDraggable<IntakeEntity>(
+                                maxSimultaneousDrags:
+                                    widget.onItemLongPressedCallback == null
+                                        ? 1
+                                        : 0,
                                 onDragStarted: () {
                                   widget.onItemDragCallback?.call(true);
                                 },
@@ -358,8 +367,6 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                       key: ValueKey(intakeEntity.meal.code),
                                       intake: intakeEntity,
                                       firstListElement: false,
-                                      usesImperialUnits:
-                                          widget.usesImperialUnits,
                                     ),
                                   ),
                                 ),
@@ -395,7 +402,6 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                       widget.onItemLongPressedCallback,
                                   onItemTapped: widget.onItemTappedCallback,
                                   firstListElement: firstListElement,
-                                  usesImperialUnits: widget.usesImperialUnits,
                                 ),
                               );
                             },
@@ -450,7 +456,8 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                       Text(widget.title,
                           style: theme.textTheme.titleMedium
                               ?.copyWith(fontWeight: FontWeight.w800)),
-                      Text('${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+                      Text(
+                          '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
                           style: theme.textTheme.bodySmall
                               ?.copyWith(color: colors.onSurfaceVariant)),
                     ],
@@ -510,11 +517,19 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: widget.intakeList.isEmpty
-                    ? TextButton.icon(
-                        onPressed: () => _onPlaceholderCardTapped(context),
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: Text(S.of(context).addLabel),
-                      )
+                    ? Column(children: [
+                        TextButton.icon(
+                          onPressed: () => _onPlaceholderCardTapped(context),
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: Text(S.of(context).addLabel),
+                        ),
+                        if (widget.onCopyFromYesterday != null)
+                          TextButton.icon(
+                              onPressed: widget.onCopyFromYesterday,
+                              icon: const Icon(Icons.copy_outlined, size: 18),
+                              label:
+                                  Text(S.of(context).copyFromYesterdayLabel)),
+                      ])
                     : Column(
                         children: [
                           for (final intake in (_showAllFoods ||
@@ -531,6 +546,10 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                 color: separatorColor,
                               ),
                             LongPressDraggable<IntakeEntity>(
+                              maxSimultaneousDrags:
+                                  widget.onItemLongPressedCallback == null
+                                      ? 1
+                                      : 0,
                               key: ValueKey(intake.id),
                               data: intake,
                               onDragStarted: () =>
@@ -546,7 +565,6 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                     key: ValueKey('drag-${intake.id}'),
                                     intake: intake,
                                     firstListElement: false,
-                                    usesImperialUnits: widget.usesImperialUnits,
                                     compact: true,
                                   ),
                                 ),
@@ -555,7 +573,6 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
                                 key: ValueKey('home-${intake.id}'),
                                 intake: intake,
                                 firstListElement: false,
-                                usesImperialUnits: widget.usesImperialUnits,
                                 onItemTapped: widget.onItemTappedCallback,
                                 onItemLongPressed:
                                     widget.onItemLongPressedCallback,
@@ -658,8 +675,12 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
       builder: (context) => const DeleteAllDialog(),
     );
     if (confirmed != true || !mounted) return;
+    if (widget.onDeleteAllIntakesCallback != null) {
+      await widget.onDeleteAllIntakesCallback!(List.of(widget.intakeList));
+      return;
+    }
     for (final intake in List<IntakeEntity>.of(widget.intakeList)) {
-      widget.onDeleteIntakeCallback(intake, widget.trackedDayEntity);
+      await widget.onDeleteIntakeCallback(intake, widget.trackedDayEntity);
     }
   }
 
@@ -678,7 +699,8 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
             );
             if (selectedMealType != null) {
               for (IntakeEntity intake in widget.intakeList) {
-                widget.onCopyIntakeCallback!(intake, null, selectedMealType);
+                await widget.onCopyIntakeCallback!(
+                    intake, null, selectedMealType);
               }
             }
             break;
@@ -767,19 +789,19 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
     await copyCallback(widget.intakeList, result.targetDate, result.mealType);
   }
 
-  void _onItemDropped(IntakeEntity entity) {
+  Future<void> _onItemDropped(IntakeEntity entity) async {
     if (!widget.isDropZone) {
       return;
     }
-    _mealDetailBloc.addIntake(
+    await _mealDetailBloc.addIntake(
       context,
       entity.unit,
       entity.amount.toString(),
       widget.addMealType.getIntakeType(),
       entity.meal,
-      entity.dateTime,
+      widget.day,
     );
-    _homeBloc.deleteIntakeItem(entity);
+    await _homeBloc.deleteIntakeItem(entity);
 
     locator<HomeBloc>().add(const LoadItemsEvent());
 
@@ -961,8 +983,8 @@ class _CopyMealToDateDialogState extends State<_CopyMealToDateDialog> {
     final selectedDate = await showDatePicker(
       context: context,
       initialDate: _targetDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 356)),
-      lastDate: DateTime.now().add(const Duration(days: 356)),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
       helpText: S.of(context).copyMealSelectDateLabel,
     );
 
@@ -1074,7 +1096,7 @@ class _MealCollapsedEnergy extends StatelessWidget {
         Icon(Icons.local_fire_department_rounded, size: 15, color: accentColor),
         const SizedBox(width: 5),
         Text(
-          '${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+          '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: theme.textTheme.labelLarge?.copyWith(
@@ -1106,21 +1128,24 @@ class _MealMacroTotals extends StatelessWidget {
             child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: _MealTotalChip(
-                    value: '${totalCarbs.toInt()} ${S.of(context).gramUnit}',
+                    value:
+                        '${formatNumber(totalCarbs)} ${S.of(context).gramUnit}',
                     visual: MacroVisuals.carbs))),
         const SizedBox(width: 6),
         Flexible(
             child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: _MealTotalChip(
-                    value: '${totalFats.toInt()} ${S.of(context).gramUnit}',
+                    value:
+                        '${formatNumber(totalFats)} ${S.of(context).gramUnit}',
                     visual: MacroVisuals.fats))),
         const SizedBox(width: 6),
         Flexible(
             child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: _MealTotalChip(
-                    value: '${totalProteins.toInt()} ${S.of(context).gramUnit}',
+                    value:
+                        '${formatNumber(totalProteins)} ${S.of(context).gramUnit}',
                     visual: MacroVisuals.proteins))),
       ],
     );
@@ -1136,7 +1161,7 @@ class _MealEnergyBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _MealTotalChip(
-      value: '${totalKcal.toInt()} ${S.of(context).kcalLabel}',
+      value: '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
       icon: Icons.local_fire_department_rounded,
       color: accentColor,
       emphasized: true,

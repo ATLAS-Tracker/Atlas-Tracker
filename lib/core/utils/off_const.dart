@@ -16,9 +16,9 @@ class OFFConst {
   static const _offSearchCountryFilter = 'countries_tags:"en:france"';
   // Drops sparse entries (no photo, no category...) that clutter results.
   static const _offSearchCompletenessFilter = 'completeness:[0.4 TO *]';
-  static const _offSearchSortTag = "sort_by";
-  // Most scanned first: the real LU "Prince" before obscure lookalikes.
-  static const _offSearchSortByPopularity = "-unique_scans_n";
+  // No sort_by: sorting by popularity overrode relevance, so a product matching
+  // one typed word outranked the one matching all of them. OFFDataSource ranks
+  // by matched words, then popularity (unique_scans_n).
   // Lucene operators in user input would break or alter the query.
   static final _offSearchSyntaxChars = RegExp(r'[+\-!(){}\[\]^"~*?:\\/&|]');
   static const _offFieldsTag = "fields";
@@ -44,6 +44,7 @@ class OFFConst {
   static const _offServingQuantityTag = "serving_quantity";
   static const _offServingSizeTag = "serving_size";
   static const _offNutrimentsTag = "nutriments";
+  static const _offUniqueScansTag = "unique_scans_n";
 
   static const _returnFields = [
     _offCodeTag,
@@ -60,7 +61,8 @@ class OFFConst {
     _offQuantityTag,
     _offServingQuantityTag,
     _offServingSizeTag,
-    _offNutrimentsTag
+    _offNutrimentsTag,
+    _offUniqueScansTag
   ];
 
   static String _getReturnFields() => _returnFields.join(",");
@@ -68,17 +70,21 @@ class OFFConst {
   static const _offPageSizeTag = "page_size";
   static const _offPageTag = "page";
 
+  /// [brand] restricts to products whose brand contains that word
+  /// ("brands:carrefour"), for a brand typed among the search words.
   static Uri getOffWordSearchUrl(String searchString,
-      {int page = 1, int pageSize = 20}) {
+      {int page = 1, int pageSize = 20, String? brand}) {
     final terms = searchString.replaceAll(_offSearchSyntaxChars, ' ').trim();
+    final brandFilter = brand == null
+        ? ''
+        : ' brands:${brand.replaceAll(_offSearchSyntaxChars, '')}';
     final queryParameters = {
       _offSearchQueryTag:
-          '$terms $_offSearchCountryFilter $_offSearchCompletenessFilter',
+          '$terms$brandFilter $_offSearchCountryFilter $_offSearchCompletenessFilter',
       _offSearchLangsTag: 'fr',
       _offFieldsTag: _getReturnFields(),
       _offPageTag: page.toString(),
       _offPageSizeTag: pageSize.toString(),
-      _offSearchSortTag: _offSearchSortByPopularity,
     };
 
     return Uri.https(_offSearchBaseUrl, _offSearchTag, queryParameters);

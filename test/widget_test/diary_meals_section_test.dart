@@ -21,11 +21,10 @@ class MockDetail extends Mock implements MealDetailBloc {}
 
 void main() {
   tearDown(() => locator.reset());
-  testWidgets(
-      'journal meals start collapsed, expand and reset when changing date',
+  testWidgets('journal meals are immediately accessible when changing date',
       (tester) async {
     final diary = MockDiary();
-    when(() => diary.state).thenReturn(const DiaryLoadedState({}, false));
+    when(() => diary.state).thenReturn(const DiaryLoadedState({}));
     when(() => diary.stream)
         .thenAnswer((_) => const Stream<DiaryState>.empty());
     final day = MockDay();
@@ -52,15 +51,13 @@ void main() {
       home: const Scaffold(body: DiaryPage()),
     ));
     await tester.pumpAndSettle();
-    expect(find.text(S.current.breakfastLabel), findsNothing);
+    expect(find.text(S.current.breakfastLabel), findsOneWidget);
     final calendar =
         tester.widget<DiaryTableCalendar>(find.byType(DiaryTableCalendar));
     final meals = find.text(S.current.mealsOfDayLabel);
     await tester.scrollUntilVisible(meals, 250,
         scrollable: find.byType(Scrollable).first);
     await tester.ensureVisible(meals);
-    await tester.pumpAndSettle();
-    await tester.tap(meals);
     await tester.pumpAndSettle();
     expect(find.text(S.current.breakfastLabel), findsOneWidget);
     expect(find.text(S.current.lunchLabel), findsOneWidget);
@@ -69,7 +66,7 @@ void main() {
     calendar
         .onDateSelected(DateTime.now().subtract(const Duration(days: 1)), {});
     await tester.pumpAndSettle();
-    expect(find.text(S.current.breakfastLabel), findsNothing);
+    expect(find.text(S.current.breakfastLabel), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

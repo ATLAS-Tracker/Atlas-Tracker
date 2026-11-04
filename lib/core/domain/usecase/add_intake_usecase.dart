@@ -9,4 +9,7 @@ class AddIntakeUsecase {
   Future<void> addIntake(IntakeEntity intakeEntity) async {
     return await _intakeRepository.addIntake(intakeEntity);
   }
+
+  Future<void> addIntakes(List<IntakeEntity> intakes) =>
+      _intakeRepository.addIntakes(intakes);
 }

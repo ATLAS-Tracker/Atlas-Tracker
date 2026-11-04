@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_tab_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,17 +7,17 @@ import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_weight_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
 import 'package:opennutritracker/core/presentation/widgets/editable_text_widget.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
 import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
-import 'package:opennutritracker/core/utils/calc/unit_calc.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_weight/presentation/bloc/weight_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
@@ -23,10 +25,8 @@ import 'package:opennutritracker/generated/l10n.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
 
-String _formatWeight(double weight, {bool signed = false}) {
-  final sign = signed && weight > 0 ? '+' : '';
-  return '$sign${NumberFormat('0.0').format(weight)}';
-}
+String _formatWeight(double weight, {bool signed = false}) =>
+    formatNumber(weight, decimals: 1, signed: signed);
 
 String _capitalizeFirst(String value) {
   if (value.isEmpty) return value;
@@ -48,7 +48,6 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
   late AddWeightUsecase _addWeightUsecase;
   late GetWeightUsecase _getWeightUsecase;
   late GetUserUsecase _getUserUsecase;
-  late GetConfigUsecase _getConfigUsecase;
   late CalendarDayBloc _calendarDayBloc;
   late DateTime _day;
   late bool _isEditable;
@@ -67,7 +66,6 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
     _addWeightUsecase = locator<AddWeightUsecase>();
     _getWeightUsecase = locator<GetWeightUsecase>();
     _getUserUsecase = locator<GetUserUsecase>();
-    _getConfigUsecase = locator<GetConfigUsecase>();
     _calendarDayBloc = locator<CalendarDayBloc>();
   }
 
@@ -114,26 +112,20 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
       _day,
       _summaryDays,
     );
-    final lastRecordedWeight = await _getWeightUsecase.getLastUserWeight(_day);
+    final snapshot = await _getWeightUsecase.getSnapshot(_day);
     final userData = await _getUserUsecase.getUserData();
-    final config = await _getConfigUsecase.getConfig();
 
     return WeightSummary(
       averageWeight: averageWeight,
-      lastRecordedWeight: lastRecordedWeight,
-      targetWeight: userData.weightKG,
+      lastRecordedWeight: snapshot.current?.weight,
+      weeklyWeightDelta: snapshot.delta,
       userWeightGoal: userData.goal,
-      usesImperialUnits: config.usesImperialUnits,
       weightDataList: weightDataList,
     );
   }
 
   double roundDecimal(double number, {int nbDecimal = 1}) {
     return (number * 10 * nbDecimal).round() / (10 * nbDecimal);
-  }
-
-  double _displayWeight(double weightKg, bool usesImperialUnits) {
-    return usesImperialUnits ? UnitCalc.kgToLbs(weightKg) : weightKg;
   }
 
   bool _hasSavedWeightForDay(WeightSummary summary) {
@@ -193,38 +185,17 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
             return BlocBuilder<WeightBloc, WeightState>(
               bloc: _weightBloc,
               builder: (context, state) {
-                final unit = weightSummary.usesImperialUnits
-                    ? S.of(context).lbsLabel
-                    : S.of(context).kgLabel;
+                final unit = S.of(context).kgLabel;
                 final overviewChildren = <Widget>[
                   _WeightHeroCard(
-                    currentWeight: _displayWeight(
-                      weightSummary.lastRecordedWeight,
-                      weightSummary.usesImperialUnits,
-                    ),
-                    averageWeight: _displayWeight(
-                      weightSummary.averageWeight,
-                      weightSummary.usesImperialUnits,
-                    ),
-                    targetWeight: _displayWeight(
-                      weightSummary.targetWeight,
-                      weightSummary.usesImperialUnits,
-                    ),
+                    currentWeight: weightSummary.lastRecordedWeight,
+                    delta: weightSummary.weeklyWeightDelta,
                     unit: unit,
                     goal: weightSummary.userWeightGoal,
-                    trendColor: weightTrendColor(
-                      deltaKg: weightSummary.lastRecordedWeight -
-                          weightSummary.averageWeight,
-                      goal: weightSummary.userWeightGoal,
-                      colors: colorScheme,
-                    ),
                   ),
                   const SizedBox(height: 22),
                   _WeightSelectorCard(
-                    weight: _displayWeight(
-                      state.weight,
-                      weightSummary.usesImperialUnits,
-                    ),
+                    weight: state.weight,
                     unit: unit,
                     day: _day,
                     isReadOnly: _isEditable || _isSaving,
@@ -239,7 +210,6 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                     day: _day,
                     initialData: weightSummary.weightDataList,
                     averageWeight: weightSummary.averageWeight,
-                    usesImperialUnits: weightSummary.usesImperialUnits,
                   ),
                   if (_hasSavedWeightForDay(weightSummary)) ...[
                     const SizedBox(height: 16),
@@ -253,8 +223,8 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                 final historyChildren = <Widget>[
                   _WeightHistoryCard(
                     day: _day,
-                    usesImperialUnits: weightSummary.usesImperialUnits,
                     userWeightGoal: weightSummary.userWeightGoal,
+                    onEdit: _isEditable ? null : _editHistoryWeight,
                   ),
                 ];
 
@@ -299,8 +269,9 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
       _savedWeightKg = null;
     });
     try {
+      final existing = await _getWeightUsecase.getUserWeightByDate(savedDay);
       await _addWeightUsecase.addUserWeight(UserWeightEntity(
-        id: IdGenerator.getUniqueID(),
+        id: existing?.id ?? IdGenerator.getUniqueID(),
         weight: roundedWeight,
         date: savedDay,
         updatedAt: DateTime.now().toUtc(),
@@ -324,22 +295,40 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
     }
   }
 
+  Future<void> _editHistoryWeight(DateTime day) async {
+    await Navigator.of(context).pushNamed(NavigationOptions.addWeightRoute,
+        arguments: AddWeightScreenArguments(day: day, isReadOnly: false));
+    if (!mounted) return;
+    _weightBloc.add(WeightLoadInitialRequested(_day));
+    setState(() => _summaryFuture = _getWeightsSummary());
+  }
+
   Future<void> _onDeleteWeightPressed(BuildContext context) async {
     final deleteWeight = await showDialog<bool>(
       context: context,
       builder: (context) => const DeleteDialog(),
     );
     if (deleteWeight != true) return;
-
-    await _calendarDayBloc.deleteUserWeightItem(_day);
+    final deletedDay = _day;
+    final original = await _getWeightUsecase.getUserWeightByDate(deletedDay);
+    if (original == null) return;
+    await _calendarDayBloc.deleteUserWeightItem(deletedDay);
     _homeBloc.add(const LoadItemsEvent());
     _calendarDayBloc.add(const RefreshCalendarDayEvent());
     _weightBloc.add(WeightLoadInitialRequested(_day));
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(S.of(context).weightDeletedSnackbar)),
-    );
+    showUndo(context, () async {
+      await _addWeightUsecase.addUserWeight(UserWeightEntity(
+          id: original.id,
+          weight: original.weight,
+          date: original.date,
+          updatedAt: DateTime.now().toUtc()));
+      _homeBloc.add(const LoadItemsEvent());
+      _calendarDayBloc.add(const RefreshCalendarDayEvent());
+      _weightBloc.add(WeightLoadInitialRequested(_day));
+      if (mounted) setState(() => _summaryFuture = _getWeightsSummary());
+    });
     setState(() {
       _savedWeightKg = null;
       _summaryFuture = _getWeightsSummary();
@@ -348,19 +337,15 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
 }
 
 class _WeightHeroCard extends StatelessWidget {
-  final double currentWeight;
-  final double averageWeight;
-  final double targetWeight;
+  final double? currentWeight;
+  final double? delta;
   final String unit;
-  final Color trendColor;
   final UserWeightGoalEntity goal;
 
   const _WeightHeroCard({
     required this.currentWeight,
-    required this.averageWeight,
-    required this.targetWeight,
+    required this.delta,
     required this.unit,
-    required this.trendColor,
     required this.goal,
   });
 
@@ -372,9 +357,6 @@ class _WeightHeroCard extends StatelessWidget {
         ? lightColorScheme.onPrimary
         : colorScheme.onPrimary;
     final brandSecondary = brandOnSurface.withValues(alpha: 0.78);
-    final brandDivider = brandOnSurface.withValues(alpha: 0.16);
-    final delta = currentWeight - averageWeight;
-    final remaining = (targetWeight - currentWeight).abs();
 
     return AtlasBrandPanel(
       padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
@@ -403,7 +385,10 @@ class _WeightHeroCard extends StatelessWidget {
                       child: Text.rich(
                         TextSpan(
                           children: [
-                            TextSpan(text: _formatWeight(currentWeight)),
+                            TextSpan(
+                                text: currentWeight == null
+                                    ? '—'
+                                    : _formatWeight(currentWeight!)),
                             TextSpan(
                               text: ' $unit',
                               style: theme.textTheme.headlineSmall?.copyWith(
@@ -422,9 +407,11 @@ class _WeightHeroCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '${_formatWeight(delta, signed: true)} $unit',
+                      delta == null
+                          ? '—'
+                          : '${_formatWeight(delta!, signed: true)} $unit',
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: trendColor,
+                        color: brandOnSurface,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -443,29 +430,6 @@ class _WeightHeroCard extends StatelessWidget {
           Text('${S.of(context).goalLabel} : ${goal.getName(context)}',
               style: theme.textTheme.bodyMedium?.copyWith(
                   color: brandOnSurface, fontWeight: FontWeight.w600)),
-          const SizedBox(height: 20),
-          Divider(height: 1, thickness: 1, color: brandDivider),
-          const SizedBox(height: 22),
-          Row(
-            children: [
-              Expanded(
-                child: _HeroMetric(
-                  label: S.of(context).weightGoalShortLabel,
-                  value: '${_formatWeight(targetWeight)} $unit',
-                ),
-              ),
-              Container(width: 1, height: 56, color: brandDivider),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 26),
-                  child: _HeroMetric(
-                    label: S.of(context).remainingToLoseLabel,
-                    value: '${_formatWeight(remaining)} $unit',
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -540,44 +504,6 @@ class _ScaleGlyphPainter extends CustomPainter {
   bool shouldRepaint(covariant _ScaleGlyphPainter oldDelegate) {
     return oldDelegate.dialColor != dialColor ||
         oldDelegate.needleColor != needleColor;
-  }
-}
-
-class _HeroMetric extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _HeroMetric({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final brandOnSurface = colorScheme.brightness == Brightness.dark
-        ? lightColorScheme.onPrimary
-        : colorScheme.onPrimary;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: brandOnSurface.withValues(alpha: 0.76),
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          value,
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: brandOnSurface,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
-          ),
-        ),
-      ],
-    );
   }
 }
 
@@ -851,6 +777,9 @@ class _WeightAdjustButton extends StatelessWidget {
           ],
         ),
         child: IconButton(
+          tooltip: icon == Icons.add
+              ? S.of(context).increaseWeightLabel
+              : S.of(context).decreaseWeightLabel,
           onPressed: onPressed,
           icon: Icon(icon, size: 28),
           color: colorScheme.primary,
@@ -930,13 +859,11 @@ class _WeightEvolutionCard extends StatefulWidget {
   final DateTime day;
   final List<WeightData> initialData;
   final double averageWeight;
-  final bool usesImperialUnits;
 
   const _WeightEvolutionCard({
     required this.day,
     required this.initialData,
     required this.averageWeight,
-    required this.usesImperialUnits,
   });
 
   @override
@@ -958,16 +885,11 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
   void didUpdateWidget(covariant _WeightEvolutionCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.day != widget.day ||
-        oldWidget.initialData != widget.initialData ||
-        oldWidget.usesImperialUnits != widget.usesImperialUnits) {
+        oldWidget.initialData != widget.initialData) {
       _chartDataFuture = _selectedRange == _WeightChartRange.sevenDays
           ? Future.value(widget.initialData)
           : _loadChartData(_selectedRange);
     }
-  }
-
-  double _displayWeight(double weightKg) {
-    return widget.usesImperialUnits ? UnitCalc.kgToLbs(weightKg) : weightKg;
   }
 
   Future<List<WeightData>> _loadChartData(_WeightChartRange range) async {
@@ -1017,47 +939,6 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
     }).reversed.toList();
 
     return rawData;
-  }
-
-  List<WeightData> _interpolateMissingWeights(List<WeightData> rawData) {
-    if (rawData.isEmpty) return rawData;
-
-    final knownIndexes = <int>[
-      for (var i = 0; i < rawData.length; i++)
-        if (rawData[i].weight != null) i,
-    ];
-
-    if (knownIndexes.isEmpty) return rawData;
-
-    return List.generate(rawData.length, (index) {
-      final point = rawData[index];
-      if (point.weight != null) return point;
-
-      final previousIndex = knownIndexes.lastWhere(
-        (knownIndex) => knownIndex < index,
-        orElse: () => -1,
-      );
-      final nextIndex = knownIndexes.firstWhere(
-        (knownIndex) => knownIndex > index,
-        orElse: () => -1,
-      );
-
-      if (previousIndex == -1 && nextIndex == -1) return point;
-      if (previousIndex == -1) {
-        return WeightData(point.date, rawData[nextIndex].weight);
-      }
-      if (nextIndex == -1) {
-        return WeightData(point.date, rawData[previousIndex].weight);
-      }
-
-      final previous = rawData[previousIndex];
-      final next = rawData[nextIndex];
-      final totalGap = nextIndex - previousIndex;
-      final progress = (index - previousIndex) / totalGap;
-      final interpolated =
-          previous.weight! + (next.weight! - previous.weight!) * progress;
-      return WeightData(point.date, interpolated);
-    });
   }
 
   String _rangeLabel(BuildContext context, _WeightChartRange range) {
@@ -1127,24 +1008,13 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
     }
   }
 
-  List<WeightData> _displayData(List<WeightData> rawData) {
-    return rawData
-        .map(
-          (point) => WeightData(
-            point.date,
-            point.weight == null ? null : _displayWeight(point.weight!),
-          ),
-        )
-        .toList();
-  }
-
   List<WeightData> _recordedDisplayData(List<WeightData> rawData) {
     return rawData
         .where((point) => point.weight != null)
         .map(
           (point) => WeightData(
             point.date,
-            _displayWeight(point.weight!),
+            point.weight!,
           ),
         )
         .toList();
@@ -1155,7 +1025,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
         .where((point) => point.weight != null)
         .map((point) => point.weight!)
         .toList();
-    if (weights.isEmpty) return _displayWeight(widget.averageWeight);
+    if (weights.isEmpty) return widget.averageWeight;
     return weights.reduce((a, b) => a + b) / weights.length;
   }
 
@@ -1173,7 +1043,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
             : null,
         builder: (context, snapshot) {
           final rawData = snapshot.data ?? widget.initialData;
-          final chartData = _displayData(_interpolateMissingWeights(rawData));
+          final chartData = _recordedDisplayData(rawData);
           final recordedData = _recordedDisplayData(rawData);
           final isDenseRange = chartData.length > 31;
           final displayedAverage = _safeAverage(recordedData);
@@ -1223,10 +1093,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
               if (recordedData.isNotEmpty)
                 Text(
                     S.of(context).weightPeriodAverage(
-                        _formatWeight(displayedAverage),
-                        widget.usesImperialUnits
-                            ? S.of(context).lbsLabel
-                            : S.of(context).kgLabel),
+                        _formatWeight(displayedAverage), S.of(context).kgLabel),
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: colorScheme.onSurfaceVariant)),
               const SizedBox(height: 18),
@@ -1276,8 +1143,8 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                           shouldRenderAboveSeries: true,
                         )
                       ],
-                      interval: 0.5,
-                      numberFormat: NumberFormat('0.#'),
+                      desiredIntervals: 4,
+                      numberFormat: numberFormatter(decimals: 1),
                       maximum:
                           paddedMax == paddedMin ? paddedMax + 1 : paddedMax,
                       minimum:
@@ -1300,9 +1167,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                       elevation: 0,
                       builder: (data, point, series, pointIndex, seriesIndex) {
                         final weightPoint = data as WeightData;
-                        final unit = widget.usesImperialUnits
-                            ? S.of(context).lbsLabel
-                            : S.of(context).kgLabel;
+                        final unit = S.of(context).kgLabel;
                         return _WeightChartTooltip(
                           date: weightPoint.date,
                           weight: weightPoint.weight ?? 0,
@@ -1343,9 +1208,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                         if (date is! DateTime || weight is! num) {
                           return const SizedBox.shrink();
                         }
-                        final unit = widget.usesImperialUnits
-                            ? S.of(context).lbsLabel
-                            : S.of(context).kgLabel;
+                        final unit = S.of(context).kgLabel;
                         return _WeightChartTooltip(
                           date: date,
                           weight: weight.toDouble(),
@@ -1455,13 +1318,13 @@ class _DeleteWeightCard extends StatelessWidget {
 
 class _WeightHistoryCard extends StatefulWidget {
   final DateTime day;
-  final bool usesImperialUnits;
   final UserWeightGoalEntity userWeightGoal;
+  final ValueChanged<DateTime>? onEdit;
 
   const _WeightHistoryCard({
     required this.day,
-    required this.usesImperialUnits,
     required this.userWeightGoal,
+    this.onEdit,
   });
 
   @override
@@ -1482,7 +1345,6 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
   void didUpdateWidget(covariant _WeightHistoryCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.day != widget.day ||
-        oldWidget.usesImperialUnits != widget.usesImperialUnits ||
         oldWidget.userWeightGoal != widget.userWeightGoal) {
       _historyFuture = _loadHistory();
     }
@@ -1501,17 +1363,7 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
 
     final entries = <_WeightHistoryEntry>[];
     for (final weight in filteredWeights) {
-      final pastWeights = await _getWeightUsecase.getWeightsFromPastDays(
-        weight.date,
-        7,
-      );
-      final delta = pastWeights.isEmpty
-          ? null
-          : weight.weight -
-              (pastWeights.map((entry) => entry.weight).reduce(
-                        (value, element) => value + element,
-                      ) /
-                  pastWeights.length);
+      final delta = WeightSnapshot.at(weight.date, weights).delta;
       entries.add(_WeightHistoryEntry(weight: weight, delta: delta));
     }
     return entries;
@@ -1521,9 +1373,7 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final unit = widget.usesImperialUnits
-        ? S.of(context).lbsLabel
-        : S.of(context).kgLabel;
+    final unit = S.of(context).kgLabel;
 
     return FutureBuilder<List<_WeightHistoryEntry>>(
       future: _historyFuture,
@@ -1566,8 +1416,8 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
               _WeightHistoryListCard(
                 entries: entries,
                 unit: unit,
-                usesImperialUnits: widget.usesImperialUnits,
                 userWeightGoal: widget.userWeightGoal,
+                onEdit: widget.onEdit,
               ),
           ],
         );
@@ -1579,14 +1429,14 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
 class _WeightHistoryListCard extends StatelessWidget {
   final List<_WeightHistoryEntry> entries;
   final String unit;
-  final bool usesImperialUnits;
   final UserWeightGoalEntity userWeightGoal;
+  final ValueChanged<DateTime>? onEdit;
 
   const _WeightHistoryListCard({
     required this.entries,
     required this.unit,
-    required this.usesImperialUnits,
     required this.userWeightGoal,
+    this.onEdit,
   });
 
   @override
@@ -1597,8 +1447,10 @@ class _WeightHistoryListCard extends StatelessWidget {
           _WeightHistoryTile(
             entry: entries[index],
             unit: unit,
-            usesImperialUnits: usesImperialUnits,
             userWeightGoal: userWeightGoal,
+            onEdit: onEdit == null
+                ? null
+                : () => onEdit!(entries[index].weight.date),
           ),
           if (index != entries.length - 1) const SizedBox(height: 12),
         ],
@@ -1610,19 +1462,15 @@ class _WeightHistoryListCard extends StatelessWidget {
 class _WeightHistoryTile extends StatelessWidget {
   final _WeightHistoryEntry entry;
   final String unit;
-  final bool usesImperialUnits;
   final UserWeightGoalEntity userWeightGoal;
+  final VoidCallback? onEdit;
 
   const _WeightHistoryTile({
     required this.entry,
     required this.unit,
-    required this.usesImperialUnits,
     required this.userWeightGoal,
+    this.onEdit,
   });
-
-  double _displayWeight(double weightKg) {
-    return usesImperialUnits ? UnitCalc.kgToLbs(weightKg) : weightKg;
-  }
 
   IconData _variationIcon(double deltaKg) {
     return deltaKg >= 0
@@ -1639,7 +1487,7 @@ class _WeightHistoryTile extends StatelessWidget {
       DateFormat('EEEE d MMMM', locale).format(entry.weight.date),
     );
     final deltaKg = entry.delta;
-    final displayedDelta = deltaKg == null ? null : _displayWeight(deltaKg);
+    final displayedDelta = deltaKg;
     final variationColor = deltaKg == null
         ? colorScheme.onSurfaceVariant
         : weightTrendColor(
@@ -1651,6 +1499,12 @@ class _WeightHistoryTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (onEdit != null)
+            IconButton(
+                key: ValueKey('edit-weight-${entry.weight.id}'),
+                tooltip: S.of(context).editWeightLabel,
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined)),
           Expanded(
             child: Text(
               dateLabel,
@@ -1675,7 +1529,7 @@ class _WeightHistoryTile extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '${_formatWeight(_displayWeight(entry.weight.weight))} $unit',
+                      '${_formatWeight(entry.weight.weight)} $unit',
                       textAlign: TextAlign.right,
                       maxLines: 1,
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -1962,18 +1816,16 @@ class WeightData {
 
 class WeightSummary {
   final double averageWeight;
-  final double lastRecordedWeight;
-  final double targetWeight;
+  final double? lastRecordedWeight;
+  final double? weeklyWeightDelta;
   final UserWeightGoalEntity userWeightGoal;
-  final bool usesImperialUnits;
   final List<WeightData> weightDataList;
 
   WeightSummary({
     required this.averageWeight,
     required this.lastRecordedWeight,
-    required this.targetWeight,
+    required this.weeklyWeightDelta,
     required this.userWeightGoal,
-    required this.usesImperialUnits,
     required this.weightDataList,
   });
 }

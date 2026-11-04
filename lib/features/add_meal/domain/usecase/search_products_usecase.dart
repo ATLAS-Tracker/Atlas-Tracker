@@ -19,6 +19,9 @@ class SearchProductsUseCase {
   SearchProductsUseCase(this._productsRepository);
   static final _log = Logger('SearchProductsUseCase');
   static const Duration _offTimeout = Duration(seconds: 10);
+  // OFF hits are ranked locally: a wide page lets the products matching every
+  // typed word reach the top (50 ranked as well as 100 in field tests).
+  static const _offPageSize = 50;
 
   Future<List<MealEntity>> searchOFFProductsByString(String searchString,
       {int page = 1, int pageSize = 20}) async {
@@ -65,21 +68,21 @@ class SearchProductsUseCase {
           return const <MealEntity>[];
         });
 
-    final results = await Future.wait<List<MealEntity>>([
+    final [off, supabase] = await Future.wait<List<MealEntity>>([
       orEmpty(_productsRepository
           .getOFFProductsByString(searchString,
-              page: page + 1, pageSize: pageSize)
+              page: page + 1, pageSize: _offPageSize)
           .timeout(_offTimeout)),
       orEmpty(_productsRepository.getSupabaseFDCFoodsByString(searchString,
           page: page, pageSize: pageSize)),
     ]);
-    if (failures == results.length) {
+    if (failures == 2) {
       throw StateError('All product search sources failed');
     }
 
     return SearchProductsPage(
-      results: results.expand((r) => r).toList(),
-      hasMore: results.any((r) => r.length == pageSize),
+      results: [...off, ...supabase],
+      hasMore: off.length >= _offPageSize || supabase.length == pageSize,
     );
   }
 }

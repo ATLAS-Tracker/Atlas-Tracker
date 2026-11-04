@@ -9,6 +9,8 @@ import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'package:opennutritracker/features/scanner/presentation/bloc/scanner_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/features/edit_meal/presentation/edit_meal_screen.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 
 import 'package:opennutritracker/features/scanner/presentation/widget/missing_nutrients_dialog.dart';
 
@@ -27,11 +29,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
   late DateTime _day;
 
   late ScannerBloc _scannerBloc;
+  late MobileScannerController _cameraController;
+  bool _scanInFlight = false;
+  bool _navigating = false;
 
   @override
   void initState() {
     _scannerBloc = locator<ScannerBloc>();
+    _cameraController = MobileScannerController();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _cameraController.dispose();
+    _scannerBloc.close();
+    super.dispose();
   }
 
   @override
@@ -55,6 +68,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
               appBar: AppBar(),
               body: const Center(child: CircularProgressIndicator()));
         } else if (state is ScannerLoadedState) {
+          if (_navigating) return const SizedBox();
+          _navigating = true;
           // Push new route after build
           Future.microtask(() {
             if (!context.mounted) return;
@@ -69,8 +84,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             return MissingNutrientsDialog(
                                 day: _day,
                                 mealEntity: state.product,
-                                intakeTypeEntity: _intakeTypeEntity,
-                                usesImperialUnits: state.usesImperialUnits);
+                                intakeTypeEntity: _intakeTypeEntity);
                           },
                         );
                       }
@@ -80,7 +94,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
               state.product,
               _intakeTypeEntity,
               _day,
-              state.usesImperialUnits,
               postNavigationAction: postNavigationAction,
             );
 
@@ -94,13 +107,25 @@ class _ScannerScreenState extends State<ScannerScreen> {
           return Scaffold(
               appBar: AppBar(),
               body: Center(
-                child: ErrorDialog(
-                  errorText:
-                      state.type == ScannerFailedStateType.productNotFound
-                          ? S.of(context).errorProductNotFound
-                          : S.of(context).errorFetchingProductData,
-                  onRefreshPressed: _onRefreshButtonPressed,
-                ),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  ErrorDialog(
+                    errorText:
+                        state.type == ScannerFailedStateType.productNotFound
+                            ? S.of(context).errorProductNotFound
+                            : S.of(context).errorFetchingProductData,
+                    onRefreshPressed: _onRefreshButtonPressed,
+                  ),
+                  TextButton.icon(
+                      icon: const Icon(Icons.edit_outlined),
+                      label: Text(S.of(context).customFoodTitle),
+                      onPressed: () => Navigator.of(context)
+                          .pushReplacementNamed(NavigationOptions.editMealRoute,
+                              arguments: EditMealScreenArguments(
+                                  _day,
+                                  MealEntity.empty()
+                                      .copyWith(code: _scannedBarcode),
+                                  _intakeTypeEntity))),
+                ]),
               ));
         }
         return const SizedBox();
@@ -109,12 +134,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Scaffold _getScannerContent(BuildContext context) {
-    final cameraController = MobileScannerController();
+    final cameraController = _cameraController;
     return Scaffold(
       appBar: AppBar(
         title: Text(S.of(context).scanProductLabel),
         actions: [
           IconButton(
+            tooltip: S.of(context).toggleFlashLabel,
             icon: ValueListenableBuilder(
               valueListenable: cameraController,
               builder: (context, state, child) {
@@ -130,6 +156,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
             onPressed: () => cameraController.toggleTorch(),
           ),
           IconButton(
+            tooltip: S.of(context).switchCameraLabel,
             icon: const Icon(Icons.flip_camera_android_outlined),
             onPressed: () => cameraController.switchCamera(),
           ),
@@ -138,16 +165,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
       body: MobileScanner(
           controller: cameraController,
           onDetect: (capture) {
+            if (_scanInFlight) return;
             final List<Barcode> barcodes = capture.barcodes;
             for (final barcode in barcodes) {
               if (barcode.rawValue != null &&
                   barcode.type == BarcodeType.product) {
                 final barcodeResult = barcode.rawValue;
                 if (barcodeResult != null) {
+                  _scanInFlight = true;
                   _scannedBarcode = barcodeResult;
                   log.fine('Barcode found: $barcodeResult');
                   _scannerBloc
                       .add(ScannerLoadProductEvent(barcode: barcodeResult));
+                  break;
                 }
               }
             }

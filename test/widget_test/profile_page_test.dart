@@ -54,12 +54,11 @@ void main() {
             userBMI: const UserBMIEntity(
                 bmiValue: 24,
                 nutritionalStatus: UserNutritionalStatus.normalWeight),
-            userEntity: user,
-            usesImperialUnits: false));
+            userEntity: user));
         when(() => bloc.stream)
             .thenAnswer((_) => const Stream<ProfileState>.empty());
-        when(() => bloc.getDisplayWeight(user, false)).thenReturn('78.4');
-        when(() => bloc.getDisplayHeight(user, false)).thenReturn('180');
+        when(() => bloc.getDisplayWeight(user)).thenReturn('78.4');
+        when(() => bloc.getDisplayHeight(user)).thenReturn('180');
         locator.registerSingleton<ProfileBloc>(bloc);
         final home = MockHomeBloc();
         final homeState = MockHomeLoadedState();

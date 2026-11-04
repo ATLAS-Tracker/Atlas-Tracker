@@ -43,6 +43,10 @@ void main() {
       when(() => recipes.stream)
           .thenAnswer((_) => const Stream<RecipeSearchState>.empty());
       final add = MockAddMealBloc();
+      when(() => add.close()).thenAnswer((_) async {});
+      when(() => products.close()).thenAnswer((_) async {});
+      when(() => recent.close()).thenAnswer((_) async {});
+      when(() => recipes.close()).thenAnswer((_) async {});
       when(() => add.state).thenReturn(const AddMealLoadedState());
       when(() => add.stream)
           .thenAnswer((_) => const Stream<AddMealState>.empty());
@@ -76,6 +80,10 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(TextField), findsOneWidget);
       expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+      verify(() => add.close()).called(1);
+      verify(() => products.close()).called(1);
     });
   }
 }

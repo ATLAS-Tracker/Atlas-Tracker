@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/core/domain/entity/physical_activity_entity.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/activity_detail/activity_detail_screen.dart';
@@ -32,19 +33,24 @@ class ActivityItemCard extends StatelessWidget {
               ),
               title: AutoSizeText(
                 physicalActivityEntity.getName(context),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: AutoSizeText(
                 physicalActivityEntity.getDescription(context),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
               trailing: IconButton(
+                tooltip: S.of(context).addLabel,
                 style: IconButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.onSurface),
                 icon: const Icon(Icons.add_outlined),

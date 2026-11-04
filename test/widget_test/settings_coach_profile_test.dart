@@ -31,8 +31,8 @@ void main() {
   for (final role in UserRoleEntity.values) {
     testWidgets('coach profile entry in settings, role=$role', (tester) async {
       final settings = MockSettingsBloc();
-      when(() => settings.state).thenReturn(const SettingsLoadedState(
-          '1.0.0', false, AppThemeEntity.system, false));
+      when(() => settings.state).thenReturn(
+          const SettingsLoadedState('1.0.0', false, AppThemeEntity.system));
       when(() => settings.stream)
           .thenAnswer((_) => const Stream<SettingsState>.empty());
       final profile = MockProfileBloc();
@@ -48,8 +48,7 @@ void main() {
               gender: UserGenderEntity.male,
               goal: UserWeightGoalEntity.maintainWeight,
               pal: UserPALEntity.active,
-              role: role),
-          usesImperialUnits: false));
+              role: role)));
       when(() => profile.stream)
           .thenAnswer((_) => const Stream<ProfileState>.empty());
       locator
@@ -70,6 +69,8 @@ void main() {
         home: const SettingsScreen(),
       ));
       await tester.pump();
+
+      expect(find.byIcon(Icons.ac_unit_outlined), findsNothing);
 
       expect(find.text('Profil'),
           role == UserRoleEntity.coach ? findsOneWidget : findsNothing);

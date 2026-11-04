@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -62,99 +63,74 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
 
   Future<void> _loadCalendarDay(
       DateTime day, Emitter<CalendarDayState> emit) async {
-    final userActivities =
-        await _getUserActivityUsecase.getUserActivityByDay(day);
+    try {
+      final userActivities =
+          await _getUserActivityUsecase.getUserActivityByDay(day);
 
-    final breakfastIntakeList =
-        await _getIntakeUsecase.getBreakfastIntakeByDay(day);
+      final breakfastIntakeList =
+          await _getIntakeUsecase.getBreakfastIntakeByDay(day);
 
-    final lunchIntakeList = await _getIntakeUsecase.getLunchIntakeByDay(day);
-    final dinnerIntakeList = await _getIntakeUsecase.getDinnerIntakeByDay(day);
-    final snackIntakeList = await _getIntakeUsecase.getSnackIntakeByDay(day);
+      final lunchIntakeList = await _getIntakeUsecase.getLunchIntakeByDay(day);
+      final dinnerIntakeList =
+          await _getIntakeUsecase.getDinnerIntakeByDay(day);
+      final snackIntakeList = await _getIntakeUsecase.getSnackIntakeByDay(day);
 
-    final trackedDayEntity = await _getTrackedDayUsecase.getTrackedDay(day);
+      final storedDay = await _getTrackedDayUsecase.getTrackedDay(day);
+      final intakes = [
+        ...breakfastIntakeList,
+        ...lunchIntakeList,
+        ...dinnerIntakeList,
+        ...snackIntakeList,
+      ];
+      final goals = locator<GetMacroGoalUsecase>();
+      final carbs = await goals.getCarbsGoal(day: day);
+      final fats = await goals.getFatsGoal(day: day);
+      final proteins = await goals.getProteinsGoal(day: day);
+      // Like HomeBloc: calculate consumption from each food and its quantity.
+      final trackedDayEntity = TrackedDayEntity(
+        day: day,
+        calorieGoal: carbs * 4 + fats * 9 + proteins * 4,
+        carbsGoal: carbs,
+        fatGoal: fats,
+        proteinGoal: proteins,
+        caloriesTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalKcal),
+        carbsTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalCarbsGram),
+        fatTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalFatsGram),
+        proteinTracked: intakes.fold<double>(
+            0, (sum, food) => sum + food.totalProteinsGram),
+        caloriesBurned: storedDay?.caloriesBurned ?? 0,
+        updatedAt: storedDay?.updatedAt,
+      );
 
-    final userWeightEntity =
-        await _getUserWeightUsecase.getUserWeightByDate(day);
+      final weightSnapshot = await _getUserWeightUsecase.getSnapshot(day);
+      final userWeightEntity = weightSnapshot.current;
+      final weeklyWeightDelta = weightSnapshot.delta;
 
-    double? weeklyWeightDelta;
-    if (userWeightEntity != null) {
-      final pastWeights =
-          await _getUserWeightUsecase.getWeightsFromPastDays(day, 7);
-      if (pastWeights.isNotEmpty) {
-        final average =
-            pastWeights.fold<double>(0, (sum, entry) => sum + entry.weight) /
-                pastWeights.length;
-        weeklyWeightDelta = userWeightEntity.weight - average;
-      }
+      emit(CalendarDayLoaded(
+          trackedDayEntity,
+          userActivities,
+          breakfastIntakeList,
+          lunchIntakeList,
+          dinnerIntakeList,
+          snackIntakeList,
+          userWeightEntity,
+          weeklyWeightDelta: weeklyWeightDelta));
+    } catch (_) {
+      emit(CalendarDayError());
     }
-
-    emit(CalendarDayLoaded(
-        trackedDayEntity,
-        userActivities,
-        breakfastIntakeList,
-        lunchIntakeList,
-        dinnerIntakeList,
-        snackIntakeList,
-        userWeightEntity,
-        weeklyWeightDelta: weeklyWeightDelta));
   }
 
   Future<void> deleteIntakeItem(
       BuildContext context, IntakeEntity intakeEntity, DateTime day) async {
     await _deleteIntakeUsecase.deleteIntake(intakeEntity);
-    await _addTrackedDayUsecase.removeDayCaloriesTracked(
-        day, intakeEntity.totalKcal);
-    await _addTrackedDayUsecase.removeDayMacrosTracked(day,
-        carbsTracked: intakeEntity.totalCarbsGram,
-        fatTracked: intakeEntity.totalFatsGram,
-        proteinTracked: intakeEntity.totalProteinsGram);
   }
 
   Future<void> updateIntakeItem(
       String intakeId, Map<String, dynamic> fields, DateTime day) async {
-    final oldIntakeObject = await _getIntakeUsecase.getIntakeById(intakeId);
-    assert(oldIntakeObject != null);
-    final newIntakeObject =
-        await _updateIntakeUsecase.updateIntake(intakeId, fields);
-    assert(newIntakeObject != null);
-
-    if (oldIntakeObject == null || newIntakeObject == null) {
-      return;
-    }
-
-    final kcalDelta = newIntakeObject.totalKcal - oldIntakeObject.totalKcal;
-    final carbsDelta =
-        newIntakeObject.totalCarbsGram - oldIntakeObject.totalCarbsGram;
-    final fatsDelta =
-        newIntakeObject.totalFatsGram - oldIntakeObject.totalFatsGram;
-    final proteinsDelta =
-        newIntakeObject.totalProteinsGram - oldIntakeObject.totalProteinsGram;
-
-    if (kcalDelta > 0) {
-      await _addTrackedDayUsecase.addDayCaloriesTracked(day, kcalDelta);
-    } else if (kcalDelta < 0) {
-      await _addTrackedDayUsecase.removeDayCaloriesTracked(
-          day, kcalDelta.abs());
-    }
-
-    if (carbsDelta > 0 || fatsDelta > 0 || proteinsDelta > 0) {
-      await _addTrackedDayUsecase.addDayMacrosTracked(
-        day,
-        carbsTracked: carbsDelta > 0 ? carbsDelta : 0,
-        fatTracked: fatsDelta > 0 ? fatsDelta : 0,
-        proteinTracked: proteinsDelta > 0 ? proteinsDelta : 0,
-      );
-    }
-
-    if (carbsDelta < 0 || fatsDelta < 0 || proteinsDelta < 0) {
-      await _addTrackedDayUsecase.removeDayMacrosTracked(
-        day,
-        carbsTracked: carbsDelta < 0 ? carbsDelta.abs() : 0,
-        fatTracked: fatsDelta < 0 ? fatsDelta.abs() : 0,
-        proteinTracked: proteinsDelta < 0 ? proteinsDelta.abs() : 0,
-      );
-    }
+    await _updateIntakeUsecase.updateIntake(intakeId, fields);
   }
 
   Future<void> deleteUserWeightItem(DateTime day) async {

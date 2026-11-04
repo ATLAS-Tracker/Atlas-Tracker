@@ -144,6 +144,9 @@ class _CalendarNavButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return IconButton(
+      tooltip: icon == Icons.chevron_left_rounded
+          ? MaterialLocalizations.of(context).previousPageTooltip
+          : MaterialLocalizations.of(context).nextPageTooltip,
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints.tightFor(width: 40.0, height: 40.0),
@@ -233,7 +236,7 @@ class _CalendarDayCell extends StatelessWidget {
                   width: isSelected ? 6.0 : 5.0,
                   height: isSelected ? 6.0 : 5.0,
                   decoration: BoxDecoration(
-                    color: isSelected ? colorScheme.primary : dotColor,
+                    color: dotColor,
                     shape: BoxShape.circle,
                   ),
                 )

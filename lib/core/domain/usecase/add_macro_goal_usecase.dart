@@ -4,6 +4,8 @@ import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dar
 import 'package:opennutritracker/core/domain/usecase/get_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/utils/extensions.dart';
 
 class AddMacroGoalUsecase {
   final MacroGoalRepository _macroGoalRepository =
@@ -18,57 +20,54 @@ class AddMacroGoalUsecase {
     final userId = _supabaseClient.auth.currentUser?.id;
     if (userId == null) throw Exception('User not authenticated');
 
-    // 1. Fetch macro goals depuis Supabase
-    final response = await _supabaseClient
-        .from('coach_macro_goals')
-        .select()
-        .eq('user_id', userId)
-        .maybeSingle();
-
-    if (response == null) throw Exception('No goal found for this user');
-
-    // 2. Récupère l’ancien goal s’il existe
-    final oldEntity = await _macroGoalRepository.getMacroGoal();
-
-    final startDate = DateTime.parse(response['start_date']);
     final now = DateTime.now();
-
-    final newMacro = MacroGoalEntity(
-      id: userId,
-      date: startDate,
-      oldCarbsGoal: now.isBefore(startDate)
-          ? (oldEntity?.oldCarbsGoal ??
-              (response['carb_goal'] as num).toDouble())
-          : (response['carb_goal'] as num).toDouble(),
-      oldFatsGoal: now.isBefore(startDate)
-          ? (oldEntity?.oldFatsGoal ?? (response['fat_goal'] as num).toDouble())
-          : (response['fat_goal'] as num).toDouble(),
-      oldProteinsGoal: now.isBefore(startDate)
-          ? (oldEntity?.oldProteinsGoal ??
-              (response['protein_goal'] as num).toDouble())
-          : (response['protein_goal'] as num).toDouble(),
-      newCarbsGoal: (response['carb_goal'] as num).toDouble(),
-      newFatsGoal: (response['fat_goal'] as num).toDouble(),
-      newProteinsGoal: (response['protein_goal'] as num).toDouble(),
-    );
-
-    // 3. Sauvegarde dans Hive via repository
+    final responses = await Future.wait([
+      _supabaseClient
+          .from('coach_macro_goals')
+          .select()
+          .eq('user_id', userId)
+          .lte('start_date', now.toDayKey())
+          .order('start_date', ascending: false)
+          .limit(1)
+          .maybeSingle()
+          .timeout(const Duration(seconds: 8)),
+      _supabaseClient
+          .from('coach_macro_goals')
+          .select()
+          .eq('user_id', userId)
+          .gt('start_date', now.toDayKey())
+          .order('start_date')
+          .limit(1)
+          .maybeSingle()
+          .timeout(const Duration(seconds: 8)),
+    ]);
+    bool owns() =>
+        _supabaseClient.auth.currentUser?.id == userId &&
+        locator<HiveDBProvider>().activeUserId == userId;
+    if (!owns()) return;
+    final oldEntity = await _macroGoalRepository.getMacroGoal();
+    final history = responses.whereType<Map<String, dynamic>>().toList();
+    final newMacro = MacroGoalEntity.fromHistory(userId, history,
+        today: now, previous: oldEntity);
+    if (newMacro == null || !owns()) return;
     await _macroGoalRepository.saveMacroGoal(newMacro);
-
-    // 4. Update existing tracked days from startDate onward
-    final newCalorieGoal = (newMacro.newCarbsGoal * 4) +
-        (newMacro.newFatsGoal * 9) +
-        (newMacro.newProteinsGoal * 4);
+    final firstStart = history
+        .map((row) => DateTime.tryParse(row['start_date'].toString()))
+        .whereType<DateTime>()
+        .reduce((a, b) => a.isBefore(b) ? a : b);
     final existingDays = await _getTrackedDayUsecase.getTrackedDaysFrom(
-      startDate,
+      firstStart,
     );
     for (final day in existingDays) {
-      await _addTrackedDayUsecase.updateDayCalorieGoal(day, newCalorieGoal);
+      if (!owns()) return;
+      final goal = MacroGoalEntity.forDay(newMacro, day);
+      await _addTrackedDayUsecase.updateDayCalorieGoal(
+          day, goal.carbs * 4 + goal.fats * 9 + goal.proteins * 4);
       await _addTrackedDayUsecase.updateDayMacroGoals(
         day,
-        carbsGoal: newMacro.newCarbsGoal,
-        fatGoal: newMacro.newFatsGoal,
-        proteinGoal: newMacro.newProteinsGoal,
+        carbsGoal: goal.carbs,
+        fatGoal: goal.fats,
+        proteinGoal: goal.proteins,
       );
     }
   }

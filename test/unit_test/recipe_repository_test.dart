@@ -19,9 +19,18 @@ import 'package:opennutritracker/core/data/dbo/intake_recipe_dbo.dart';
 import '../fixture/recipe_entity_fixtures.dart';
 
 void main() {
+  setUpAll(() {
+    Hive.registerAdapter(RecipesDBOAdapter());
+    Hive.registerAdapter(MealDBOAdapter());
+    Hive.registerAdapter(MealNutrimentsDBOAdapter());
+    Hive.registerAdapter(MealSourceDBOAdapter());
+    Hive.registerAdapter(IntakeForRecipeDBOAdapter());
+    Hive.registerAdapter(MealOrRecipeDBOAdapter());
+  });
   group('Recipe add/replace logic', () {
     late Box<RecipesDBO> box;
     late Directory tempDir;
+    late RecipeRepository repository;
 
     setUp(() async {
       TestWidgetsFlutterBinding.ensureInitialized();
@@ -30,18 +39,12 @@ void main() {
       Hive.init(tempDir.path);
       PathHelper.overrideDirectory = tempDir;
 
-      Hive.registerAdapter(RecipesDBOAdapter());
-      Hive.registerAdapter(MealDBOAdapter());
-      Hive.registerAdapter(MealNutrimentsDBOAdapter());
-      Hive.registerAdapter(MealSourceDBOAdapter());
-      Hive.registerAdapter(IntakeForRecipeDBOAdapter());
-      Hive.registerAdapter(MealOrRecipeDBOAdapter());
-
       box = await Hive.openBox<RecipesDBO>('recipes_test');
       final hive = HiveDBProvider();
       hive.recipeBox = box;
       final dataSource = RecipesDataSource(hive);
       final repo = RecipeRepository(dataSource);
+      repository = repo;
       final addRecipeUsecase = AddRecipeUsecase(repo);
       final deleteRecipeUsecase = DeleteRecipeUsecase(repo);
 
@@ -91,9 +94,22 @@ void main() {
       expect(allRecipes.length, 1);
       expect(allRecipes.first.recipe.code, 'new_recipe_id');
     });
+
+    test('saved foods persist independently of the journal and recipe results',
+        () async {
+      final food = MealEntity.empty().copyWith(name: 'Mon yaourt');
+      await repository.saveFood(food);
+      expect((await repository.getSavedFoods()).single.name, 'Mon yaourt');
+      expect(await repository.getAllRecipes(), isEmpty);
+      expect(await repository.getAllRecipeDBOs(), hasLength(1),
+          reason: 'saved foods remain in the existing archive format');
+      await repository.saveFood(food.copyWith(name: 'Yaourt corrigé'));
+      expect((await repository.getSavedFoods()).single.name, 'Yaourt corrigé');
+      expect(box.length, 1);
+    });
   });
 
-  group('Recipe deletion removes image', () {
+  group('Recipe deletion preserves referenced image', () {
     late Box<RecipesDBO> box;
     late Directory tempDir;
 
@@ -120,7 +136,7 @@ void main() {
       PathHelper.overrideDirectory = null;
     });
 
-    test('delete removes recipe and local image', () async {
+    test('delete preserves image for historic intakes and undo', () async {
       final imagePath = await PathHelper.localImagePath('img.png');
       final imageFile = File(imagePath);
       await imageFile.writeAsString('test');
@@ -139,7 +155,9 @@ void main() {
 
       await locator<DeleteRecipeUsecase>().deleteRecipe('to_delete');
       expect(box.values.isEmpty, true);
-      expect(await imageFile.exists(), false);
+      expect(await imageFile.exists(), true);
+      await locator<AddRecipeUsecase>().addRecipe(recipe);
+      expect(box.values.single.recipe.mainImageUrl, 'img.png');
     });
   });
 }

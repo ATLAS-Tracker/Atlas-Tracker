@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/domain/usecase/delete_recipe_usecase.dart';
 import 'package:opennutritracker/features/diary/presentation/widgets/diary_table_calendar.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
@@ -16,14 +15,14 @@ import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dar
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
-import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
-import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 class CalendarMealTypeSelector extends StatefulWidget {
   final Function(DateTime) onDateSelected;
   final String mealName;
   final String? idOfRecipeToModify;
   final String? imagePath;
+  final DateTime? initialDay;
+  final IntakeTypeEntity? initialType;
 
   const CalendarMealTypeSelector({
     super.key,
@@ -31,6 +30,8 @@ class CalendarMealTypeSelector extends StatefulWidget {
     required this.mealName,
     required this.idOfRecipeToModify,
     required this.imagePath,
+    this.initialDay,
+    this.initialType,
   });
 
   @override
@@ -41,13 +42,16 @@ class CalendarMealTypeSelector extends StatefulWidget {
 class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
   late DateTime _selectedDate;
   int _currentMealIndex = 0;
+  bool _addToDiary = false;
+  bool _saving = false;
 
   final List<IntakeTypeEntity> _mealTypes = IntakeTypeEntity.values;
 
   @override
   void initState() {
     super.initState();
-    _selectedDate = DateTime.now();
+    _selectedDate = widget.initialDay ?? DateTime.now();
+    _currentMealIndex = (widget.initialType ?? IntakeTypeEntity.lunch).index;
   }
 
   void _handleDateSelected(DateTime day, Map<String, TrackedDayEntity> _) {
@@ -83,14 +87,31 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
     }
   }
 
-  void _onSavePressed() => saveRecipe(
+  Future<void> _onSavePressed() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+    try {
+      await saveRecipe(
         context,
         mealName: widget.mealName,
         imagePath: widget.imagePath,
         idOfRecipeToModify: widget.idOfRecipeToModify,
         type: _mealTypes[_currentMealIndex],
         day: _selectedDate,
+        addToDiary: _addToDiary,
       );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      Navigator.of(context).pop();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).recipeSaveError)));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,46 +143,59 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
                       ?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 20),
 
-              /// Meal type selector
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: _goToPreviousMeal,
-                    icon: const Icon(Icons.chevron_left),
-                  ),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(currentMeal.getIconData()),
-                        const SizedBox(width: 8),
-                        Flexible(
-                            child: Text(
-                          _getMealLabel(currentMeal),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        )),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _goToNextMeal,
-                    icon: const Icon(Icons.chevron_right),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+              Text(S.of(context).recipeLibraryHelp),
+              SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(S.of(context).addRecipeToDiary),
+                  value: _addToDiary,
+                  onChanged: _saving
+                      ? null
+                      : (value) => setState(() => _addToDiary = value)),
 
-              /// Calendar
-              DiaryTableCalendar(
-                onDateSelected: _handleDateSelected,
-                calendarDurationDays: const Duration(days: 30),
-                focusedDate: _selectedDate,
-                currentDate: DateTime.now(),
-                selectedDate: _selectedDate,
-                trackedDaysMap: const {},
-              ),
+              /// Meal type selector
+              if (_addToDiary) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      tooltip: S.of(context).previousLabel,
+                      onPressed: _goToPreviousMeal,
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(currentMeal.getIconData()),
+                          const SizedBox(width: 8),
+                          Flexible(
+                              child: Text(
+                            _getMealLabel(currentMeal),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          )),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: S.of(context).nextLabel,
+                      onPressed: _goToNextMeal,
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                /// Calendar
+                DiaryTableCalendar(
+                  onDateSelected: _handleDateSelected,
+                  calendarDurationDays: const Duration(days: 30),
+                  focusedDate: _selectedDate,
+                  currentDate: DateTime.now(),
+                  selectedDate: _selectedDate,
+                  trackedDaysMap: const {},
+                ),
+              ],
               const SizedBox(height: 16),
 
               /// Save button
@@ -172,7 +206,7 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16))),
-                    onPressed: _onSavePressed,
+                    onPressed: _saving ? null : _onSavePressed,
                     child: Text(S.of(context).buttonSaveLabel),
                   )),
               const SizedBox(height: 16),
@@ -186,14 +220,15 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
 
 /// Saves the ingredients currently held by [CreateMealBloc] as a one-serving
 /// recipe and logs one serving of it to [type] on [day].
-void saveRecipe(
+Future<void> saveRecipe(
   BuildContext context, {
   required String mealName,
   required String? imagePath,
   required String? idOfRecipeToModify,
   required IntakeTypeEntity type,
   required DateTime day,
-}) {
+  bool addToDiary = false,
+}) async {
   final macros = locator<CreateMealBloc>().computeMacros();
 
   final nutriment = MealNutrimentsEntity(
@@ -208,33 +243,19 @@ void saveRecipe(
   );
 
   final meal = MealEntity(
-    code: IdGenerator.getUniqueID(),
+    code: idOfRecipeToModify ?? IdGenerator.getUniqueID(),
     name: mealName,
     brands: "",
     url: imagePath,
     thumbnailImageUrl: imagePath,
     mainImageUrl: imagePath,
     mealQuantity: '1',
-    mealUnit: S.of(context).servingLabel,
+    mealUnit: 'serving',
     servingQuantity: 1,
-    servingUnit: S.of(context).servingLabel,
+    servingUnit: 'serving',
     servingSize: S.of(context).servingLabel,
     nutriments: nutriment,
     source: MealSourceEntity.custom,
-  );
-
-  // In case we want to modify recipe we need to delete the previous version before adding the new one
-  if (idOfRecipeToModify != null) {
-    locator<DeleteRecipeUsecase>().deleteRecipe(idOfRecipeToModify);
-  }
-
-  locator<MealDetailBloc>().addIntake(
-    context,
-    'serving',
-    '1',
-    type,
-    meal,
-    day,
   );
 
   // Add the recipe to the DB to keep tracking of the mealEntity composing the recipe
@@ -242,7 +263,18 @@ void saveRecipe(
     meal: meal,
     ingredients: locator<CreateMealBloc>().getListOfIntakeForRecipeEntity(),
   );
-  locator<AddRecipeUsecase>().addRecipe(recipe);
+  await locator<AddRecipeUsecase>().addRecipe(recipe);
+  if (addToDiary) {
+    if (!context.mounted) return;
+    await locator<MealDetailBloc>().addIntake(
+      context,
+      'serving',
+      '1',
+      type,
+      meal,
+      day,
+    );
+  }
 
   // Clean the list of intake
   locator<CreateMealBloc>().clearIntakeList();
@@ -250,11 +282,4 @@ void saveRecipe(
   locator<HomeBloc>().add(const LoadItemsEvent());
   locator<DiaryBloc>().add(const LoadDiaryYearEvent());
   locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
-  locator<RecipeSearchBloc>().add(
-    const LoadRecipeSearchEvent(searchString: ""),
-  );
-
-  Navigator.of(
-    context,
-  ).pushNamedAndRemoveUntil(NavigationOptions.mainRoute, (route) => false);
 }
