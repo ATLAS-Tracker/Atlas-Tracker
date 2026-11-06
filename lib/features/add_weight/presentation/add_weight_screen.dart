@@ -124,8 +124,8 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
     );
   }
 
-  double roundDecimal(double number, {int nbDecimal = 1}) {
-    return (number * 10 * nbDecimal).round() / (10 * nbDecimal);
+  double _roundDecimal(double number) {
+    return (number * 10).round() / 10;
   }
 
   bool _hasSavedWeightForDay(WeightSummary summary) {
@@ -201,7 +201,7 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                     isReadOnly: _isEditable || _isSaving,
                     isSaving: _isSaving,
                     isSaved: _savedWeightKg != null &&
-                        roundDecimal(state.weight) == _savedWeightKg,
+                        _roundDecimal(state.weight) == _savedWeightKg,
                     onStepChanged: _changeWeightBy,
                     onSavePressed: () => _onButtonPressed(context),
                   ),
@@ -262,7 +262,7 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
 
   Future<void> _onButtonPressed(BuildContext context) async {
     if (_isSaving || _isEditable) return;
-    final roundedWeight = roundDecimal(_weightBloc.state.weight);
+    final roundedWeight = _roundDecimal(_weightBloc.state.weight);
     final savedDay = _day;
     setState(() {
       _isSaving = true;

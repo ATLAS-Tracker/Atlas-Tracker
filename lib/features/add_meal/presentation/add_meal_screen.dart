@@ -196,13 +196,11 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 
   void _onRecentMealsRefreshButtonPressed() {
-    _recentMealBloc.add(const LoadRecentMealEvent(searchString: ""));
+    _recentMealBloc
+        .add(LoadRecentMealEvent(searchString: _searchStringListener.value));
   }
 
   void _onSearchSubmit(String inputText) {
-    // The local recipe/recent search is literal, so "oe" must become "œ" to
-    // match. Product search engines handle it and would lose "boeuf" results.
-    final localInput = inputText.replaceAll("oe", "œ");
     switch (_tabController.index) {
       case 0:
         final trimmedInput = inputText.trim();
@@ -214,10 +212,10 @@ class _AddMealScreenState extends State<AddMealScreen>
         _productsBloc.add(LoadProductsEvent(searchString: trimmedInput));
         break;
       case 1:
-        _recipeSearchBloc.add(LoadRecipeSearchEvent(searchString: localInput));
+        _recipeSearchBloc.add(LoadRecipeSearchEvent(searchString: inputText));
         break;
       case 2:
-        _recentMealBloc.add(LoadRecentMealEvent(searchString: localInput));
+        _recentMealBloc.add(LoadRecentMealEvent(searchString: inputText));
         break;
     }
   }
@@ -493,8 +491,7 @@ class _RecentMealsPane extends StatelessWidget {
                     filteredMeals[index].name ??
                     ''],
                 addMealType: mealType,
-                onReturn: () =>
-                    bloc.add(const LoadRecentMealEvent(searchString: '')),
+                onReturn: () => onRefreshPressed(),
               );
             },
           );

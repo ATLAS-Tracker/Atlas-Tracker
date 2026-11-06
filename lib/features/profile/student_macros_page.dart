@@ -735,7 +735,7 @@ class _MacroProgressRow extends StatelessWidget {
                   ),
                 ],
               ),
-              if (goal > 0 && tracked > goal)
+              if (!showPercent && goal > 0 && tracked > goal)
                 Text(_percent(tracked, goal),
                     textAlign: TextAlign.end,
                     style: theme.textTheme.labelSmall?.copyWith(

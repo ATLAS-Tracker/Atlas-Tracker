@@ -4,7 +4,7 @@ import 'profile_dialog_widgets.dart';
 import 'profile_value_picker.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
-class SetHeightDialog extends StatelessWidget {
+class SetHeightDialog extends StatefulWidget {
   static const _heightRangeCM = 100.0;
 
   final double userHeight;
@@ -12,9 +12,15 @@ class SetHeightDialog extends StatelessWidget {
   const SetHeightDialog({super.key, required this.userHeight});
 
   @override
+  State<SetHeightDialog> createState() => _SetHeightDialogState();
+}
+
+class _SetHeightDialogState extends State<SetHeightDialog> {
+  final _form = GlobalKey<FormState>();
+  late double _selectedHeight = widget.userHeight.clamp(0.1, 300);
+
+  @override
   Widget build(BuildContext context) {
-    double selectedHeight = userHeight;
-    final form = GlobalKey<FormState>();
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
@@ -25,15 +31,17 @@ class SetHeightDialog extends StatelessWidget {
           color: carbColor),
       scrollable: true,
       content: Form(
-          key: form,
+          key: _form,
           child: ProfileValuePicker(
-            initialValue: userHeight,
-            min: (userHeight - _heightRangeCM).clamp(0.1, 300),
-            max: (userHeight + _heightRangeCM).clamp(0.1, 300),
+            initialValue: _selectedHeight,
+            min: (widget.userHeight - SetHeightDialog._heightRangeCM)
+                .clamp(0.1, 300),
+            max: (widget.userHeight + SetHeightDialog._heightRangeCM)
+                .clamp(0.1, 300),
             divisions: 400,
             unit: S.of(context).cmLabel,
             color: carbColor,
-            onChanged: (value) => selectedHeight = value,
+            onChanged: (value) => _selectedHeight = value,
           )),
       actions: <Widget>[
         TextButton(
@@ -43,8 +51,8 @@ class SetHeightDialog extends StatelessWidget {
             child: Text(S.of(context).dialogCancelLabel)),
         FilledButton(
             onPressed: () {
-              if (!form.currentState!.validate()) return;
-              Navigator.pop(context, selectedHeight);
+              if (!_form.currentState!.validate()) return;
+              Navigator.pop(context, _selectedHeight);
             },
             child: Text(S.of(context).dialogOKLabel))
       ],

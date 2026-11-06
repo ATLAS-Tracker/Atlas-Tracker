@@ -488,8 +488,16 @@ class _EditMealScreenState extends State<EditMealScreen> {
       if (_pickedImagePath != null) {
         photoName =
             'food_photo_${IdGenerator.getUniqueID()}${p.extension(_pickedImagePath!)}';
-        final target = await PathHelper.localImagePath(photoName);
-        await File(_pickedImagePath!).copy(target);
+        try {
+          final target = await PathHelper.localImagePath(photoName);
+          await File(_pickedImagePath!).copy(target);
+        } catch (_) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(S.of(context).customFoodPhotoError)));
+          }
+          return;
+        }
       }
       if (!mounted) return;
       double value(TextEditingController controller) =>
@@ -517,7 +525,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(S.of(context).customFoodPhotoError)));
+            SnackBar(content: Text(S.of(context).intakeSaveError)));
       }
     } finally {
       if (mounted) setState(() => _saving = false);

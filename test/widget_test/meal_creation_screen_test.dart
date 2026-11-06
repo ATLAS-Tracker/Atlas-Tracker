@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/styles/color_schemes.dart';
@@ -75,6 +77,64 @@ void main() {
       home: const MealCreationScreen(),
     );
   }
+
+  testWidgets(
+      'meal recipe save ignores double tap and preserves draft on failure',
+      (tester) async {
+    final pending = Completer<void>();
+    when(() => addRecipe.addRecipe(any())).thenAnswer((_) => pending.future);
+    var deleted = false;
+    await tester.pumpWidget(MaterialApp(
+      supportedLocales: S.delegate.supportedLocales,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate
+      ],
+      onGenerateRoute: (_) => MaterialPageRoute<void>(
+          settings: RouteSettings(
+              arguments: CreateRecipeFromMealArguments(IntakeTypeEntity.lunch,
+                  DateTime(2026, 11, 6), () => deleted = true)),
+          builder: (_) => const MealCreationScreen()),
+    ));
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      final loaded =
+          bloc.stream.firstWhere((state) => state.intakeList.isNotEmpty);
+      bloc.add(SetIntakeListFromRecipeEvent([IntakeForRecipeFixtures.chicken]));
+      await loaded.timeout(const Duration(seconds: 2));
+    });
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, 'My recipe');
+    await tester.pumpAndSettle();
+    final save = tester
+        .widget<FilledButton>(find.byKey(const ValueKey('save-recipe')))
+        .onPressed!;
+    save();
+    save();
+    await tester.pump();
+    verify(() => addRecipe.addRecipe(any())).called(1);
+    expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('save-recipe')))
+            .onPressed,
+        isNull);
+    pending.completeError(StateError('storage unavailable'));
+    await tester.pumpAndSettle();
+    expect(find.text(S.current.recipeSaveError), findsOneWidget);
+    expect(deleted, isFalse);
+    expect(bloc.state.intakeList, hasLength(1));
+    expect(find.text('My recipe'), findsOneWidget);
+    expect(
+        tester
+            .widget<FilledButton>(find.byKey(const ValueKey('save-recipe')))
+            .onPressed,
+        isNotNull);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+  });
 
   testWidgets('save button disabled with empty name or ingredients',
       (tester) async {

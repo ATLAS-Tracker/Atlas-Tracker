@@ -51,11 +51,18 @@ void main() {
     await locator.reset();
   });
 
-  for (final mode in ['portion', 'g', 'ml', 'photo']) {
+  for (final mode in [
+    'portion',
+    'g',
+    'ml',
+    'photo',
+    'save-error',
+    'photo-error'
+  ]) {
     testWidgets('custom food $mode keeps reference and navigation context',
         (tester) async {
       final perPortion = mode == 'portion' || mode == 'photo';
-      if (mode == 'photo') {
+      if (mode == 'photo' || mode == 'photo-error') {
         PathHelper.overrideDirectory = photoDir;
         addTearDown(() => PathHelper.overrideDirectory = null);
         const channel = MethodChannel('plugins.flutter.io/image_picker');
@@ -63,7 +70,7 @@ void main() {
             .setMockMethodCallHandler(
                 channel,
                 (call) async => call.method == 'pickImage'
-                    ? '${photoDir.path}/selected.png'
+                    ? '${photoDir.path}/${mode == 'photo-error' ? 'missing' : 'selected'}.png'
                     : null);
         addTearDown(() => TestDefaultBinaryMessengerBinding
             .instance.defaultBinaryMessenger
@@ -106,7 +113,7 @@ void main() {
         },
       ));
       await tester.pumpAndSettle();
-      if (mode == 'photo') {
+      if (mode == 'photo' || mode == 'photo-error') {
         await tester.tap(find.byKey(const ValueKey('custom-food-photo')));
         await tester.runAsync(() async {
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -143,13 +150,32 @@ void main() {
       await tester.pumpAndSettle();
       await tester
           .ensureVisible(find.byKey(const ValueKey('save-custom-food')));
+      if (mode == 'save-error') {
+        when(() => locator<RecipeRepository>().saveFood(any()))
+            .thenThrow(StateError('storage unavailable'));
+      }
       await tester.tap(find.byKey(const ValueKey('save-custom-food')));
-      if (mode == 'photo') {
+      if (mode == 'photo' || mode == 'photo-error') {
         await tester.runAsync(() async {
           await Future<void>.delayed(const Duration(milliseconds: 100));
         });
       }
       await tester.pumpAndSettle();
+      if (mode == 'save-error' || mode == 'photo-error') {
+        expect(result, isNull);
+        expect(
+            find.text(mode == 'photo-error'
+                ? S.current.customFoodPhotoError
+                : S.current.intakeSaveError),
+            findsOneWidget);
+        expect(
+            tester
+                .widget<FilledButton>(
+                    find.byKey(const ValueKey('save-custom-food')))
+                .onPressed,
+            isNotNull);
+        return;
+      }
       expect(result, isNotNull);
       expect(result!.day, day);
       expect(result!.intakeTypeEntity, IntakeTypeEntity.lunch);
@@ -161,7 +187,7 @@ void main() {
       } else {
         expect(result!.mealEntity.mealUnit, mode);
       }
-      if (mode == 'photo') {
+      if (mode == 'photo' || mode == 'photo-error') {
         final path = result!.mealEntity.mainImageUrl!;
         expect(path, startsWith('food_photo_'));
         expect(result!.mealEntity.thumbnailImageUrl, path);

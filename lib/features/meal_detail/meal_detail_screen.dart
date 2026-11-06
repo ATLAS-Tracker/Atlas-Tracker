@@ -178,7 +178,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                     if (recipe == null) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Recette introuvable.")),
+                        SnackBar(content: Text(S.of(context).errorRecipeLabel)),
                       );
                       return;
                     }

@@ -514,17 +514,27 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     final recipeName = _nameTextController.text;
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is CreateRecipeFromMealArguments) {
-      await saveRecipe(
-        context,
-        mealName: recipeName,
-        imagePath: _imagePath,
-        idOfRecipeToModify: null,
-        type: args.type,
-        day: args.day,
-        addToDiary: true,
-      );
-      args.deleteSourceIntakes();
-      if (mounted) Navigator.of(context).pop();
+      setState(() => _saving = true);
+      try {
+        await saveRecipe(
+          context,
+          mealName: recipeName,
+          imagePath: _imagePath,
+          idOfRecipeToModify: null,
+          type: args.type,
+          day: args.day,
+          addToDiary: true,
+        );
+        args.deleteSourceIntakes();
+        if (mounted) Navigator.of(context).pop();
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(S.of(context).recipeSaveError)));
+        }
+      } finally {
+        if (mounted) setState(() => _saving = false);
+      }
       return;
     }
     if (args is CreateMealScreenArguments) {

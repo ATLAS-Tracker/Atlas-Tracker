@@ -32,21 +32,9 @@ class MacroGoalEntity {
       String owner, List<Map<String, dynamic>> history,
       {required DateTime today, MacroGoalEntity? previous}) {
     final date = DateTime(today.year, today.month, today.day);
-    final valid = history.where((row) {
-      if (row['user_id'] != owner ||
-          DateTime.tryParse(row['start_date']?.toString() ?? '') == null) {
-        return false;
-      }
-      final values = [row['carb_goal'], row['fat_goal'], row['protein_goal']];
-      if (values.any((value) =>
-          value is! num || !value.isFinite || value < 0 || value > 1000)) {
-        return false;
-      }
-      final energy = (values[0] as num) * 4 +
-          (values[1] as num) * 9 +
-          (values[2] as num) * 4;
-      return energy > 0 && energy <= 10000;
-    }).toList()
+    final valid = history
+        .where((row) => row['user_id'] == owner && isValidHistoryRow(row))
+        .toList()
       ..sort((a, b) =>
           a['start_date'].toString().compareTo(b['start_date'].toString()));
     Map<String, dynamic>? current;
@@ -72,6 +60,21 @@ class MacroGoalEntity {
         newCarbsGoal: (next['carb_goal'] as num).toDouble(),
         newFatsGoal: (next['fat_goal'] as num).toDouble(),
         newProteinsGoal: (next['protein_goal'] as num).toDouble());
+  }
+
+  static bool isValidHistoryRow(Map<String, dynamic> row) {
+    if (DateTime.tryParse(row['start_date']?.toString() ?? '') == null) {
+      return false;
+    }
+    final values = [row['carb_goal'], row['fat_goal'], row['protein_goal']];
+    if (values.any((value) =>
+        value is! num || !value.isFinite || value < 0 || value > 1000)) {
+      return false;
+    }
+    final energy = (values[0] as num) * 4 +
+        (values[1] as num) * 9 +
+        (values[2] as num) * 4;
+    return energy > 0 && energy <= 10000;
   }
 
   static ({double carbs, double fats, double proteins}) forDay(

@@ -89,6 +89,15 @@ void main() {
         'fat_goal': 70,
         'protein_goal': 160,
       });
+      for (final grams in [0, 1000]) {
+        await c.from('coach_macro_goals').insert({
+          'user_id': 'student',
+          'start_date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          'carb_goal': grams,
+          'fat_goal': grams,
+          'protein_goal': grams,
+        });
+      }
       await c.from('coach_macro_goals').insert({
         'user_id': 'student',
         'start_date': DateFormat('yyyy-MM-dd')

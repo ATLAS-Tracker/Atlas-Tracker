@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/search_match.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
@@ -22,7 +23,7 @@ class RecipeSearchBloc extends Bloc<RecipeSearchEvent, RecipeSearchState> {
       emit(RecipeLoadingState());
       try {
         final recipeIntake = await _getRecipeUsecase.getAllRecipes();
-        final searchString = (event.searchString).toLowerCase();
+        final searchString = foldText(event.searchString);
 
         if (searchString.isEmpty) {
           emit(RecipeLoadedState(
@@ -58,7 +59,7 @@ class RecipeSearchBloc extends Bloc<RecipeSearchEvent, RecipeSearchState> {
 
   bool Function(RecipeEntity) matchesSearchString(String searchString) {
     return (intake) =>
-        (intake.meal.name?.toLowerCase().contains(searchString) ?? false) ||
-        (intake.meal.brands?.toLowerCase().contains(searchString) ?? false);
+        foldText(intake.meal.name ?? '').contains(foldText(searchString)) ||
+        foldText(intake.meal.brands ?? '').contains(foldText(searchString));
   }
 }

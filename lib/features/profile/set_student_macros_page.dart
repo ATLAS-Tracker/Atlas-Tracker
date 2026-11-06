@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/domain/entity/macro_goal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
@@ -659,16 +660,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
         history.addAll(page);
         if (page.length < 500) break;
       }
-      _goalHistory = history
-          .where((row) =>
-              DateTime.tryParse(row['start_date']?.toString() ?? '') != null &&
-              [row['carb_goal'], row['fat_goal'], row['protein_goal']].every(
-                  (value) =>
-                      value is num &&
-                      value.isFinite &&
-                      value >= 0 &&
-                      value <= 1000))
-          .toList();
+      _goalHistory = history.where(MacroGoalEntity.isValidHistoryRow).toList();
       final current = _goalHistory
           .where((row) => !DateTime.parse(row['start_date']).isAfter(_today()));
       final response = current.firstOrNull;

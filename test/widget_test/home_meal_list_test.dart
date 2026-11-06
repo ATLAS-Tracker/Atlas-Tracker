@@ -52,6 +52,7 @@ void main() {
       DateTime? mealDay,
       double textScale = 1,
       bool journal = false,
+      int previewLimit = 2,
       void Function(IntakeEntity)? onDelete,
       Function(bool)? onDrag}) {
     return MaterialApp(
@@ -80,7 +81,7 @@ void main() {
         compact: true,
         isCollapsible: journal,
         initiallyExpanded: !journal,
-        foodPreviewLimit: journal ? null : 2,
+        foodPreviewLimit: journal ? null : previewLimit,
         onCopyMealToDateCallback: journal ? (_, __, ___) async {} : null,
         onDeleteIntakeCallback: (item, _) => onDelete?.call(item),
         onItemTappedCallback: onTapped,
@@ -198,6 +199,23 @@ void main() {
     await tester.pumpAndSettle();
     expect(deleted, [intake]);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('custom preview resets expansion when foods fit the limit',
+      (tester) async {
+    final foods =
+        List.generate(5, (index) => intake.copyWith(id: 'food-$index'));
+    await tester.pumpWidget(buildMeal(intakes: foods, previewLimit: 3));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('toggle-meal-foods')));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNWidgets(5));
+    await tester.pumpWidget(
+        buildMeal(intakes: foods.take(3).toList(), previewLimit: 3));
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(buildMeal(intakes: foods, previewLimit: 3));
+    await tester.pumpAndSettle();
+    expect(find.byType(IntakeCard), findsNWidgets(3));
   });
 
   testWidgets('new day resets an expanded meal', (tester) async {

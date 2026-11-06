@@ -114,7 +114,10 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
       _isExpanded = widget.initiallyExpanded;
       _showAllFoods = false;
     }
-    if (widget.intakeList.length <= 2) _showAllFoods = false;
+    if (widget.foodPreviewLimit == null ||
+        widget.intakeList.length <= widget.foodPreviewLimit!) {
+      _showAllFoods = false;
+    }
   }
 
   double get totalKcal => widget.intakeList.fold(

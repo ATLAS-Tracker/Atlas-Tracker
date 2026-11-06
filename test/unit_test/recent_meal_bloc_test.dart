@@ -12,6 +12,27 @@ class MockGetIntake extends Mock implements GetIntakeUsecase {}
 class MockGetRecipe extends Mock implements GetRecipeUsecase {}
 
 void main() {
+  for (final query in ['boeuf', 'bœuf', ' BŒUF ']) {
+    test('recent food search folds ligatures: $query', () async {
+      final intakes = MockGetIntake();
+      final recipes = MockGetRecipe();
+      final foods = [
+        MealEntity.empty().copyWith(code: 'a', name: 'Boeuf'),
+        MealEntity.empty().copyWith(code: 'b', name: 'Bœuf'),
+        MealEntity.empty().copyWith(code: 'c', name: 'Poulet', brands: 'Bœuf'),
+        MealEntity.empty().copyWith(code: 'd', name: 'Riz'),
+      ];
+      when(() => intakes.getRecentIntake()).thenAnswer((_) async => []);
+      when(() => recipes.getSavedFoods()).thenAnswer((_) async => foods);
+      final bloc = RecentMealBloc(intakes, recipes);
+      addTearDown(bloc.close);
+      final loaded = bloc.stream.firstWhere((s) => s is RecentMealLoadedState);
+      bloc.add(LoadRecentMealEvent(searchString: query));
+      expect(
+          (await loaded as RecentMealLoadedState).recentMeals, foods.take(3));
+    });
+  }
+
   test('saved food keeps its last intake and unconsumed food has no history',
       () async {
     final intakes = MockGetIntake();

@@ -43,7 +43,7 @@ void main() {
         'calorieGoal': 2000,
         'caloriesTracked': 1500,
         'carbsGoal': 200,
-        'carbsTracked': 150,
+        'carbsTracked': 300,
         'fatGoal': 70,
         'fatTracked': 50,
         'proteinGoal': 150,
@@ -83,6 +83,13 @@ void main() {
     expect(find.text('+0,4 kg'), findsNothing);
     expect(find.textContaining('85,3'), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    final macros = find.text(S.current.dayMacrosTitle);
+    await tester.ensureVisible(macros);
+    await tester.tap(macros);
+    await tester.pumpAndSettle();
+    expect(find.text('150 %'), findsOneWidget,
+        reason: 'over-goal percent appears once in percent mode');
 
     await tester.tap(find.text(S.current.studentTrendTab));
     await tester.pumpAndSettle();
