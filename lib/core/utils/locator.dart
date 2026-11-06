@@ -51,13 +51,11 @@ import 'package:opennutritracker/core/utils/ont_image_cache_manager.dart';
 import 'package:opennutritracker/features/activity_detail/presentation/bloc/activity_detail_bloc.dart';
 import 'package:opennutritracker/features/add_activity/presentation/bloc/activities_bloc.dart';
 import 'package:opennutritracker/features/add_activity/presentation/bloc/recent_activities_bloc.dart';
-import 'package:opennutritracker/features/add_meal/data/data_sources/fdc_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/data_sources/off_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/data_sources/sp_fdc_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/repository/products_repository.dart';
 import 'package:opennutritracker/features/add_meal/domain/usecase/search_products_usecase.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/add_meal_bloc.dart';
-import 'package:opennutritracker/features/add_meal/presentation/bloc/food_bloc.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/products_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recent_meal_bloc.dart';
@@ -77,7 +75,7 @@ import 'package:opennutritracker/features/settings/domain/usecase/export_data_su
 import 'package:opennutritracker/features/settings/domain/usecase/import_data_supabase_usecase.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
-import 'package:opennutritracker/features/sync/journal_remote_sync_service.dart';
+import 'package:opennutritracker/features/sync/journal_sync_engine.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
 import 'package:opennutritracker/services/step_count/android_step_count_provider.dart';
@@ -143,7 +141,6 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton(() => UserWeightDataSource(hive));
   locator.registerLazySingleton(() => MacroGoalDataSource(hive));
   locator.registerLazySingleton<OFFDataSource>(() => OFFDataSource());
-  locator.registerLazySingleton<FDCDataSource>(() => FDCDataSource());
   locator.registerLazySingleton<SpFdcDataSource>(() => SpFdcDataSource());
 
   // Repositories
@@ -154,7 +151,7 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton(() => IntakeRepository(locator()));
   locator.registerLazySingleton(() => RecipeRepository(locator()));
   locator.registerLazySingleton(
-    () => ProductsRepository(locator(), locator(), locator()),
+    () => ProductsRepository(locator(), locator()),
   );
   locator.registerLazySingleton(() => UserActivityRepository(locator()));
   locator.registerLazySingleton(() => PhysicalActivityRepository(locator()));
@@ -162,16 +159,16 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerLazySingleton(() => UserWeightRepository(locator()));
   locator.registerLazySingleton(() => MacroGoalRepository(locator()));
   locator.registerLazySingleton(
-    () => JournalRemoteSyncService(
-      intakeRepository: locator(),
-      recipeRepository: locator(),
-      trackedDayRepository: locator(),
-      userWeightRepository: locator(),
-      configRepository: locator(),
+    () => JournalSyncEngine(
+      intakes: locator(),
+      recipes: locator(),
+      days: locator(),
+      weights: locator(),
+      config: locator(),
       client: locator(),
       hive: hive,
     ),
-    dispose: (service) => service.stopAutoPush(),
+    dispose: (engine) => engine.stop(),
   );
 
   // UseCases
@@ -358,7 +355,6 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   locator.registerFactory<ProductsBloc>(
     () => ProductsBloc(locator()),
   );
-  locator.registerFactory<FoodBloc>(() => FoodBloc(locator()));
   locator.registerFactory(() => RecentMealBloc(locator(), locator()));
   locator.registerFactory(
     () => RecipeSearchBloc(locator(), locator()),
@@ -385,7 +381,7 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   );
 
   await _initializeConfig(locator());
-  await locator<JournalRemoteSyncService>().startAutoPush();
+  await locator<JournalSyncEngine>().start();
 }
 
 StepCountProvider? _createStepCountProvider() {

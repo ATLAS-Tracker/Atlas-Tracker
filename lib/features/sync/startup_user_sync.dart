@@ -9,7 +9,7 @@ import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart'
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
-import 'journal_remote_sync_service.dart';
+import 'journal_sync_engine.dart';
 import 'profile_remote_sync.dart';
 
 /// Runs after the local UI is available. Each remote request has a deadline;
@@ -35,7 +35,7 @@ Future<void> synchronizeUserData(SupabaseClient client) async {
       }
     }
     if (!owns()) return;
-    await locator<JournalRemoteSyncService>().syncAtStartup();
+    await locator<JournalSyncEngine>().sync();
     if (!owns()) return;
     locator<HomeBloc>().add(const LoadItemsEvent());
     locator<DiaryBloc>().add(const LoadDiaryYearEvent());

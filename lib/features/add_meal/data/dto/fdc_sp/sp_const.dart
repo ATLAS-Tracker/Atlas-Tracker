@@ -1,10 +1,7 @@
-import 'package:opennutritracker/core/utils/supported_language.dart';
-
 class SPConst {
   static const maxNumberOfItems = 20;
 
   // Table names
-  static const fdcFoodTableName = 'fdc_food';
   static const fdcPortionsName = 'fdc_portions';
   static const fdcNutrientsName = 'fdc_nutrients';
   static const fdcFoodSearchFunctionName = 'search_fdc_food';
@@ -22,15 +19,4 @@ class SPConst {
 
   static const fdcNutrientId = 'nutrient_id';
   static const fdcNutrientsAmount = 'amount';
-
-  static String getFdcFoodDescriptionColumnName(SupportedLanguage language) {
-    switch (language) {
-      case SupportedLanguage.en:
-        return fdcFoodDescriptionEn;
-      case SupportedLanguage.fr:
-        return fdcFoodDescriptionFr;
-      case SupportedLanguage.de:
-        return fdcFoodDescriptionDe;
-    }
-  }
 }

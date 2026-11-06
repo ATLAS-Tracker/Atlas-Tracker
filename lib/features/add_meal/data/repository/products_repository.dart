@@ -1,17 +1,13 @@
-import 'package:opennutritracker/features/add_meal/data/data_sources/fdc_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/data_sources/off_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/data_sources/sp_fdc_data_source.dart';
-import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_const.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 
 class ProductsRepository {
   final OFFDataSource _offDataSource;
-  final FDCDataSource _fdcDataSource;
   final SpFdcDataSource _spBackendDataSource;
 
-  ProductsRepository(
-      this._offDataSource, this._fdcDataSource, this._spBackendDataSource);
+  ProductsRepository(this._offDataSource, this._spBackendDataSource);
 
   Future<List<MealEntity>> getOFFProductsByString(String searchString,
       {int page = 1, int pageSize = 20}) async {
@@ -26,19 +22,6 @@ class ProductsRepository {
         .where((mealEntity) => mealEntity.hasNutriments)
         .toList();
 
-    return products;
-  }
-
-  Future<List<MealEntity>> getFDCFoodsByString(String searchString,
-      {int pageNumber = 1, int pageSize = FDCConst.defaultPageSize}) async {
-    final fdcWordResponse = await _fdcDataSource.fetchSearchWordResults(
-      searchString,
-      pageNumber: pageNumber,
-      pageSize: pageSize,
-    );
-    final products = fdcWordResponse.foods
-        .map((food) => MealEntity.fromFDCFood(food))
-        .toList();
     return products;
   }
 
