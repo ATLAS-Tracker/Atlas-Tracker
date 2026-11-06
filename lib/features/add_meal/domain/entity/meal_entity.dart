@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
@@ -115,6 +116,7 @@ class MealEntity extends Equatable {
       source: MealSourceEntity.fromMealSourceDBO(mealDBO.source));
 
   factory MealEntity.fromOFFProduct(OFFProductDTO offProduct) {
+    final serving = _offServing(offProduct);
     return MealEntity(
         code: offProduct.code,
         name: offProduct
@@ -129,8 +131,8 @@ class MealEntity extends Equatable {
                 : '${OFFConst.offWebsiteUrl}product/${offProduct.code}'),
         mealQuantity: offProduct.product_quantity?.toString(),
         mealUnit: _tryGetUnit(offProduct.quantity),
-        servingQuantity: _tryQuantityCast(offProduct.serving_quantity),
-        servingUnit: _tryGetUnit(offProduct.quantity),
+        servingQuantity: serving.quantity,
+        servingUnit: serving.unit,
         servingSize: offProduct.serving_size,
         nutriments:
             MealNutrimentsEntity.fromOffNutriments(offProduct.nutriments),
@@ -195,6 +197,34 @@ class MealEntity extends Equatable {
 
   MealOrRecipeEntity get mealOrRecipe {
     return nutriments.mealOrRecipe;
+  }
+
+  static ({double? quantity, String? unit}) _offServing(OFFProductDTO product) {
+    final matches = RegExp(
+      r'(\d+(?:[.,]\d+)?)\s*(kg|mg|g|ml|cl|l)\b',
+      caseSensitive: false,
+    ).allMatches(product.serving_size ?? '').toList();
+    // Mixed ice cream portions give both weight and volume; prefer the weight.
+    final match = matches.firstWhereOrNull(
+          (match) => const {'kg', 'mg', 'g'}.contains(match[2]!.toLowerCase()),
+        ) ??
+        matches.firstOrNull;
+    if (match != null) {
+      final unit = match[2]!.toLowerCase();
+      final factor = const {'kg': 1000.0, 'mg': 0.001, 'cl': 10.0, 'l': 1000.0};
+      final quantity =
+          double.parse(match[1]!.replaceAll(',', '.')) * (factor[unit] ?? 1);
+      if (quantity.isFinite && quantity > 0) {
+        return (
+          quantity: quantity,
+          unit: const {'kg', 'mg', 'g'}.contains(unit) ? 'g' : 'ml',
+        );
+      }
+    }
+    return (
+      quantity: _tryQuantityCast(product.serving_quantity),
+      unit: _tryGetUnit(product.quantity),
+    );
   }
 
   /// Value returned from OFF can either be String, int or double.
