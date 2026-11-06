@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/diary/presentation/widgets/diary_table_calendar.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
@@ -9,9 +10,6 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_nutriments_entity.dart';
-import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 
@@ -273,7 +271,5 @@ Future<void> saveRecipe(
   // Clean the list of intake
   locator<CreateMealBloc>().clearIntakeList();
 
-  locator<HomeBloc>().add(const LoadItemsEvent());
-  locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-  locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+  refreshJournalViews();
 }

@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/food_card_style.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'dart:io';
 
@@ -14,8 +15,6 @@ import 'package:opennutritracker/core/utils/path_helper.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class IntakeCard extends StatelessWidget {
-  static const double _cardWidth = 162;
-  static const double _cardHeight = 176;
   static const double _imageHeight = 72;
 
   final IntakeEntity intake;
@@ -38,12 +37,7 @@ class IntakeCard extends StatelessWidget {
     if (compact) return _buildCompact(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final cardSurface = Color.alphaBlend(
-      colorScheme.onSurface.withValues(
-        alpha: colorScheme.brightness == Brightness.dark ? 0.12 : 0.00,
-      ),
-      colorScheme.surfaceContainerLow,
-    );
+    final cardSurface = foodCardSurface(colorScheme);
     final imageSurface = Color.alphaBlend(
       colorScheme.primary.withValues(
         alpha: colorScheme.brightness == Brightness.dark ? 0.18 : 0.08,
@@ -59,10 +53,11 @@ class IntakeCard extends StatelessWidget {
 
     return Row(
       children: [
-        SizedBox(width: firstListElement ? 16 : 10),
         SizedBox(
-          width: _cardWidth,
-          height: _cardHeight,
+            width: firstListElement ? foodCardLeadingInset : foodCardSpacing),
+        SizedBox(
+          width: foodCardWidth,
+          height: foodCardHeight,
           child: Material(
             type: MaterialType.transparency,
             child: InkWell(

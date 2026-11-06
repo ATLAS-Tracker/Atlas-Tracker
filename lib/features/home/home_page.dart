@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,8 +10,6 @@ import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
@@ -386,9 +385,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   void _refreshAllViews() {
-    _homeBloc.add(const LoadItemsEvent());
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(const RefreshCalendarDayEvent());
+    refreshJournalViews();
   }
 
   Future<void> _copyYesterday(AddMealType type) async {

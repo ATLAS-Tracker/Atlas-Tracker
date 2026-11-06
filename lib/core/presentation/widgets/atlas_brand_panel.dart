@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 
@@ -69,3 +70,8 @@ class AtlasBrandPanel extends StatelessWidget {
     );
   }
 }
+
+Color atlasBrandOnSurface(ColorScheme colors) =>
+    colors.brightness == Brightness.dark
+        ? lightColorScheme.onPrimary
+        : colors.onPrimary;

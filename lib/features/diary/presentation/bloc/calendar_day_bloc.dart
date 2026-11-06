@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,7 +18,6 @@ import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
 import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 
 part 'calendar_day_event.dart';
 
@@ -88,7 +89,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
       // Like HomeBloc: calculate consumption from each food and its quantity.
       final trackedDayEntity = TrackedDayEntity(
         day: day,
-        calorieGoal: carbs * 4 + fats * 9 + proteins * 4,
+        calorieGoal: macroCalories(carbs: carbs, fat: fats, protein: proteins),
         carbsGoal: carbs,
         fatGoal: fats,
         proteinGoal: proteins,
@@ -156,7 +157,6 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
   }
 
   Future<void> _updateDiaryPage(DateTime day) async {
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(LoadCalendarDayEvent(day));
+    refreshJournalViews(day: day, includeHome: false);
   }
 }

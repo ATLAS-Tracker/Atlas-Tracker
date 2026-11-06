@@ -10,9 +10,6 @@ class SetPALCategoryDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SimpleDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-      surfaceTintColor: Colors.transparent,
       contentPadding: const EdgeInsets.only(top: 12, bottom: 20),
       title: ProfileDialogTitle(
           title: S.of(context).selectPalCategoryLabel,

@@ -7,7 +7,6 @@ import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
-import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_weight/presentation/add_weight_screen.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -55,9 +54,7 @@ class DashboardWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final s = S.of(context);
     final colorScheme = theme.colorScheme;
-    final brandOnSurface = colorScheme.brightness == Brightness.dark
-        ? lightColorScheme.onPrimary
-        : colorScheme.onPrimary;
+    final brandOnSurface = atlasBrandOnSurface(colorScheme);
     final brandSecondary = brandOnSurface.withValues(alpha: 0.74);
     final brandTertiary = brandOnSurface.withValues(alpha: 0.58);
 
@@ -323,9 +320,7 @@ class _WeightButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final brandOnSurface = colorScheme.brightness == Brightness.dark
-        ? lightColorScheme.onPrimary
-        : colorScheme.onPrimary;
+    final brandOnSurface = atlasBrandOnSurface(colorScheme);
     final brandSecondary = brandOnSurface.withValues(alpha: 0.76);
     return InkWell(
       onTap: onTap,

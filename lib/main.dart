@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/styles/dialog_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -128,6 +129,7 @@ class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: lightColorScheme,
+        dialogTheme: atlasDialogTheme(lightColorScheme),
         textTheme: appTextTheme,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
@@ -140,6 +142,7 @@ class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: darkColorScheme,
+        dialogTheme: atlasDialogTheme(darkColorScheme),
         textTheme: appTextTheme,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(

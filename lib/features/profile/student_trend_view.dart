@@ -108,7 +108,7 @@ class _TrendViewState extends State<_TrendView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TrendPillSelector(
+        ChartSelector(
           labels: [
             s.trendPeriod7d,
             s.trendPeriod14d,
@@ -140,68 +140,6 @@ class _TrendViewState extends State<_TrendView> {
         const SizedBox(height: 12),
         _TrendMacrosCard(data: data),
       ],
-    );
-  }
-}
-
-/// Compact pill selector (period filter, chart metric).
-class TrendPillSelector extends StatelessWidget {
-  final List<String> labels;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  const TrendPillSelector({
-    super.key,
-    required this.labels,
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: colors.primary.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: i == selectedIndex,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onSelected(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: i == selectedIndex
-                          ? atlasBrandGradientColors.first
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(labels[i],
-                        maxLines: 1,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: i == selectedIndex
-                                ? Colors.white
-                                : colors.onSurfaceVariant)),
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
@@ -383,43 +321,15 @@ class _TrendChartCardState extends State<_TrendChartCard> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    Widget metric(int i, String label) {
-      final selected = i == _metric;
-      return Semantics(
-        button: true,
-        selected: selected,
-        child: InkWell(
-          onTap: () => setState(() => _metric = i),
-          borderRadius: BorderRadius.circular(999),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: selected
-                  ? colors.primary.withValues(alpha: 0.12)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(label,
-                style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color:
-                        selected ? colors.primary : colors.onSurfaceVariant)),
-          ),
-        ),
-      );
-    }
-
     return _InfoCard(
       title: s.trendEvolutionTitle,
       icon: Icons.show_chart_rounded,
       fill: false,
-      trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        metric(0, s.weightLabel),
-        metric(1, s.caloriesLabel),
-      ]),
+      trailing: ChartSelector(
+          style: ChartSelectorStyle.compact,
+          labels: [s.weightLabel, s.caloriesLabel],
+          selectedIndex: _metric,
+          onSelected: (index) => setState(() => _metric = index)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -458,42 +368,6 @@ class _ChartEmpty extends StatelessWidget {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                   color: colors.onSurfaceVariant, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChartTooltip extends StatelessWidget {
-  final DateTime date;
-  final List<String> lines;
-
-  const _ChartTooltip({required this.date, required this.lines});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colors = theme.colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: colors.inverseSurface,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-              DateFormat.MMMd(Localizations.localeOf(context).toString())
-                  .format(date),
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: colors.onInverseSurface)),
-          for (final line in lines)
-            Text(line,
-                style: theme.textTheme.labelMedium?.copyWith(
-                    color: colors.onInverseSurface,
-                    fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -559,7 +433,8 @@ class _WeightChart extends StatelessWidget {
               enable: true,
               color: Colors.transparent,
               elevation: 0,
-              builder: (d, _, __, ___, ____) => _ChartTooltip(
+              builder: (d, _, __, ___, ____) => ChartTooltip(
+                inverse: true,
                 date: (d as TrendDay).date,
                 lines: ['${formatNumber(d.weight!, decimals: 1)} ${s.kgLabel}'],
               ),
@@ -626,7 +501,7 @@ class _CaloriesChart extends StatelessWidget {
 
     Widget tooltip(dynamic d, _, __, ___, ____) {
       final day = d as TrendDay;
-      return _ChartTooltip(date: day.date, lines: [
+      return ChartTooltip(inverse: true, date: day.date, lines: [
         day.kcal == null
             ? s.studentNoEntryLabel
             : '${day.kcal!.round()} ${s.kcalLabel}',

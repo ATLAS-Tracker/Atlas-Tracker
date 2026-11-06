@@ -44,3 +44,13 @@ bool isWithinNutritionGoal(double consumed, double goal) {
       displayedConsumed >= displayedGoal * 0.9 &&
       displayedConsumed <= displayedGoal * 1.1;
 }
+
+double macroCalories(
+        {required num carbs, required num fat, required num protein}) =>
+    (carbs * 4 + fat * 9 + protein * 4).toDouble();
+
+String capitalizeFirst(String value) =>
+    value.isEmpty ? value : value[0].toUpperCase() + value.substring(1);
+
+bool exceedsNutritionGoal(double consumed, double goal) =>
+    consumed.round() > goal.round() * 1.1;

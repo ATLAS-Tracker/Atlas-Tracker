@@ -24,4 +24,23 @@ void main() {
     expect(isWithinNutritionGoal(0, 2000), isFalse);
     expect(isWithinNutritionGoal(100, 0), isFalse);
   });
+  test('macro energy uses the same 4/4/9 calculation for integers and decimals',
+      () {
+    expect(macroCalories(carbs: 250, fat: 60, protein: 120), 2020);
+    expect(macroCalories(carbs: 0.5, fat: 0.5, protein: 0.5), 8.5);
+    expect(macroCalories(carbs: 0, fat: 0, protein: 0), 0);
+  });
+
+  test('capitalization handles empty text and accented names', () {
+    expect(capitalizeFirst(''), '');
+    expect(capitalizeFirst('énergie'), 'Énergie');
+    expect(capitalizeFirst('7 jours'), '7 jours');
+    expect(capitalizeFirst('🥗 salade'), '🥗 salade');
+  });
+
+  test('over-goal warning agrees with the displayed rounded values', () {
+    expect(exceedsNutritionGoal(2200.4, 2000), isFalse);
+    expect(exceedsNutritionGoal(2200.6, 2000), isTrue);
+    expect(exceedsNutritionGoal(0, 0), isFalse);
+  });
 }

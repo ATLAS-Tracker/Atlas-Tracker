@@ -1,3 +1,4 @@
+import 'package:opennutritracker/features/add_meal/presentation/widgets/search_empty_state.dart';
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -10,10 +11,8 @@ import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.da
 import 'package:opennutritracker/features/add_meal/presentation/recipe_results_list.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recent_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/default_results_widget.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_search_bar.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/no_results_widget.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/products_bloc.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
@@ -362,7 +361,7 @@ class _ProductsResultsPane extends StatelessWidget {
             bloc: bloc,
             builder: (context, state) {
               if (state is ProductsInitial) {
-                return const DefaultsResultsWidget();
+                return const SearchEmptyState.initial();
               } else if (state is ProductsLoadingState) {
                 return Center(
                   child: SingleChildScrollView(
@@ -385,7 +384,7 @@ class _ProductsResultsPane extends StatelessWidget {
                 if (state.visibleCount == 0) {
                   return state.isLoadingMore
                       ? const Center(child: CircularProgressIndicator())
-                      : NoResultsWidget(
+                      : SearchEmptyState(
                           query: search.value,
                           onCreate: onCreate,
                           onScan: onScan);
@@ -466,7 +465,7 @@ class _RecentMealsPane extends StatelessWidget {
               : state.recentMeals;
 
           if (filteredMeals.isEmpty) {
-            return const NoResultsWidget();
+            return const SearchEmptyState();
           }
           return ListView.builder(
             padding: const EdgeInsets.only(bottom: 16, top: 8),

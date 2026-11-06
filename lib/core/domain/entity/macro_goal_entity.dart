@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/data/data_source/macro_goal_dbo.dart';
 
 class MacroGoalEntity {
@@ -71,9 +72,10 @@ class MacroGoalEntity {
         value is! num || !value.isFinite || value < 0 || value > 1000)) {
       return false;
     }
-    final energy = (values[0] as num) * 4 +
-        (values[1] as num) * 9 +
-        (values[2] as num) * 4;
+    final energy = macroCalories(
+        carbs: values[0] as num,
+        fat: values[1] as num,
+        protein: values[2] as num);
     return energy > 0 && energy <= 10000;
   }
 

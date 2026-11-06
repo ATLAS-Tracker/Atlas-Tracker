@@ -1,6 +1,5 @@
+import 'package:opennutritracker/features/profile/presentation/widgets/profile_value_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/features/profile/presentation/widgets/set_weight_dialog.dart';
-import 'package:opennutritracker/features/profile/presentation/widgets/set_height_dialog.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opennutritracker/core/domain/entity/user_gender_entity.dart';
@@ -93,10 +92,10 @@ void main() {
                                   StatefulBuilder(builder: (_, setState) {
                                     rebuildDialog = setState;
                                     return weight
-                                        ? SetWeightDialog(
-                                            userWeight: imperial ? 170 : 78)
-                                        : SetHeightDialog(
-                                            userHeight: imperial ? 6 : 180);
+                                        ? ProfileValueDialog.weight(
+                                            value: imperial ? 170 : 78)
+                                        : ProfileValueDialog.height(
+                                            value: imperial ? 6 : 180);
                                   }));
                         },
                         child: const Text('open'),
@@ -125,10 +124,10 @@ void main() {
     }
   }
   for (final entry in [
-    (const SetHeightDialog(userHeight: 350), 300.0),
-    (const SetWeightDialog(userWeight: 450), 400.0),
-    (const SetHeightDialog(userHeight: 0), 0.1),
-    (const SetWeightDialog(userWeight: 0), 0.1),
+    (const ProfileValueDialog.height(value: 350), 300.0),
+    (const ProfileValueDialog.weight(value: 450), 400.0),
+    (const ProfileValueDialog.height(value: 0), 0.1),
+    (const ProfileValueDialog.weight(value: 0), 0.1),
   ]) {
     testWidgets('numeric profile clamps ${entry.$1}', (tester) async {
       double? saved;

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
-class NoResultsWidget extends StatelessWidget {
+class SearchEmptyState extends StatelessWidget {
+  final bool _initial;
   final String query;
   final VoidCallback? onCreate;
   final VoidCallback? onScan;
-  const NoResultsWidget(
-      {super.key, this.query = '', this.onCreate, this.onScan});
+  const SearchEmptyState(
+      {super.key, this.query = '', this.onCreate, this.onScan})
+      : _initial = false;
+
+  const SearchEmptyState.initial({super.key})
+      : _initial = true,
+        query = '',
+        onCreate = null,
+        onScan = null;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +30,16 @@ class NoResultsWidget extends StatelessWidget {
               decoration: BoxDecoration(
                   color: colors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(24)),
-              child: Icon(Icons.search_off_rounded,
-                  color: colors.primary, size: 32),
+              child: Icon(
+                  _initial ? Icons.search_rounded : Icons.search_off_rounded,
+                  color: colors.primary,
+                  size: 32),
             ),
             const SizedBox(height: 16),
-            Text(S.of(context).noResultsFound,
+            Text(
+                _initial
+                    ? S.of(context).searchDefaultLabel
+                    : S.of(context).noResultsFound,
                 textAlign: TextAlign.center,
                 style: Theme.of(context)
                     .textTheme

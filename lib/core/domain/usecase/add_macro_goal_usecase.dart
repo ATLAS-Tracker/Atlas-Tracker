@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/data/repository/macro_goal_repository.dart';
 import 'package:opennutritracker/core/domain/entity/macro_goal_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/add_tracked_day_usecase.dart';
@@ -62,7 +63,9 @@ class AddMacroGoalUsecase {
       if (!owns()) return;
       final goal = MacroGoalEntity.forDay(newMacro, day);
       await _addTrackedDayUsecase.updateDayCalorieGoal(
-          day, goal.carbs * 4 + goal.fats * 9 + goal.proteins * 4);
+          day,
+          macroCalories(
+              carbs: goal.carbs, fat: goal.fats, protein: goal.proteins));
       await _addTrackedDayUsecase.updateDayMacroGoals(
         day,
         carbsGoal: goal.carbs,

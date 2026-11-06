@@ -1,3 +1,4 @@
+import 'package:opennutritracker/features/profile/presentation/widgets/profile_value_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
@@ -12,9 +13,7 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:opennutritracker/features/profile/presentation/widgets/set_gender_dialog.dart';
 import 'package:opennutritracker/features/profile/presentation/widgets/set_goal_dialog.dart';
-import 'package:opennutritracker/features/profile/presentation/widgets/set_height_dialog.dart';
 import 'package:opennutritracker/features/profile/presentation/widgets/set_pal_category_dialog.dart';
-import 'package:opennutritracker/features/profile/presentation/widgets/set_weight_dialog.dart';
 import 'package:opennutritracker/features/profile/presentation/widgets/profile_photo_picker.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'presentation/widgets/manage_account_dialog.dart';
@@ -299,7 +298,8 @@ class _ProfilePageState extends State<ProfilePage> {
       BuildContext context, UserEntity userEntity) async {
     final selectedHeight = await showDialog<double>(
         context: context,
-        builder: (context) => SetHeightDialog(userHeight: userEntity.heightCM));
+        builder: (context) =>
+            ProfileValueDialog.height(value: userEntity.heightCM));
     if (selectedHeight != null) {
       userEntity.heightCM = selectedHeight;
       _profileBloc.updateUser(userEntity);
@@ -310,7 +310,8 @@ class _ProfilePageState extends State<ProfilePage> {
       BuildContext context, UserEntity userEntity) async {
     final selectedWeight = await showDialog<double>(
         context: context,
-        builder: (context) => SetWeightDialog(userWeight: userEntity.weightKG));
+        builder: (context) =>
+            ProfileValueDialog.weight(value: userEntity.weightKG));
     if (selectedWeight != null) {
       userEntity.weightKG = selectedWeight;
       _profileBloc.updateUser(userEntity);

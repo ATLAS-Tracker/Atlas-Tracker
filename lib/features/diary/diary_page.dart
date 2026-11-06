@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
@@ -180,78 +181,34 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                                     .titleMedium
                                     ?.copyWith(fontWeight: FontWeight.w800)),
                             children: [
-                              IntakeVerticalList(
-                                day: _selectedDate,
-                                title: S.of(context).breakfastLabel,
-                                addMealType: AddMealType.breakfastType,
-                                intakeList: loadedDay.breakfastIntakeList,
-                                onDeleteIntakeCallback: onDeleteIntake,
-                                onDeleteAllIntakesCallback: onDeleteIntakes,
-                                onItemLongPressedCallback:
-                                    onIntakeItemLongPressed,
-                                onItemTappedCallback: onIntakeItemTapped,
-                                onCopyMealToDateCallback: onCopyMealToDate,
-                                trackedDayEntity: loadedDay.trackedDayEntity,
-                                isDropZone: false,
-                                isCollapsible: true,
-                                initiallyExpanded: true,
-                                foodPreviewLimit: null,
-                                horizontalMargin: 0,
-                              ),
-                              IntakeVerticalList(
-                                day: _selectedDate,
-                                title: S.of(context).lunchLabel,
-                                addMealType: AddMealType.lunchType,
-                                intakeList: loadedDay.lunchIntakeList,
-                                onDeleteIntakeCallback: onDeleteIntake,
-                                onDeleteAllIntakesCallback: onDeleteIntakes,
-                                onItemLongPressedCallback:
-                                    onIntakeItemLongPressed,
-                                onItemTappedCallback: onIntakeItemTapped,
-                                onCopyMealToDateCallback: onCopyMealToDate,
-                                trackedDayEntity: loadedDay.trackedDayEntity,
-                                isDropZone: false,
-                                isCollapsible: true,
-                                initiallyExpanded: true,
-                                foodPreviewLimit: null,
-                                horizontalMargin: 0,
-                              ),
-                              IntakeVerticalList(
-                                day: _selectedDate,
-                                title: S.of(context).dinnerLabel,
-                                addMealType: AddMealType.dinnerType,
-                                intakeList: loadedDay.dinnerIntakeList,
-                                onDeleteIntakeCallback: onDeleteIntake,
-                                onDeleteAllIntakesCallback: onDeleteIntakes,
-                                onItemLongPressedCallback:
-                                    onIntakeItemLongPressed,
-                                onItemTappedCallback: onIntakeItemTapped,
-                                onCopyMealToDateCallback: onCopyMealToDate,
-                                trackedDayEntity: loadedDay.trackedDayEntity,
-                                isDropZone: false,
-                                isCollapsible: true,
-                                initiallyExpanded: true,
-                                foodPreviewLimit: null,
-                                horizontalMargin: 0,
-                              ),
-                              IntakeVerticalList(
-                                day: _selectedDate,
-                                title: S.of(context).snackLabel,
-                                addMealType: AddMealType.snackType,
-                                intakeList: loadedDay.snackIntakeList,
-                                onDeleteIntakeCallback: onDeleteIntake,
-                                onDeleteAllIntakesCallback: onDeleteIntakes,
-                                onItemLongPressedCallback:
-                                    onIntakeItemLongPressed,
-                                onItemTappedCallback: onIntakeItemTapped,
-                                onCopyMealToDateCallback: onCopyMealToDate,
-                                trackedDayEntity: loadedDay.trackedDayEntity,
-                                isDropZone: false,
-                                isCollapsible: true,
-                                initiallyExpanded: true,
-                                foodPreviewLimit: null,
-                                horizontalMargin: 0,
-                              ),
+                              for (final type in AddMealType.values)
+                                IntakeVerticalList(
+                                  day: _selectedDate,
+                                  title: type.getTypeName(context),
+                                  addMealType: type,
+                                  intakeList: switch (type) {
+                                    AddMealType.breakfastType =>
+                                      loadedDay.breakfastIntakeList,
+                                    AddMealType.lunchType =>
+                                      loadedDay.lunchIntakeList,
+                                    AddMealType.dinnerType =>
+                                      loadedDay.dinnerIntakeList,
+                                    AddMealType.snackType =>
+                                      loadedDay.snackIntakeList,
+                                  },
+                                  onDeleteIntakeCallback: onDeleteIntake,
+                                  onDeleteAllIntakesCallback: onDeleteIntakes,
+                                  onItemLongPressedCallback:
+                                      onIntakeItemLongPressed,
+                                  onItemTappedCallback: onIntakeItemTapped,
+                                  onCopyMealToDateCallback: onCopyMealToDate,
+                                  trackedDayEntity: loadedDay.trackedDayEntity,
+                                  isDropZone: false,
+                                  isCollapsible: true,
+                                  initiallyExpanded: true,
+                                  foodPreviewLimit: null,
+                                  horizontalMargin: 0,
+                                ),
                             ],
                           ),
                         ],
@@ -370,9 +327,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
   }
 
   void _refreshSelectedDay() {
-    _diaryBloc.add(const LoadDiaryYearEvent());
-    _calendarDayBloc.add(LoadCalendarDayEvent(_selectedDate));
-    _homeBloc.add(const LoadItemsEvent());
+    refreshJournalViews(day: _selectedDate);
   }
 
   Future<void> _openSelectedDayWeightScreen() async {

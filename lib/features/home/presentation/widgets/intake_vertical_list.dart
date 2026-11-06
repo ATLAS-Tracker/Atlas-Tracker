@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
 import 'dart:async';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +18,6 @@ import 'package:opennutritracker/features/add_meal/presentation/add_meal_screen.
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_detail_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -450,19 +450,18 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
       return;
     }
 
-    final result = await showDialog<_CopyMealToDateResult>(
-      context: context,
-      builder: (context) => _CopyMealToDateDialog(
-        initialMealType: widget.addMealType,
-        initialDate: DateTime.now(),
-      ),
-    );
+    final result = await selectIntakeDestination(context,
+        day: DateTime.now(), type: widget.addMealType.getIntakeType());
 
     if (result == null || !mounted) {
       return;
     }
 
-    await copyCallback(widget.intakeList, result.targetDate, result.mealType);
+    await copyCallback(
+        widget.intakeList,
+        result.$1,
+        AddMealType.values
+            .firstWhere((type) => type.getIntakeType() == result.$2));
   }
 
   Future<void> _onItemDropped(IntakeEntity entity) async {
@@ -479,240 +478,7 @@ class _IntakeVerticalListState extends State<IntakeVerticalList> {
     );
     await _homeBloc.deleteIntakeItem(entity);
 
-    locator<HomeBloc>().add(const LoadItemsEvent());
-
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
-  }
-}
-
-class _CopyMealToDateResult {
-  final DateTime targetDate;
-  final AddMealType mealType;
-
-  const _CopyMealToDateResult({
-    required this.targetDate,
-    required this.mealType,
-  });
-}
-
-class _CopyMealToDateDialog extends StatefulWidget {
-  final DateTime initialDate;
-  final AddMealType initialMealType;
-
-  const _CopyMealToDateDialog({
-    required this.initialDate,
-    required this.initialMealType,
-  });
-
-  @override
-  State<_CopyMealToDateDialog> createState() => _CopyMealToDateDialogState();
-}
-
-class _CopyMealToDateDialogState extends State<_CopyMealToDateDialog> {
-  late DateTime _targetDate;
-  late AddMealType _mealType;
-
-  @override
-  void initState() {
-    super.initState();
-    _targetDate = widget.initialDate;
-    _mealType = widget.initialMealType;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final formattedDate =
-        MaterialLocalizations.of(context).formatFullDate(_targetDate);
-
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-      contentPadding: const EdgeInsets.fromLTRB(24, 18, 24, 0),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
-      title: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Color.alphaBlend(
-                colorScheme.primary.withValues(
-                  alpha:
-                      colorScheme.brightness == Brightness.dark ? 0.24 : 0.12,
-                ),
-                colorScheme.surfaceContainerHighest,
-              ),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.content_copy_rounded,
-              color: colorScheme.primary,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              S.of(context).copyMealDialogTitle,
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _CopyDialogField(
-            label: S.of(context).copyMealTargetDateLabel,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: _selectDate,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_month_rounded,
-                      color: colorScheme.primary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        formattedDate,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _CopyDialogField(
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<AddMealType>(
-                value: _mealType,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                dropdownColor: colorScheme.surfaceContainerHighest,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                borderRadius: BorderRadius.circular(18),
-                onChanged: (AddMealType? addMealType) {
-                  if (addMealType == null) {
-                    return;
-                  }
-                  setState(() {
-                    _mealType = addMealType;
-                  });
-                },
-                items: AddMealType.values.map((addMealType) {
-                  return DropdownMenuItem(
-                    value: addMealType,
-                    child: Text(addMealType.getTypeName(context)),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(S.of(context).dialogCancelLabel),
-        ),
-        FilledButton.icon(
-          onPressed: () {
-            Navigator.of(context).pop(
-              _CopyMealToDateResult(
-                targetDate: _targetDate,
-                mealType: _mealType,
-              ),
-            );
-          },
-          icon: const Icon(Icons.content_copy_rounded, size: 18),
-          label: Text(S.of(context).copyMealLabel),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _selectDate() async {
-    final selectedDate = await showDatePicker(
-      context: context,
-      initialDate: _targetDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      helpText: S.of(context).copyMealSelectDateLabel,
-    );
-
-    if (selectedDate == null || !mounted) {
-      return;
-    }
-
-    setState(() {
-      _targetDate = selectedDate;
-    });
-  }
-}
-
-class _CopyDialogField extends StatelessWidget {
-  final String? label;
-  final Widget child;
-
-  const _CopyDialogField({this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final background = Color.alphaBlend(
-      colorScheme.primary.withValues(
-        alpha: colorScheme.brightness == Brightness.dark ? 0.12 : 0.06,
-      ),
-      colorScheme.surfaceContainerHighest,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (label != null) ...[
-          Text(
-            label!,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: child,
-        ),
-      ],
-    );
+    refreshJournalViews();
   }
 }
 

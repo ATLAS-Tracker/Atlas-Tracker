@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
@@ -321,7 +320,7 @@ class _MealDetailBottomSheetState extends State<MealDetailBottomSheet> {
         quantity > 0 &&
         ['g', 'ml'].contains(unit);
     final description = hasPhysicalQuantity
-        ? '${NumberFormat('0.##', Localizations.localeOf(context).toString()).format(quantity)} ${_localizedUnit(context, unit)}'
+        ? '${formatQuantity(quantity)} ${_localizedUnit(context, unit)}'
         : product.servingSize?.trim();
     final label = description == null ||
             description.isEmpty ||

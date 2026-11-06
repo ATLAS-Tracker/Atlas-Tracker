@@ -1,3 +1,4 @@
+import 'package:opennutritracker/features/add_meal/presentation/widgets/search_empty_state.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 import 'package:flutter/material.dart';
@@ -5,8 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/default_results_widget.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/no_results_widget.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:logging/logging.dart';
@@ -94,7 +93,7 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
           bloc: widget.bloc,
           builder: (context, state) {
             if (state is RecipeInitial) {
-              return const DefaultsResultsWidget();
+              return const SearchEmptyState.initial();
             } else if (state is RecipeLoadingState) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is RecipeLoadedState) {
@@ -199,7 +198,7 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
                           ),
                       ],
                     )
-                  : const Center(child: NoResultsWidget());
+                  : const Center(child: SearchEmptyState());
             } else if (state is RecipeFailedState) {
               return ErrorDialog(
                 errorText: S.of(context).errorRecipeLabel,

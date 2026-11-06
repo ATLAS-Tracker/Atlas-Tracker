@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/domain/entity/macro_goal_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,7 +87,8 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     final protein = int.tryParse(_proteinController.text) ?? 0;
 
     setState(() {
-      _calculatedCalories = (carbs * 4) + (fat * 9) + (protein * 4);
+      _calculatedCalories =
+          macroCalories(carbs: carbs, fat: fat, protein: protein).toInt();
     });
   }
 
@@ -383,8 +385,7 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
               ),
               child: Text(
                 s.trendVsGoal(
-                    '${_calculatedCalories > _previousCalories! ? '+' : ''}'
-                    '${_calculatedCalories - _previousCalories!} ${s.kcalLabel}'),
+                    '${formatNumber(_calculatedCalories - _previousCalories!, signed: true)} ${s.kcalLabel}'),
                 style: theme.textTheme.labelMedium
                     ?.copyWith(color: onBrand, fontWeight: FontWeight.w700),
               ),
@@ -485,7 +486,8 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
     final carbs = (row['carb_goal'] as num).toInt();
     final fat = (row['fat_goal'] as num).toInt();
     final protein = (row['protein_goal'] as num).toInt();
-    final calories = carbs * 4 + fat * 9 + protein * 4;
+    final calories =
+        macroCalories(carbs: carbs, fat: fat, protein: protein).toInt();
     Widget chip(String label, int? grams, Color color) => Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
@@ -676,7 +678,8 @@ class _SetStudentMacrosPageState extends State<SetStudentMacrosPage> {
           if (protein != null) _proteinController.text = protein.toString();
 
           if (carbs != null && fat != null && protein != null) {
-            _previousCalories = (carbs * 4) + (fat * 9) + (protein * 4);
+            _previousCalories =
+                macroCalories(carbs: carbs, fat: fat, protein: protein).toInt();
           }
         } else {
           // Fallback aux valeurs passées au widget si aucun objectif trouvé

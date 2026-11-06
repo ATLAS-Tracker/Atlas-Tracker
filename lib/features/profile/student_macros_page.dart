@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
@@ -532,7 +533,7 @@ class StudentEnergyCardState extends State<StudentEnergyCard> {
               builder: (context, value, child) => CustomPaint(
                 painter: _RingPainter(
                   progress: value,
-                  color: consumed.round() > goal.round() * 1.1
+                  color: exceedsNutritionGoal(consumed, goal)
                       ? colors.error
                       : colors.primary,
                   track: colors.primary.withValues(alpha: 0.12),
@@ -738,7 +739,7 @@ class _MacroProgressRow extends StatelessWidget {
                 Text(_percent(tracked, goal),
                     textAlign: TextAlign.end,
                     style: theme.textTheme.labelSmall?.copyWith(
-                        color: tracked.round() > goal.round() * 1.1
+                        color: exceedsNutritionGoal(tracked, goal)
                             ? colors.error
                             : colors.onSurfaceVariant)),
               const SizedBox(height: 6),
@@ -753,7 +754,7 @@ class _MacroProgressRow extends StatelessWidget {
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
                     minHeight: 6,
-                    color: goal > 0 && tracked.round() > goal.round() * 1.1
+                    color: goal > 0 && exceedsNutritionGoal(tracked, goal)
                         ? colors.error
                         : visual.color,
                     backgroundColor: visual.color.withValues(alpha: 0.14),

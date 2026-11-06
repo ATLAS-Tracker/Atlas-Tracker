@@ -53,6 +53,8 @@ void main() {
       double textScale = 1,
       bool journal = false,
       int previewLimit = 2,
+      Future<void> Function(List<IntakeEntity>, DateTime, AddMealType)?
+          onCopyMeal,
       void Function(IntakeEntity)? onDelete,
       Function(bool)? onDrag}) {
     return MaterialApp(
@@ -80,7 +82,8 @@ void main() {
         isCollapsible: journal,
         initiallyExpanded: !journal,
         foodPreviewLimit: journal ? null : previewLimit,
-        onCopyMealToDateCallback: journal ? (_, __, ___) async {} : null,
+        onCopyMealToDateCallback:
+            journal ? onCopyMeal ?? (_, __, ___) async {} : null,
         onDeleteIntakeCallback: (item, _) => onDelete?.call(item),
         onDeleteAllIntakesCallback: (items) async {
           for (final item in items) {
@@ -182,6 +185,39 @@ void main() {
     await tester.tap(find.byIcon(Icons.expand_more));
     await tester.pumpAndSettle();
     expect(find.byType(IntakeCard), findsNWidgets(4));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('meal copy uses the shared destination and supports cancellation',
+      (tester) async {
+    DateTime? copiedDay;
+    AddMealType? copiedType;
+    List<IntakeEntity>? copiedFoods;
+    await tester.pumpWidget(buildMeal(
+        intakes: [intake],
+        journal: true,
+        onCopyMeal: (foods, day, type) async {
+          copiedDay = day;
+          copiedType = type;
+          copiedFoods = foods;
+        }));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip(S.current.copyMealLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogCancelLabel));
+    await tester.pumpAndSettle();
+    expect(copiedFoods, isNull);
+    await tester.tap(find.byTooltip(S.current.copyMealLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(DropdownButtonFormField<IntakeTypeEntity>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dinnerLabel).last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogOKLabel));
+    await tester.pumpAndSettle();
+    expect(copiedFoods, [intake]);
+    expect(copiedDay, DateUtils.dateOnly(DateTime.now()));
+    expect(copiedType, AddMealType.dinnerType);
     expect(tester.takeException(), isNull);
   });
 

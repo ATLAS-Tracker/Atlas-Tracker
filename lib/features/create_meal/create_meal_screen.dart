@@ -513,40 +513,19 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     if (_saving) return;
     final recipeName = _nameTextController.text;
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is CreateRecipeFromMealArguments) {
-      setState(() => _saving = true);
-      try {
-        await saveRecipe(
-          context,
-          mealName: recipeName,
-          imagePath: _imagePath,
-          idOfRecipeToModify: null,
-          type: args.type,
-          day: args.day,
-          addToDiary: true,
-        );
-        args.deleteSourceIntakes();
-        if (mounted) Navigator.of(context).pop();
-      } catch (_) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(S.of(context).recipeSaveError)));
-        }
-      } finally {
-        if (mounted) setState(() => _saving = false);
-      }
-      return;
-    }
-    if (args is CreateMealScreenArguments) {
+    if (args is CreateRecipeFromMealArguments ||
+        args is CreateMealScreenArguments) {
+      final sourceMeal = args is CreateRecipeFromMealArguments ? args : null;
       setState(() => _saving = true);
       try {
         await saveRecipe(context,
             mealName: recipeName,
             imagePath: _imagePath,
-            idOfRecipeToModify: _id,
-            type: IntakeTypeEntity.breakfast,
-            day: DateTime.now(),
-            addToDiary: false);
+            idOfRecipeToModify: args is CreateMealScreenArguments ? _id : null,
+            type: sourceMeal?.type ?? IntakeTypeEntity.breakfast,
+            day: sourceMeal?.day ?? DateTime.now(),
+            addToDiary: sourceMeal != null);
+        sourceMeal?.deleteSourceIntakes();
         if (mounted) Navigator.of(context).pop();
       } catch (_) {
         if (mounted) {

@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
 
@@ -9,7 +10,8 @@ Future<void> saveCoachMacroGoal(
   required int fat,
   required int protein,
 }) async {
-  final calories = carbs * 4 + fat * 9 + protein * 4;
+  final calories =
+      macroCalories(carbs: carbs, fat: fat, protein: protein).toInt();
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final day = DateTime(startDate.year, startDate.month, startDate.day);

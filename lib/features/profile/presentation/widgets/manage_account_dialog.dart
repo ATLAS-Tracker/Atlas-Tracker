@@ -71,10 +71,6 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
     return PopScope(
         canPop: !_deleting,
         child: AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-          backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-          surfaceTintColor: Colors.transparent,
           title: ProfileDialogTitle(
               title: S.of(context).manageAccountTitle,
               icon: Icons.manage_accounts_outlined,
@@ -124,9 +120,6 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       context: context,
       builder: (context) => AlertDialog(
         scrollable: true,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
-        surfaceTintColor: Colors.transparent,
         title: ProfileDialogTitle(
             title: S.of(context).manageAccountConfirmTitle,
             icon: Icons.delete_outline_rounded,

@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
+import 'package:opennutritracker/core/presentation/widgets/atlas_surface_card.dart';
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +15,6 @@ import 'package:opennutritracker/core/presentation/widgets/editable_text_widget.
 import 'package:opennutritracker/core/presentation/widgets/atlas_brand_panel.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
-import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -27,11 +28,6 @@ import 'package:opennutritracker/features/add_weight/presentation/widgets/weight
 
 String _formatWeight(double weight, {bool signed = false}) =>
     formatNumber(weight, decimals: 1, signed: signed);
-
-String _capitalizeFirst(String value) {
-  if (value.isEmpty) return value;
-  return value[0].toUpperCase() + value.substring(1);
-}
 
 enum _WeightScreenTab { overview, history }
 
@@ -353,9 +349,7 @@ class _WeightHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final brandOnSurface = colorScheme.brightness == Brightness.dark
-        ? lightColorScheme.onPrimary
-        : colorScheme.onPrimary;
+    final brandOnSurface = atlasBrandOnSurface(colorScheme);
     final brandSecondary = brandOnSurface.withValues(alpha: 0.78);
 
     return AtlasBrandPanel(
@@ -372,7 +366,7 @@ class _WeightHeroCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _capitalizeFirst(S.of(context).currentWeightLabel),
+                      capitalizeFirst(S.of(context).currentWeightLabel),
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: brandSecondary,
                         fontWeight: FontWeight.w600,
@@ -539,7 +533,7 @@ class _WeightSelectorCard extends StatelessWidget {
       colorScheme.surfaceContainerLowest,
     );
 
-    return _SurfaceCard(
+    return AtlasSurfaceCard(
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 26),
       radius: 28,
       child: Column(
@@ -1035,7 +1029,7 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return _SurfaceCard(
+    return AtlasSurfaceCard(
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
       child: FutureBuilder<List<WeightData>>(
         future: _chartDataFuture,
@@ -1077,11 +1071,16 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  _RangeDropdown(
-                    selectedRange: _selectedRange,
-                    labelBuilder: (range) => _rangeLabel(context, range),
-                    onChanged: (range) {
-                      if (range == null || range == _selectedRange) return;
+                  ChartSelector(
+                    style: ChartSelectorStyle.dropdown,
+                    selectedIndex: _selectedRange.index,
+                    labels: [
+                      for (final range in _WeightChartRange.values)
+                        _rangeLabel(context, range)
+                    ],
+                    onSelected: (index) {
+                      final range = _WeightChartRange.values[index];
+                      if (range == _selectedRange) return;
                       setState(() {
                         _selectedRange = range;
                         _chartDataFuture = _loadChartData(range);
@@ -1169,11 +1168,10 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                       builder: (data, point, series, pointIndex, seriesIndex) {
                         final weightPoint = data as WeightData;
                         final unit = S.of(context).kgLabel;
-                        return _WeightChartTooltip(
-                          date: weightPoint.date,
-                          weight: weightPoint.weight ?? 0,
-                          unit: unit,
-                        );
+                        return ChartTooltip(
+                            date: weightPoint.date,
+                            lines: [_formatWeight(weightPoint.weight ?? 0)],
+                            unit: unit);
                       },
                     ),
                     trackballBehavior: TrackballBehavior(
@@ -1204,11 +1202,10 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                           return const SizedBox.shrink();
                         }
                         final unit = S.of(context).kgLabel;
-                        return _WeightChartTooltip(
-                          date: date,
-                          weight: weight.toDouble(),
-                          unit: unit,
-                        );
+                        return ChartTooltip(
+                            date: date,
+                            lines: [_formatWeight(weight.toDouble())],
+                            unit: unit);
                       },
                     ),
                     series: <CartesianSeries<WeightData, DateTime>>[
@@ -1393,7 +1390,7 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (entries.isEmpty)
-              _SurfaceCard(
+              AtlasSurfaceCard(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 24,
@@ -1478,7 +1475,7 @@ class _WeightHistoryTile extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final locale = Localizations.localeOf(context).toString();
-    final dateLabel = _capitalizeFirst(
+    final dateLabel = capitalizeFirst(
       DateFormat('EEEE d MMMM', locale).format(entry.weight.date),
     );
     final deltaKg = entry.delta;
@@ -1488,7 +1485,7 @@ class _WeightHistoryTile extends StatelessWidget {
         : weightTrendColor(
             deltaKg: deltaKg, goal: userWeightGoal, colors: colorScheme);
 
-    return _SurfaceCard(
+    return AtlasSurfaceCard(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       radius: 22,
       child: Row(
@@ -1618,181 +1615,6 @@ class _WeightHistoryEntry {
     required this.weight,
     required this.delta,
   });
-}
-
-class _WeightChartTooltip extends StatelessWidget {
-  final DateTime date;
-  final double weight;
-  final String unit;
-
-  const _WeightChartTooltip({
-    required this.date,
-    required this.weight,
-    required this.unit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final dateLabel = DateFormat(
-      'dd MMM',
-      Localizations.localeOf(context).toString(),
-    ).format(date);
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          colorScheme.primary.withValues(alpha: 0.08),
-          colorScheme.surface,
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.14),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.10),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              dateLabel,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 3),
-            RichText(
-              text: TextSpan(
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w900,
-                ),
-                children: [
-                  TextSpan(text: _formatWeight(weight)),
-                  TextSpan(
-                    text: ' $unit',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RangeDropdown extends StatelessWidget {
-  final _WeightChartRange selectedRange;
-  final ValueChanged<_WeightChartRange?> onChanged;
-  final String Function(_WeightChartRange range) labelBuilder;
-
-  const _RangeDropdown({
-    required this.selectedRange,
-    required this.onChanged,
-    required this.labelBuilder,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          colorScheme.primary.withValues(alpha: 0.06),
-          colorScheme.surfaceContainerHighest,
-        ),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<_WeightChartRange>(
-          value: selectedRange,
-          isDense: true,
-          borderRadius: BorderRadius.circular(18),
-          icon: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 18,
-            color: colorScheme.onSurface,
-          ),
-          dropdownColor: colorScheme.surface,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w800,
-          ),
-          selectedItemBuilder: (context) => _WeightChartRange.values
-              .map(
-                (range) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(labelBuilder(range), maxLines: 1),
-                ),
-              )
-              .toList(),
-          items: _WeightChartRange.values
-              .map(
-                (range) => DropdownMenuItem<_WeightChartRange>(
-                  value: range,
-                  child: Text(labelBuilder(range)),
-                ),
-              )
-              .toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-}
-
-class _SurfaceCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry padding;
-  final double radius;
-
-  const _SurfaceCard({
-    required this.child,
-    required this.padding,
-    this.radius = 22,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(radius),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: padding,
-        child: child,
-      ),
-    );
-  }
 }
 
 class AddWeightScreenArguments {

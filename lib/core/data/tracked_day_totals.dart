@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/data/data_source/macro_goal_dbo.dart';
 import 'package:opennutritracker/core/domain/entity/macro_goal_entity.dart';
 import 'package:hive/hive.dart';
@@ -43,8 +44,10 @@ class TrackedDayTotals {
             goal == null ? null : MacroGoalEntity.fromDbo(goal), date);
         day = TrackedDayDBO(
             day: DateTime(date.year, date.month, date.day),
-            calorieGoal:
-                macros.carbs * 4 + macros.fats * 9 + macros.proteins * 4,
+            calorieGoal: macroCalories(
+                carbs: macros.carbs,
+                fat: macros.fats,
+                protein: macros.proteins),
             carbsGoal: macros.carbs,
             fatGoal: macros.fats,
             proteinGoal: macros.proteins,

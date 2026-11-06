@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/presentation/widgets/atlas_surface_card.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -37,68 +39,54 @@ class DiaryTableCalendar extends StatelessWidget {
     final nextWeekSelectedDate =
         DateUtils.dateOnly(selectedDate).add(const Duration(days: 7));
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(22.0),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.06),
-            blurRadius: 22.0,
-            offset: const Offset(0.0, 10.0),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                _CalendarNavButton(
-                  icon: Icons.chevron_left_rounded,
-                  onPressed: _canSelect(previousWeekSelectedDate)
-                      ? () => _selectDate(previousWeekSelectedDate)
-                      : null,
-                ),
-                Expanded(
-                  child: Text(
-                    monthLabel,
-                    textAlign: TextAlign.center,
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w800,
-                    ),
+    return AtlasSurfaceCard.calendar(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              _CalendarNavButton(
+                icon: Icons.chevron_left_rounded,
+                onPressed: _canSelect(previousWeekSelectedDate)
+                    ? () => _selectDate(previousWeekSelectedDate)
+                    : null,
+              ),
+              Expanded(
+                child: Text(
+                  monthLabel,
+                  textAlign: TextAlign.center,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
-                _CalendarNavButton(
-                  icon: Icons.chevron_right_rounded,
-                  onPressed: _canSelect(nextWeekSelectedDate)
-                      ? () => _selectDate(nextWeekSelectedDate)
-                      : null,
-                ),
-              ],
-            ),
-            const SizedBox(height: 14.0),
-            Row(
-              children: weekDays
-                  .map(
-                    (date) => Expanded(
-                      child: _CalendarDayCell(
-                        date: date,
-                        localeName: localeName,
-                        trackedDay: trackedDaysMap[date.toParsedDay()],
-                        isSelected: DateUtils.isSameDay(date, selectedDate),
-                        isEnabled: _canSelect(date),
-                        onTap: () => _selectDate(date),
-                      ),
+              ),
+              _CalendarNavButton(
+                icon: Icons.chevron_right_rounded,
+                onPressed: _canSelect(nextWeekSelectedDate)
+                    ? () => _selectDate(nextWeekSelectedDate)
+                    : null,
+              ),
+            ],
+          ),
+          const SizedBox(height: 14.0),
+          Row(
+            children: weekDays
+                .map(
+                  (date) => Expanded(
+                    child: _CalendarDayCell(
+                      date: date,
+                      localeName: localeName,
+                      trackedDay: trackedDaysMap[date.toParsedDay()],
+                      isSelected: DateUtils.isSameDay(date, selectedDate),
+                      isEnabled: _canSelect(date),
+                      onTap: () => _selectDate(date),
                     ),
-                  )
-                  .toList(growable: false),
-            ),
-          ],
-        ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        ],
       ),
     );
   }
@@ -111,8 +99,7 @@ class DiaryTableCalendar extends StatelessWidget {
   String _formatMonth(String localeName, DateTime date) {
     final formatted = DateFormat.yMMMM(localeName).format(date);
     if (formatted.isEmpty) return formatted;
-    return formatted.characters.first.toUpperCase() +
-        formatted.characters.skip(1).toString();
+    return capitalizeFirst(formatted);
   }
 
   bool _canSelect(DateTime date) {
@@ -253,7 +240,6 @@ class _CalendarDayCell extends StatelessWidget {
     final rawLabel = DateFormat.E(localeName).format(date);
     final normalizedLabel = rawLabel.replaceAll('.', '');
     if (normalizedLabel.isEmpty) return normalizedLabel;
-    return normalizedLabel.characters.first.toUpperCase() +
-        normalizedLabel.characters.skip(1).toString();
+    return capitalizeFirst(normalizedLabel);
   }
 }
