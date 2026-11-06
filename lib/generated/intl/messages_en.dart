@@ -155,11 +155,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "copyFromYesterdayLabel":
             MessageLookupByLibrary.simpleMessage("Copy from yesterday"),
         "copyIntakeLabel": MessageLookupByLibrary.simpleMessage("Copy"),
-        "copyMealDialogTitle":
-            MessageLookupByLibrary.simpleMessage("Copy this meal"),
         "copyMealLabel": MessageLookupByLibrary.simpleMessage("Copy meal"),
-        "copyMealSelectDateLabel":
-            MessageLookupByLibrary.simpleMessage("Choose a date"),
         "copyMealTargetDateLabel":
             MessageLookupByLibrary.simpleMessage("Destination day"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -459,7 +455,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "noResultsFound":
             MessageLookupByLibrary.simpleMessage("No results found"),
         "noStudents": MessageLookupByLibrary.simpleMessage("No students"),
-        "noWeighInLabel": MessageLookupByLibrary.simpleMessage("No weigh-in"),
         "notAvailableLabel": MessageLookupByLibrary.simpleMessage("N/A"),
         "nothingAddedLabel":
             MessageLookupByLibrary.simpleMessage("Nothing added"),
@@ -977,11 +972,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "The student\'s data could not be loaded. Please retry."),
         "studentNoEntryLabel":
             MessageLookupByLibrary.simpleMessage("No entries"),
-        "studentSortAttention": MessageLookupByLibrary.simpleMessage(
-            "No entry or outside goal first"),
-        "studentSortLabel":
-            MessageLookupByLibrary.simpleMessage("Sort students"),
-        "studentSortName": MessageLookupByLibrary.simpleMessage("By name"),
         "studentTrendTab": MessageLookupByLibrary.simpleMessage("Trend"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Your subscription is no longer active. Please contact your coach."),
@@ -998,7 +988,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "trendAvgCaloriesLabel":
             MessageLookupByLibrary.simpleMessage("Avg. calories"),
         "trendDaysTracked": m12,
-        "trendEvolutionTitle": MessageLookupByLibrary.simpleMessage("Progress"),
         "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Goal"),
         "trendMacrosSubtitle":
             MessageLookupByLibrary.simpleMessage("Average daily intake"),
@@ -1031,7 +1020,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("website"),
         "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
             "Difference from the 7-day average"),
-        "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Average"),
         "weightEntryDate": m14,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Goal"),
         "weightHistoryLabel":

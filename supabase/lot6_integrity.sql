@@ -1,5 +1,9 @@
 -- LOCAL VALIDATION ONLY. Apply journal_remote_sync.sql first.
 -- Production schema inspection and explicit approval are required before use.
+-- WARNING: drops EVERY existing policy on user_intakes, user_recipes,
+-- user_weight, tracked_days and coach_macro_goals (including atlas_compat_*
+-- from production_compatible_security.sql and those from
+-- journal_remote_sync.sql) and replaces them with the atlas_* policies below.
 begin;
 
 -- A legacy global unique day/date would prevent two users sharing a date.

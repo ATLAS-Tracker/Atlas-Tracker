@@ -133,11 +133,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "consumedLabel": MessageLookupByLibrary.simpleMessage("tüketildi"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Hangi yemek türüne kopyalamak istiyorsunuz?"),
-        "copyMealDialogTitle":
-            MessageLookupByLibrary.simpleMessage("Bu öğünü kopyala"),
         "copyMealLabel": MessageLookupByLibrary.simpleMessage("Öğünü kopyala"),
-        "copyMealSelectDateLabel":
-            MessageLookupByLibrary.simpleMessage("Tarih seç"),
         "copyMealTargetDateLabel":
             MessageLookupByLibrary.simpleMessage("Hedef gün"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -399,7 +395,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "noResultsFound":
             MessageLookupByLibrary.simpleMessage("Sonuç bulunamadı"),
         "noStudents": MessageLookupByLibrary.simpleMessage("Öğrenci yok"),
-        "noWeighInLabel": MessageLookupByLibrary.simpleMessage("Tartım yok"),
         "notAvailableLabel":
             MessageLookupByLibrary.simpleMessage("Mevcut Değil"),
         "nothingAddedLabel":
@@ -895,7 +890,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "trendAvgCaloriesLabel":
             MessageLookupByLibrary.simpleMessage("Ort. kalori"),
         "trendDaysTracked": m12,
-        "trendEvolutionTitle": MessageLookupByLibrary.simpleMessage("Gelişim"),
         "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "trendMacrosSubtitle":
             MessageLookupByLibrary.simpleMessage("Günlük ortalama alım"),
@@ -920,7 +914,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("web sitesi"),
         "weightAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("7 günlük ortalamadan fark"),
-        "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Ortalama"),
         "weightEntryDate": m14,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":

@@ -1392,31 +1392,11 @@ class S {
     );
   }
 
-  /// `Copy this meal`
-  String get copyMealDialogTitle {
-    return Intl.message(
-      'Copy this meal',
-      name: 'copyMealDialogTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Destination day`
   String get copyMealTargetDateLabel {
     return Intl.message(
       'Destination day',
       name: 'copyMealTargetDateLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Choose a date`
-  String get copyMealSelectDateLabel {
-    return Intl.message(
-      'Choose a date',
-      name: 'copyMealSelectDateLabel',
       desc: '',
       args: [],
     );
@@ -2068,36 +2048,6 @@ class S {
     return Intl.message(
       'Enter all three macros (0–1,000 g). Total energy must be greater than zero and at most 10,000 kcal.',
       name: 'enterValidMacrosHelp',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sort students`
-  String get studentSortLabel {
-    return Intl.message(
-      'Sort students',
-      name: 'studentSortLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `By name`
-  String get studentSortName {
-    return Intl.message(
-      'By name',
-      name: 'studentSortName',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No entry or outside goal first`
-  String get studentSortAttention {
-    return Intl.message(
-      'No entry or outside goal first',
-      name: 'studentSortAttention',
       desc: '',
       args: [],
     );
@@ -5233,16 +5183,6 @@ class S {
     );
   }
 
-  /// `Progress`
-  String get trendEvolutionTitle {
-    return Intl.message(
-      'Progress',
-      name: 'trendEvolutionTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Average macros`
   String get trendMacrosTitle {
     return Intl.message(
@@ -5368,16 +5308,6 @@ class S {
     return Intl.message(
       'Coming soon',
       name: 'comingSoonLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `No weigh-in`
-  String get noWeighInLabel {
-    return Intl.message(
-      'No weigh-in',
-      name: 'noWeighInLabel',
       desc: '',
       args: [],
     );
@@ -5911,16 +5841,6 @@ class S {
     return Intl.message(
       'Weigh-ins',
       name: 'weightMeasurementsLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Average`
-  String get weightAverageLabel {
-    return Intl.message(
-      'Average',
-      name: 'weightAverageLabel',
       desc: '',
       args: [],
     );

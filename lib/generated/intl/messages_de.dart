@@ -138,12 +138,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "consumedLabel": MessageLookupByLibrary.simpleMessage("verbraucht"),
         "copyDialogTitle": MessageLookupByLibrary.simpleMessage(
             "Zu welcher Mahlzeit hinzufügen?"),
-        "copyMealDialogTitle":
-            MessageLookupByLibrary.simpleMessage("Diese Mahlzeit kopieren"),
         "copyMealLabel":
             MessageLookupByLibrary.simpleMessage("Mahlzeit kopieren"),
-        "copyMealSelectDateLabel":
-            MessageLookupByLibrary.simpleMessage("Datum auswählen"),
         "copyMealTargetDateLabel":
             MessageLookupByLibrary.simpleMessage("Zieldatum"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -419,7 +415,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "noResultsFound":
             MessageLookupByLibrary.simpleMessage("Keine Ergebnisse gefunden"),
         "noStudents": MessageLookupByLibrary.simpleMessage("Keine Schüler"),
-        "noWeighInLabel": MessageLookupByLibrary.simpleMessage("Keine Messung"),
         "notAvailableLabel": MessageLookupByLibrary.simpleMessage("N/A"),
         "nothingAddedLabel":
             MessageLookupByLibrary.simpleMessage("Nichts hinzugefügt"),
@@ -934,7 +929,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "trendAvgCaloriesLabel":
             MessageLookupByLibrary.simpleMessage("Ø Kalorien"),
         "trendDaysTracked": m12,
-        "trendEvolutionTitle": MessageLookupByLibrary.simpleMessage("Verlauf"),
         "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "trendMacrosSubtitle": MessageLookupByLibrary.simpleMessage(
             "Durchschnittliche Tageszufuhr"),
@@ -959,8 +953,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("Website"),
         "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
             "Abweichung vom 7-Tage-Durchschnitt"),
-        "weightAverageLabel":
-            MessageLookupByLibrary.simpleMessage("Durchschnitt"),
         "weightEntryDate": m14,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "weightHistoryLabel":

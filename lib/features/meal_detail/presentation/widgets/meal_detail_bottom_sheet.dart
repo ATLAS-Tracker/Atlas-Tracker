@@ -5,13 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_detail_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
@@ -259,9 +257,7 @@ class _MealDetailBottomSheetState extends State<MealDetailBottomSheet> {
           'meal': product,
         });
         if (updated == null) throw StateError('Intake no longer exists');
-        locator<HomeBloc>().add(const LoadItemsEvent());
-        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+        refreshJournalViews();
       } else if (createMealBloc.state.isOnCreateMealScreen) {
         await createMealBloc.addIntake(
           mealDetailBloc.state.selectedUnit,
@@ -282,13 +278,7 @@ class _MealDetailBottomSheetState extends State<MealDetailBottomSheet> {
           product,
           day,
         );
-
-        // Refresh Home Page
-        locator<HomeBloc>().add(const LoadItemsEvent());
-
-        // Refresh Diary Page
-        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+        refreshJournalViews();
       }
 
       if (!context.mounted) return;

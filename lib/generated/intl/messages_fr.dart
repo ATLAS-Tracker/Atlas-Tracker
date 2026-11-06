@@ -158,12 +158,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "copyFromYesterdayLabel":
             MessageLookupByLibrary.simpleMessage("Copier depuis hier"),
         "copyIntakeLabel": MessageLookupByLibrary.simpleMessage("Copier"),
-        "copyMealDialogTitle":
-            MessageLookupByLibrary.simpleMessage("Copier ce repas"),
         "copyMealLabel":
             MessageLookupByLibrary.simpleMessage("Copier le repas"),
-        "copyMealSelectDateLabel":
-            MessageLookupByLibrary.simpleMessage("Choisir une date"),
         "copyMealTargetDateLabel":
             MessageLookupByLibrary.simpleMessage("Jour de destination"),
         "copyOrDeleteTimeDialogContent": MessageLookupByLibrary.simpleMessage(
@@ -472,7 +468,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "noResultsFound":
             MessageLookupByLibrary.simpleMessage("Aucun résultat trouvé"),
         "noStudents": MessageLookupByLibrary.simpleMessage("Aucun élève"),
-        "noWeighInLabel": MessageLookupByLibrary.simpleMessage("Aucune pesée"),
         "notAvailableLabel": MessageLookupByLibrary.simpleMessage("N/A"),
         "nothingAddedLabel":
             MessageLookupByLibrary.simpleMessage("Rien ajouté"),
@@ -1002,11 +997,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Les données de l\'élève n\'ont pas pu être chargées. Réessayez."),
         "studentNoEntryLabel":
             MessageLookupByLibrary.simpleMessage("Aucune saisie"),
-        "studentSortAttention": MessageLookupByLibrary.simpleMessage(
-            "Sans saisie ou hors objectif d\'abord"),
-        "studentSortLabel":
-            MessageLookupByLibrary.simpleMessage("Trier les élèves"),
-        "studentSortName": MessageLookupByLibrary.simpleMessage("Par nom"),
         "studentTrendTab": MessageLookupByLibrary.simpleMessage("Tendance"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Votre abonnement n\'est plus actif. Veuillez contacter votre coach."),
@@ -1023,8 +1013,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "trendAvgCaloriesLabel":
             MessageLookupByLibrary.simpleMessage("Moy. calories"),
         "trendDaysTracked": m12,
-        "trendEvolutionTitle":
-            MessageLookupByLibrary.simpleMessage("Évolution"),
         "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Objectif"),
         "trendMacrosSubtitle":
             MessageLookupByLibrary.simpleMessage("Apports moyens par jour"),
@@ -1058,7 +1046,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("site"),
         "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
             "Écart à la moyenne sur 7 jours"),
-        "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Moyenne"),
         "weightEntryDate": m14,
         "weightGoalShortLabel":
             MessageLookupByLibrary.simpleMessage("Objectif"),
