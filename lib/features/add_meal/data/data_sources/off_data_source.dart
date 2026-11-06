@@ -113,24 +113,32 @@ class OFFDataSource {
   static String? brandWord(
       List<Map<String, dynamic>> hits, List<String> words) {
     if (words.length < 2) return null;
-    final fullMatches = hits
-        .where(
-            (hit) => matchedWordCount(_hitTokens(hit), words) == words.length)
+    final tokens = [
+      for (final hit in hits)
+        (
+          name: _hitTokens(hit, brands: false),
+          brand: _hitTokens(hit, name: false)
+        ),
+    ];
+    final allTokens = [
+      for (final token in tokens) {...token.name, ...token.brand}
+    ];
+    final fullMatches = allTokens
+        .where((tokens) => matchedWordCount(tokens, words) == words.length)
         .length;
     if (fullMatches >= 5) return null;
 
     for (final word in words) {
-      if (!hits.any((hit) => matchedWordCount(_hitTokens(hit), [word]) > 0)) {
+      if (!allTokens.any((tokens) => matchedWordCount(tokens, [word]) > 0)) {
         return word;
       }
     }
-    int margin(String word) =>
-        hits
-            .where((hit) => _hitTokens(hit, name: false).contains(word))
-            .length -
-        hits
-            .where((hit) => _hitTokens(hit, brands: false).contains(word))
-            .length;
+    final margins = {
+      for (final word in words)
+        word: tokens.where((token) => token.brand.contains(word)).length -
+            tokens.where((token) => token.name.contains(word)).length,
+    };
+    int margin(String word) => margins[word]!;
     final best = words.reduce((a, b) => margin(b) > margin(a) ? b : a);
     return margin(best) > 0 ? best : null;
   }

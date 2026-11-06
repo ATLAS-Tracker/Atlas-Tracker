@@ -911,18 +911,19 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
       eligibleDates.sort();
       final firstDate = eligibleDates.first;
       final totalDays = widget.day.difference(firstDate).inDays + 1;
-      return _buildDenseSeries(totalDays);
+      return _buildDenseSeries(totalDays, weights);
     }
 
-    return _buildDenseSeries(days);
-  }
-
-  Future<List<WeightData>> _buildDenseSeries(int days) async {
     final savedWeights = await _getWeightUsecase.getWeightsFromPastDays(
       widget.day,
       days,
       includeToday: true,
     );
+    return _buildDenseSeries(days, savedWeights);
+  }
+
+  List<WeightData> _buildDenseSeries(
+      int days, List<UserWeightEntity> savedWeights) {
     final weightsMap = {
       for (final entry in savedWeights)
         DateTime(entry.date.year, entry.date.month, entry.date.day):

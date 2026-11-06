@@ -343,6 +343,29 @@ void main() {
     expect(find.text(S.current.weightMeasurementsLabel), findsOneWidget);
   });
 
+  testWidgets('all-time chart reuses the history already loaded',
+      (tester) async {
+    savedWeights = [
+      entry('past', 50, day.subtract(const Duration(days: 20))),
+      entry('today', 54, day),
+      entry('future', 80, day.add(const Duration(days: 1))),
+    ];
+    await pumpScreen(tester);
+    clearInteractions(getWeight);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.allTimeLabel).last);
+    await tester.pumpAndSettle();
+    verify(() => getWeight.getAllUserWeights()).called(1);
+    verifyNever(() => getWeight.getWeightsFromPastDays(any(), any(),
+        includeToday: any(named: 'includeToday')));
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    final points = chart.series.first.dataSource! as List<WeightData>;
+    expect(points.map((p) => p.weight), [50, 54]);
+    expect((chart.primaryYAxis as NumericAxis).plotBands.single.start, 52);
+  });
+
   testWidgets('no measurements shows an honest empty state without a mean line',
       (tester) async {
     savedWeights = [];

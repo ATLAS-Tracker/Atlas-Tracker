@@ -44,9 +44,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   bool _isDragging = false;
   bool _copyingYesterday = false;
-  int _steps = 0;
   StepTrackingController? _stepTrackingController;
-  StreamSubscription<int>? _stepSubscription;
 
   @override
   void initState() {
@@ -65,24 +63,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       return;
     }
 
-    final initialSteps = await controller.initialize();
-    if (!mounted) return;
-    setState(() {
-      _steps = initialSteps;
-    });
-
-    _stepSubscription = controller.stepsStream.listen((steps) {
-      if (!mounted) return;
-      setState(() {
-        _steps = steps;
-      });
-    });
+    await controller.initialize();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_stepSubscription?.cancel());
     unawaited(_stepTrackingController?.dispose());
     _scrollController.dispose();
     super.dispose();
@@ -204,7 +190,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   totalKcalDaily: totalKcalDaily,
                   totalKcalLeft: totalKcalLeft,
                   totalKcalSupplied: totalKcalSupplied,
-                  dailyStepCount: _steps,
                   totalCarbsIntake: totalCarbsIntake,
                   totalFatsIntake: totalFatsIntake,
                   totalProteinsIntake: totalProteinsIntake,

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +27,6 @@ import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/features/recipe/recipe_page.dart';
 import 'package:opennutritracker/features/auth/login_screen.dart';
 import 'package:opennutritracker/features/auth/reset_password_screen.dart';
-import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -80,7 +78,6 @@ Future<void> main() async {
     'Starting App with Crashlytics ${hasAcceptedAnonymousData ? 'enabled' : 'disabled'} ...',
   );
   runAppWithChangeNotifiers(isUserInitialized, hasAuthSession, savedAppTheme);
-  if (hasAuthSession) unawaited(synchronizeUserData(Supabase.instance.client));
 }
 
 void runAppWithChangeNotifiers(

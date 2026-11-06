@@ -21,10 +21,7 @@ Future<void> deleteIntakesWithUndo(
   refresh();
   if (!context.mounted) return;
   showUndo(context, () async {
-    for (final intake in snapshot) {
-      await locator<AddIntakeUsecase>()
-          .addIntake(intake.copyWith(updatedAt: DateTime.now().toUtc()));
-    }
+    await locator<AddIntakeUsecase>().addIntakes(snapshot);
     refresh();
   });
 }

@@ -24,7 +24,6 @@ Widget app(Widget child) => MaterialApp(
 
 Widget dashboard(double consumed, double goal) => DashboardWidget(
       totalKcalSupplied: consumed,
-      dailyStepCount: 0,
       totalKcalDaily: goal,
       totalKcalLeft: goal - consumed,
       totalCarbsIntake: 200,

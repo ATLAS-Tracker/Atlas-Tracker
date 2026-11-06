@@ -30,6 +30,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    unawaited(synchronizeUserData(locator<SupabaseClient>()));
     locator.get<GetUserUsecase>().getUserData().then((user) {
       if (mounted && user.role == UserRoleEntity.coach) {
         setState(() => _isCoach = true);

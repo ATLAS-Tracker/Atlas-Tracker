@@ -28,8 +28,8 @@ void main() {
       (tester) async {
     final add = MockAddIntake();
     final restored = <IntakeEntity>[];
-    when(() => add.addIntake(any())).thenAnswer((call) async {
-      restored.add(call.positionalArguments.first as IntakeEntity);
+    when(() => add.addIntakes(any())).thenAnswer((call) async {
+      restored.addAll(call.positionalArguments.first as List<IntakeEntity>);
     });
     locator.registerSingleton<AddIntakeUsecase>(add);
     final foods = [intake, intake.copyWith(id: 'second', amount: 75)];
@@ -66,6 +66,8 @@ void main() {
             food.dateTime == intake.dateTime && food.type == intake.type),
         isTrue);
     expect(refreshes, 2);
+    verify(() => add.addIntakes(any())).called(1);
+    verifyNever(() => add.addIntake(any()));
   });
 
   testWidgets('opening and dismissing actions never deletes the food',

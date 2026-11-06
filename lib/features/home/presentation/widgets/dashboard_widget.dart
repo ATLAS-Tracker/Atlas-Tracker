@@ -16,7 +16,6 @@ class DashboardWidget extends StatelessWidget {
   final double totalKcalDaily;
   final double totalKcalLeft;
   final double totalKcalSupplied;
-  final int dailyStepCount;
   final double totalCarbsIntake;
   final double totalFatsIntake;
   final double totalProteinsIntake;
@@ -31,7 +30,6 @@ class DashboardWidget extends StatelessWidget {
   const DashboardWidget({
     super.key,
     required this.totalKcalSupplied,
-    required this.dailyStepCount,
     required this.totalKcalDaily,
     required this.totalKcalLeft,
     required this.totalCarbsIntake,

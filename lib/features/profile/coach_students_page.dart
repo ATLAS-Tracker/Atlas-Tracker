@@ -69,20 +69,27 @@ class _CoachStudentsPageState extends State<CoachStudentsPage> {
         .inFilter('user_id', studentIds)
         .timeout(const Duration(seconds: 8));
 
-    final lastEntries = await Future.wait(studentIds.map((id) => supabase
-        .from('tracked_days')
-        .select('day')
-        .eq('user_id', id)
-        .gt('caloriesTracked', 0)
-        .lte('day', todayKey)
-        .order('day', ascending: false)
-        .limit(1)
-        .maybeSingle()
-        .timeout(const Duration(seconds: 8))));
-    final lastByUser = {
-      for (var i = 0; i < studentIds.length; i++)
-        studentIds[i]: lastEntries[i]?['day'],
-    };
+    final lastByUser = <String, String>{};
+    const pageSize = 500;
+    for (var offset = 0;; offset += pageSize) {
+      final entries = await supabase
+          .from('tracked_days')
+          .select('user_id, day')
+          .inFilter('user_id', studentIds)
+          .gt('caloriesTracked', 0)
+          .lte('day', todayKey)
+          .order('day', ascending: false)
+          .order('user_id', ascending: true)
+          .range(offset, offset + pageSize - 1)
+          .timeout(const Duration(seconds: 8));
+      for (final entry in entries) {
+        lastByUser.putIfAbsent(
+            entry['user_id'].toString(), () => entry['day'].toString());
+      }
+      if (lastByUser.length == studentIds.length || entries.length < pageSize) {
+        break;
+      }
+    }
 
     final byUser = {
       for (final row in rows.cast<Map<String, dynamic>>())

@@ -12,7 +12,6 @@ import 'otp_password_reset_email_screen.dart';
 import 'check_subscription.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
-import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:opennutritracker/features/sync/profile_remote_sync.dart';
 import 'package:opennutritracker/services/firebase_messaging_service.dart';
 import 'package:opennutritracker/services/local_notifications_service.dart';
@@ -174,7 +173,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // ── 5. Tout est OK  →  on passe à l’app
         _navigateHome();
-        unawaited(synchronizeUserData(supabase));
       }
     } on AuthException catch (e) {
       final message = e.message.toLowerCase();

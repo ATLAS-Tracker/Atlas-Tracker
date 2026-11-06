@@ -33,10 +33,9 @@ class IntakeDataSource {
     final updates = <dynamic, IntakeDBO>{};
     final dates = <DateTime>[];
     final duplicates = <dynamic>[];
+    final existingById = _hive.intakeBox.values.groupListsBy((row) => row.id);
     for (final intake in incoming.values) {
-      final matches = _hive.intakeBox.values
-          .where((row) => row.id == intake.id)
-          .toList()
+      final matches = (existingById[intake.id] ?? <IntakeDBO>[])
         ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
       final current = matches.firstOrNull;
       final deleted = metadata.deletedAt('user_intakes', intake.id);

@@ -41,7 +41,6 @@ void main() {
               body: SingleChildScrollView(
                   child: DashboardWidget(
             totalKcalSupplied: 2500,
-            dailyStepCount: 500,
             totalKcalDaily: 2200,
             totalKcalLeft: -300,
             totalCarbsIntake: 220,

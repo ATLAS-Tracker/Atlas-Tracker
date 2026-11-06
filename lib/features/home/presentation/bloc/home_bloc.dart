@@ -42,6 +42,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final SupabaseClient _supabaseClient = locator<SupabaseClient>();
 
   DateTime currentDay = DateTime.now();
+  String? _coachNameUserId;
+  Future<String?>? _coachNameFuture;
 
   HomeBloc(
       this._getIntakeUsecase,
@@ -151,42 +153,48 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<String?> _getCoachName() async {
     final userId = _supabaseClient.auth.currentUser?.id;
-    if (userId == null) {
-      return null;
+    if (userId != _coachNameUserId) {
+      _coachNameUserId = userId;
+      _coachNameFuture = null;
     }
-
+    if (userId == null) return null;
     try {
-      final userRows = await _supabaseClient
-          .from('users')
-          .select('coach_id')
-          .eq('id', userId)
-          .limit(1)
-          .timeout(const Duration(seconds: 5));
-
-      if (userRows.isEmpty) {
-        return null;
-      }
-
-      final coachId = userRows.first['coach_id']?.toString();
-      if (coachId == null || coachId.isEmpty) {
-        return null;
-      }
-
-      final coachRows = await _supabaseClient
-          .from('users')
-          .select('display_name')
-          .eq('id', coachId)
-          .limit(1)
-          .timeout(const Duration(seconds: 5));
-
-      if (coachRows.isEmpty) {
-        return null;
-      }
-
-      return (coachRows.first['display_name'] as String?)?.trim();
+      return await (_coachNameFuture ??= _loadCoachName(userId));
     } catch (_) {
+      if (_coachNameUserId == userId) _coachNameFuture = null;
       return null;
     }
+  }
+
+  Future<String?> _loadCoachName(String userId) async {
+    final userRows = await _supabaseClient
+        .from('users')
+        .select('coach_id')
+        .eq('id', userId)
+        .limit(1)
+        .timeout(const Duration(seconds: 5));
+
+    if (userRows.isEmpty) {
+      return null;
+    }
+
+    final coachId = userRows.first['coach_id']?.toString();
+    if (coachId == null || coachId.isEmpty) {
+      return null;
+    }
+
+    final coachRows = await _supabaseClient
+        .from('users')
+        .select('display_name')
+        .eq('id', coachId)
+        .limit(1)
+        .timeout(const Duration(seconds: 5));
+
+    if (coachRows.isEmpty) {
+      return null;
+    }
+
+    return (coachRows.first['display_name'] as String?)?.trim();
   }
 
   double getTotalKcal(List<IntakeEntity> intakeList) =>

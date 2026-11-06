@@ -22,7 +22,6 @@ void main() {
       home: const Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -61,7 +60,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -105,7 +103,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -144,7 +141,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -185,7 +181,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -223,7 +218,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,
@@ -266,7 +260,6 @@ void main() {
       home: Scaffold(
         body: DashboardWidget(
           totalKcalSupplied: 1500,
-          dailyStepCount: 500,
           totalKcalDaily: 2000,
           totalKcalLeft: 1000,
           totalCarbsIntake: 200,

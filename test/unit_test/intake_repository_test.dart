@@ -71,6 +71,41 @@ void main() {
           intake.totalKcal);
     });
 
+    test('batch import keeps newest versions and removes legacy duplicates',
+        () async {
+      final hive = HiveDBProvider();
+      hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+      final repo = IntakeRepository(IntakeDataSource(hive));
+      final day = DateTime(2026, 11, 1);
+      IntakeDBO row(String id, int version, double amount, DateTime date) =>
+          IntakeDBO.fromIntakeEntity(IntakeEntity(
+              id: id,
+              unit: 'g',
+              amount: amount,
+              type: IntakeTypeEntity.lunch,
+              meal: IntakeForRecipeFixtures.chicken.meal!,
+              dateTime: date,
+              updatedAt: DateTime.utc(2026, 11, 1, version)));
+      await hive.intakeBox.put(1, row('same', 1, 100, day));
+      await hive.intakeBox.put(2, row('same', 2, 200, day));
+      await hive.intakeBox.put(3, row('keep', 4, 100, day));
+      final target = day.add(const Duration(days: 1));
+      await repo.addAllIntakeDBOs([
+        row('same', 3, 300, target),
+        row('same', 1, 100, day),
+        row('keep', 1, 999, target),
+        row('new', 1, 100, target),
+      ]);
+      expect(hive.intakeBox.length, 3);
+      expect(hive.intakeBox.containsKey(1), isFalse);
+      expect((await repo.getIntakeById('same'))!.amount, 300);
+      expect((await repo.getIntakeById('keep'))!.amount, 100);
+      expect(hive.trackedDayBox.get('2026-11-01')!.caloriesTracked, 165);
+      expect(hive.trackedDayBox.get('2026-11-02')!.caloriesTracked, 660);
+    });
+
     test('returns last added first', () async {
       final box = await Hive.openBox<IntakeDBO>('intake_test');
 
