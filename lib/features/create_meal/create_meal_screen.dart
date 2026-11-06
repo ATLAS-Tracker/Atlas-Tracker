@@ -569,9 +569,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
       ),
       builder: (BuildContext context) {
         return CalendarMealTypeSelector(
-          onDateSelected: (date) {},
           mealName: recipeName,
-          idOfRecipeToModify: null,
           imagePath: _imagePath,
           initialDay: args is CreateMealContext ? args.day : null,
           initialType: args is CreateMealContext ? args.type : null,

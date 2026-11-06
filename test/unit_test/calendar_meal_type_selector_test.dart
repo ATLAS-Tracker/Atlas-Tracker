@@ -18,9 +18,7 @@ void main() {
       supportedLocales: S.delegate.supportedLocales,
       home: Scaffold(
         body: CalendarMealTypeSelector(
-          onDateSelected: (_) {},
           mealName: 'Test meal',
-          idOfRecipeToModify: null,
           imagePath: null,
         ),
       ),

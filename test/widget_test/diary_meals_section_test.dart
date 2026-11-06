@@ -63,8 +63,7 @@ void main() {
     expect(find.text(S.current.lunchLabel), findsOneWidget);
     expect(find.text(S.current.dinnerLabel), findsOneWidget);
     expect(find.text(S.current.snackLabel), findsOneWidget);
-    calendar
-        .onDateSelected(DateTime.now().subtract(const Duration(days: 1)), {});
+    calendar.onDateSelected(DateTime.now().subtract(const Duration(days: 1)));
     await tester.pumpAndSettle();
     expect(find.text(S.current.breakfastLabel), findsOneWidget);
     expect(tester.takeException(), isNull);

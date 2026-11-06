@@ -39,10 +39,7 @@ Future<DateTime?> _tapWeekNavigation(
       home: Scaffold(
         body: DiaryTableCalendar(
           trackedDaysMap: const <String, TrackedDayEntity>{},
-          onDateSelected: (
-            DateTime date,
-            Map<String, TrackedDayEntity> trackedDaysMap,
-          ) {
+          onDateSelected: (DateTime date) {
             selectedDate = date;
           },
           calendarDurationDays: const Duration(days: 356),

@@ -23,7 +23,6 @@ class HomeLoadedState extends HomeState {
   final String userName;
   final String? coachName;
   final double totalKcalDaily;
-  final double totalKcalLeft;
   final double totalKcalSupplied;
   final double totalKcalBurned;
   final double totalCarbsIntake;
@@ -35,7 +34,6 @@ class HomeLoadedState extends HomeState {
   final List<UserActivityEntity> userActivityList;
   final UserWeightEntity? userWeightEntity;
   final double? weeklyWeightDelta;
-  final double targetWeight;
   final UserWeightGoalEntity userWeightGoal;
   final List<IntakeEntity> breakfastIntakeList;
   final List<IntakeEntity> lunchIntakeList;
@@ -46,7 +44,6 @@ class HomeLoadedState extends HomeState {
     required this.userName,
     required this.coachName,
     required this.totalKcalDaily,
-    required this.totalKcalLeft,
     required this.totalKcalSupplied,
     required this.totalKcalBurned,
     required this.totalCarbsIntake,
@@ -58,7 +55,6 @@ class HomeLoadedState extends HomeState {
     required this.userActivityList,
     required this.userWeightEntity,
     required this.weeklyWeightDelta,
-    required this.targetWeight,
     required this.userWeightGoal,
     required this.breakfastIntakeList,
     required this.lunchIntakeList,
@@ -73,7 +69,6 @@ class HomeLoadedState extends HomeState {
         dinnerIntakeList,
         snackIntakeList,
         weeklyWeightDelta,
-        targetWeight,
         userWeightGoal,
         userName,
         coachName

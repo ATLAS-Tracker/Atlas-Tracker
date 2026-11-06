@@ -39,8 +39,8 @@ class SyncMetadata {
         (jsonDecode(value) as Map)['modified_at'] as String);
   }
 
-  static DateTime nextVersion(DateTime? previous, {DateTime? now}) {
-    final clock = (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch;
+  static DateTime nextVersion(DateTime? previous) {
+    final clock = DateTime.now().toUtc().millisecondsSinceEpoch;
     final prior = previous?.toUtc().millisecondsSinceEpoch ?? -1;
     return DateTime.fromMillisecondsSinceEpoch(
         clock > prior ? clock : prior + 1,

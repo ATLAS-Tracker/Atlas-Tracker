@@ -22,20 +22,6 @@ class ChangeDateEvent extends StudentMacrosEvent {
   List<Object?> get props => [date];
 }
 
-class ChangeMacroTypeEvent extends StudentMacrosEvent {
-  final MacroType macro;
-  ChangeMacroTypeEvent(this.macro);
-  @override
-  List<Object?> get props => [macro];
-}
-
-class ChangeRangeEvent extends StudentMacrosEvent {
-  final TimeRange range;
-  ChangeRangeEvent(this.range);
-  @override
-  List<Object?> get props => [range];
-}
-
 class UpdateDayMacrosEvent extends StudentMacrosEvent {
   final String dayKey;
   final Map<String, dynamic> data;

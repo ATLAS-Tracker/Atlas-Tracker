@@ -16,7 +16,6 @@ import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_activity_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
-import 'package:opennutritracker/core/utils/calc/calorie_goal_calc.dart';
 import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
@@ -114,9 +113,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         final totalFatsGoal = await _getMacroGoalUsecase.getFatsGoal();
         final totalProteinsGoal = await _getMacroGoalUsecase.getProteinsGoal();
 
-        final totalKcalLeft =
-            CalorieGoalCalc.getDailyKcalLeft(totalKcalGoal, totalKcalIntake);
-
         final weightSnapshot = await _getWeightUsecase.getSnapshot(currentDay);
         final userWeight = weightSnapshot.current;
         final weeklyWeightDelta = weightSnapshot.delta;
@@ -127,7 +123,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             userName: userData.name,
             coachName: coachName,
             totalKcalDaily: totalKcalGoal,
-            totalKcalLeft: totalKcalLeft,
             totalKcalSupplied: totalKcalIntake,
             totalKcalBurned: totalKcalActivities,
             totalCarbsIntake: totalCarbsIntake,
@@ -142,7 +137,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             snackIntakeList: snackIntakeList,
             userActivityList: userActivities,
             weeklyWeightDelta: weeklyWeightDelta,
-            targetWeight: userData.weightKG,
             userWeightGoal: userData.goal,
             userWeightEntity: userWeight));
       } catch (_) {

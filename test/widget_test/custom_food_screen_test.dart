@@ -15,7 +15,7 @@ import 'package:opennutritracker/core/styles/color_schemes.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
-import 'package:opennutritracker/features/edit_meal/presentation/bloc/edit_meal_bloc.dart';
+import 'package:opennutritracker/features/edit_meal/domain/create_custom_food.dart';
 import 'package:opennutritracker/features/edit_meal/presentation/edit_meal_screen.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -38,16 +38,12 @@ void main() {
   tearDownAll(() async {
     await photoDir.delete(recursive: true);
   });
-  late EditMealBloc bloc;
   setUp(() {
     final recipes = MockRecipeRepository();
     when(() => recipes.saveFood(any())).thenAnswer((_) async {});
     locator.registerSingleton<RecipeRepository>(recipes);
-    bloc = EditMealBloc();
-    locator.registerSingleton<EditMealBloc>(bloc);
   });
   tearDown(() async {
-    await bloc.close();
     await locator.reset();
   });
 
@@ -206,7 +202,7 @@ void main() {
   testWidgets(
       'weightless portion detail displays its values and only offers portions',
       (tester) async {
-    final meal = bloc.createCustomFood(
+    final meal = createCustomFood(
         original: MealEntity.empty(),
         name: 'Nuggets',
         brands: '',

@@ -42,7 +42,6 @@ void main() {
                   child: DashboardWidget(
             totalKcalSupplied: 2500,
             totalKcalDaily: 2200,
-            totalKcalLeft: -300,
             totalCarbsIntake: 220,
             totalFatsIntake: 110,
             totalProteinsIntake: 155,
@@ -52,7 +51,6 @@ void main() {
             userWeight: UserWeightEntity(
                 id: 'weight-test', weight: 105.5, date: DateTime(2026, 10, 23)),
             weeklyWeightDelta: null,
-            targetWeight: 84,
             userWeightGoal: UserWeightGoalEntity.loseWeight,
           ))),
         ));

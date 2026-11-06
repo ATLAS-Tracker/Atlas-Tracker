@@ -8,18 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 part 'student_macros_event.dart';
 part 'student_macros_state.dart';
 
-enum MacroType { calories, carbs, fat, protein, weight, steps }
-
-enum TimeRange { week, month, threeMonths, sixMonths, year }
-
 class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
   final SupabaseClient _supabase;
 
   StudentMacrosBloc(this._supabase) : super(StudentMacrosInitial()) {
     on<LoadStudentMacrosEvent>(_onLoad);
     on<ChangeDateEvent>(_onChangeDate);
-    on<ChangeMacroTypeEvent>(_onChangeMacro);
-    on<ChangeRangeEvent>(_onChangeRange);
     on<UpdateDayMacrosEvent>(_onUpdateDayMacros);
   }
 
@@ -42,8 +36,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
           selectedDate: previous is StudentMacrosLoaded
               ? previous.selectedDate
               : DateTime.now(),
-          selectedMacro: MacroType.calories,
-          selectedRange: TimeRange.week,
         ),
       );
     } catch (e) {
@@ -66,26 +58,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
       final safeDate =
           incomingOnly.isAfter(todayOnly) ? todayOnly : incomingOnly;
       emit(current.copyWith(selectedDate: safeDate));
-    }
-  }
-
-  void _onChangeMacro(
-    ChangeMacroTypeEvent event,
-    Emitter<StudentMacrosState> emit,
-  ) {
-    final current = state;
-    if (current is StudentMacrosLoaded) {
-      emit(current.copyWith(selectedMacro: event.macro));
-    }
-  }
-
-  void _onChangeRange(
-    ChangeRangeEvent event,
-    Emitter<StudentMacrosState> emit,
-  ) {
-    final current = state;
-    if (current is StudentMacrosLoaded) {
-      emit(current.copyWith(selectedRange: event.range));
     }
   }
 
@@ -124,7 +96,7 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     final macroResponse = await _supabase
         .from('tracked_days')
         .select(
-          'day, calorieGoal, caloriesTracked, caloriesBurned, carbsGoal, carbsTracked, fatGoal, fatTracked, proteinGoal, proteinTracked',
+          'day, calorieGoal, caloriesTracked, carbsGoal, carbsTracked, fatGoal, fatTracked, proteinGoal, proteinTracked',
         )
         .eq('user_id', studentId)
         .gte('day', startDate)

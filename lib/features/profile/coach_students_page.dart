@@ -297,10 +297,7 @@ class _StudentCard extends StatelessWidget {
                         colors: atlasBrandGradientColors,
                       ),
                     ),
-                    child: Text(
-                        name.trim().isEmpty
-                            ? '?'
-                            : name.trim()[0].toUpperCase(),
+                    child: Text(name.trim()[0].toUpperCase(),
                         style: theme.textTheme.labelLarge?.copyWith(
                             color: Colors.white, fontWeight: FontWeight.w800)),
                   ),

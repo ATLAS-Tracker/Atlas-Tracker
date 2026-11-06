@@ -1176,12 +1176,6 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
                         );
                       },
                     ),
-                    onTooltipRender: (args) {
-                      if (args.seriesIndex != 1) {
-                        args.header = '';
-                        args.text = '';
-                      }
-                    },
                     trackballBehavior: TrackballBehavior(
                       enable: isDenseRange,
                       activationMode: ActivationMode.singleTap,

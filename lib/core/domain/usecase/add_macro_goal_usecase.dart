@@ -71,26 +71,4 @@ class AddMacroGoalUsecase {
       );
     }
   }
-
-  Future<void> addMacroGoal(
-    double newProteinsGoal,
-    double newCarbsGoal,
-    double newFatsGoal,
-  ) async {
-    final userId = _supabaseClient.auth.currentUser?.id;
-    if (userId == null) throw Exception('User not authenticated');
-
-    final newMacro = MacroGoalEntity(
-      id: userId,
-      date: DateTime.now(),
-      oldCarbsGoal: newCarbsGoal,
-      oldFatsGoal: newFatsGoal,
-      oldProteinsGoal: newProteinsGoal,
-      newCarbsGoal: newCarbsGoal,
-      newFatsGoal: newFatsGoal,
-      newProteinsGoal: newProteinsGoal,
-    );
-
-    await _macroGoalRepository.saveMacroGoal(newMacro);
-  }
 }

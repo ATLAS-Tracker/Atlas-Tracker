@@ -25,7 +25,6 @@ Widget app(Widget child) => MaterialApp(
 Widget dashboard(double consumed, double goal) => DashboardWidget(
       totalKcalSupplied: consumed,
       totalKcalDaily: goal,
-      totalKcalLeft: goal - consumed,
       totalCarbsIntake: 200,
       totalFatsIntake: 60,
       totalProteinsIntake: 120,
@@ -34,7 +33,6 @@ Widget dashboard(double consumed, double goal) => DashboardWidget(
       totalProteinsGoal: 120,
       userWeight: null,
       weeklyWeightDelta: null,
-      targetWeight: 84,
       userWeightGoal: UserWeightGoalEntity.maintainWeight,
     );
 

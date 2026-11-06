@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
-import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
-import 'package:opennutritracker/core/domain/entity/user_activity_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
@@ -25,7 +23,6 @@ import 'package:opennutritracker/features/home/presentation/widgets/dashboard_wi
 import 'package:opennutritracker/features/home/presentation/widgets/intake_vertical_list.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:intl/intl.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller.dart';
 import 'package:opennutritracker/services/step_tracking/step_tracking_controller_factory.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
@@ -128,7 +125,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       state.userName,
       state.coachName,
       state.totalKcalDaily,
-      state.totalKcalLeft,
       state.totalKcalSupplied,
       state.totalCarbsIntake,
       state.totalFatsIntake,
@@ -140,10 +136,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       state.lunchIntakeList,
       state.dinnerIntakeList,
       state.snackIntakeList,
-      state.userActivityList,
       state.userWeightEntity,
       state.weeklyWeightDelta,
-      state.targetWeight,
       state.userWeightGoal,
     );
   }
@@ -153,7 +147,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     String userName,
     String? coachName,
     double totalKcalDaily,
-    double totalKcalLeft,
     double totalKcalSupplied,
     double totalCarbsIntake,
     double totalFatsIntake,
@@ -165,10 +158,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     List<IntakeEntity> lunchIntakeList,
     List<IntakeEntity> dinnerIntakeList,
     List<IntakeEntity> snackIntakeList,
-    List<UserActivityEntity> userActivities,
     UserWeightEntity? userWeight,
     double? weeklyWeightDelta,
-    double targetWeight,
     UserWeightGoalEntity userWeightGoal,
   ) {
     return RefreshIndicator(
@@ -188,7 +179,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 _HomeHeader(userName: userName, coachName: coachName),
                 DashboardWidget(
                   totalKcalDaily: totalKcalDaily,
-                  totalKcalLeft: totalKcalLeft,
                   totalKcalSupplied: totalKcalSupplied,
                   totalCarbsIntake: totalCarbsIntake,
                   totalFatsIntake: totalFatsIntake,
@@ -198,7 +188,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   totalProteinsGoal: totalProteinsGoal,
                   userWeight: userWeight,
                   weeklyWeightDelta: weeklyWeightDelta,
-                  targetWeight: targetWeight,
                   userWeightGoal: userWeightGoal,
                 ),
                 Padding(
@@ -227,10 +216,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   ),
                 ),
                 IntakeVerticalList(
-                  compact: true,
                   day: DateTime.now(),
                   title: S.of(context).breakfastLabel,
-                  listIcon: IntakeTypeEntity.breakfast.getIconData(),
                   addMealType: AddMealType.breakfastType,
                   intakeList: breakfastIntakeList,
                   onDeleteIntakeCallback: onDeleteIntake,
@@ -242,10 +229,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   onItemLongPressedCallback: onIntakeItemLongPressed,
                 ),
                 IntakeVerticalList(
-                  compact: true,
                   day: DateTime.now(),
                   title: S.of(context).lunchLabel,
-                  listIcon: IntakeTypeEntity.lunch.getIconData(),
                   addMealType: AddMealType.lunchType,
                   intakeList: lunchIntakeList,
                   onDeleteIntakeCallback: onDeleteIntake,
@@ -257,11 +242,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   onItemLongPressedCallback: onIntakeItemLongPressed,
                 ),
                 IntakeVerticalList(
-                  compact: true,
                   day: DateTime.now(),
                   title: S.of(context).dinnerLabel,
                   addMealType: AddMealType.dinnerType,
-                  listIcon: IntakeTypeEntity.dinner.getIconData(),
                   intakeList: dinnerIntakeList,
                   onDeleteIntakeCallback: onDeleteIntake,
                   onDeleteAllIntakesCallback: onDeleteIntakes,
@@ -272,10 +255,8 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   onItemLongPressedCallback: onIntakeItemLongPressed,
                 ),
                 IntakeVerticalList(
-                  compact: true,
                   day: DateTime.now(),
                   title: S.of(context).snackLabel,
-                  listIcon: IntakeTypeEntity.snack.getIconData(),
                   addMealType: AddMealType.snackType,
                   intakeList: snackIntakeList,
                   onDeleteIntakeCallback: onDeleteIntake,
@@ -287,13 +268,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   onItemLongPressedCallback: onIntakeItemLongPressed,
                 ),
                 const SizedBox(height: 48.0),
-                // TEMP: activities temporarily hidden by request
-                // ActivityVerticalList(
-                //   day: DateTime.now(),
-                //   title: S.of(context).activityLabel,
-                //   userActivityList: userActivities,
-                //   onItemLongPressedCallback: onActivityItemLongPressed,
-                // ),
               ],
             ),
             Align(
@@ -330,40 +304,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ),
           ],
         ));
-  }
-
-  void onActivityItemLongPressed(
-    BuildContext context,
-    UserActivityEntity activityEntity,
-  ) async {
-    final deleteIntake = await showDialog<bool>(
-      context: context,
-      builder: (context) => const DeleteDialog(),
-    );
-
-    if (deleteIntake != null) {
-      _homeBloc.deleteUserActivityItem(activityEntity);
-      _homeBloc.add(const LoadItemsEvent());
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).itemDeletedSnackbar)),
-        );
-      }
-    }
-  }
-
-  void onWeightItemLongPressed(BuildContext context) async {
-    final deleteWeight = await showDialog<bool>(
-      context: context,
-      builder: (context) => const DeleteDialog(),
-    );
-
-    final info = await PackageInfo.fromPlatform();
-    debugPrint('Bundle ID: ${info.packageName}');
-    if (deleteWeight != null) {
-      _homeBloc.deleteUserWeightItem();
-      _homeBloc.add(const LoadItemsEvent());
-    }
   }
 
   void onIntakeItemLongPressed(

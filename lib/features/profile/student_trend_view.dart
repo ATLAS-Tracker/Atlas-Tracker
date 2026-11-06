@@ -244,12 +244,7 @@ class _TrendStats extends StatelessWidget {
         children: [
           _TrendStatRow(
             icon: Icons.monitor_weight_outlined,
-            color: delta == null
-                ? Theme.of(context).colorScheme.onSurfaceVariant
-                : weightTrendColor(
-                    deltaKg: delta,
-                    goal: null,
-                    colors: Theme.of(context).colorScheme),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             label: s.weightAverageDeltaLabel,
             value: weightValue,
             trailing: weightTrend,

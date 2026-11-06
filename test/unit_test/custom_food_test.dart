@@ -6,18 +6,14 @@ import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
-import 'package:opennutritracker/features/edit_meal/presentation/bloc/edit_meal_bloc.dart';
+import 'package:opennutritracker/features/edit_meal/domain/create_custom_food.dart';
 
 class MockGetConfigUsecase extends Mock implements GetConfigUsecase {}
 
 void main() {
-  late EditMealBloc bloc;
-  setUp(() => bloc = EditMealBloc());
-  tearDown(() => bloc.close());
-
   test('editing an OFF product creates a custom food', () {
     final original = MealEntity.empty().copyWith(source: MealSourceEntity.off);
-    final edited = bloc.createCustomFood(
+    final edited = createCustomFood(
         original: original,
         name: 'Correction',
         brands: '',
@@ -29,15 +25,9 @@ void main() {
         fat: 2,
         protein: 4);
     expect(edited.source, MealSourceEntity.custom);
-    expect(
-        bloc
-            .createNewMealEntity(original, 'Correction', '', '100', '', '100',
-                'g', '100', '10', '2', '4')
-            .source,
-        MealSourceEntity.custom);
   });
 
-  MealEntity create(bool portion, String unit) => bloc.createCustomFood(
+  MealEntity create(bool portion, String unit) => createCustomFood(
       original: MealEntity.empty(),
       name: 'Nuggets',
       brands: '',

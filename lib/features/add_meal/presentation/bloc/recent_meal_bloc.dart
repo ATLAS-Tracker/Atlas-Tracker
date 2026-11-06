@@ -1,8 +1,8 @@
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/utils/search_match.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
-import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_recipe_usecase.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
@@ -45,11 +45,5 @@ class RecentMealBloc extends Bloc<RecentMealEvent, RecentMealState> {
         emit(RecentMealFailedState());
       }
     });
-  }
-
-  bool Function(IntakeEntity) matchesSearchString(String searchString) {
-    return (intake) =>
-        foldText(intake.meal.name ?? '').contains(foldText(searchString)) ||
-        foldText(intake.meal.brands ?? '').contains(foldText(searchString));
   }
 }

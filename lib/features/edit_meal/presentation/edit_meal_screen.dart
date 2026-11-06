@@ -15,7 +15,7 @@ import 'package:opennutritracker/core/utils/custom_text_input_formatter.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
-import 'package:opennutritracker/features/edit_meal/presentation/bloc/edit_meal_bloc.dart';
+import 'package:opennutritracker/features/edit_meal/domain/create_custom_food.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
@@ -502,7 +502,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
       if (!mounted) return;
       double value(TextEditingController controller) =>
           double.parse(controller.text.replaceAll(',', '.'));
-      final meal = locator<EditMealBloc>().createCustomFood(
+      final meal = createCustomFood(
           original: _args!.mealEntity,
           photoPath: photoName,
           name: _name.text,

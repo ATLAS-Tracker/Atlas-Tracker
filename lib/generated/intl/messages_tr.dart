@@ -44,19 +44,17 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m10(count) =>
       "${Intl.plural(count, other: '${count} yiyecek daha göster')}";
 
-  static String m11(count) => "${count}/7 gün";
+  static String m11(message) => "Supabase hatası: ${message}";
 
-  static String m12(message) => "Supabase hatası: ${message}";
+  static String m12(count, total) => "${count}/${total} gün";
 
-  static String m13(count, total) => "${count}/${total} gün";
+  static String m13(value) => "hedefe göre ${value}";
 
-  static String m14(value) => "hedefe göre ${value}";
+  static String m14(date) => "${date} tarihli tartım";
 
-  static String m15(date) => "${date} tarihli tartım";
+  static String m15(value, unit) => "Dönem ortalaması: ${value} ${unit}";
 
-  static String m16(value, unit) => "Dönem ortalaması: ${value} ${unit}";
-
-  static String m17(age) => "${age} yıl";
+  static String m16(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -126,11 +124,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "cloudSyncProblem": MessageLookupByLibrary.simpleMessage(
             "Bulut senkronizasyonu sorunu."),
         "cmLabel": MessageLookupByLibrary.simpleMessage("cm"),
-        "coachFallbackName": MessageLookupByLibrary.simpleMessage("Koç"),
         "coachLoggedToday":
             MessageLookupByLibrary.simpleMessage("bugün kayıt girdi"),
-        "coachObjectiveLabel":
-            MessageLookupByLibrary.simpleMessage("Koç hedefi"),
         "coachStudentsLabel":
             MessageLookupByLibrary.simpleMessage("Öğrencilerim"),
         "coachTodayTitle": MessageLookupByLibrary.simpleMessage("Günlük takip"),
@@ -155,8 +150,6 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Özel yemek öğesi oluştur?"),
         "createRecipeLabel":
             MessageLookupByLibrary.simpleMessage("Tarif oluştur"),
-        "currentGoalLabel":
-            MessageLookupByLibrary.simpleMessage("Mevcut hedef"),
         "currentWeightLabel":
             MessageLookupByLibrary.simpleMessage("mevcut kilo"),
         "customFoodAddPhoto":
@@ -203,8 +196,6 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Girdiler silinsin mi?"),
         "deleteTimeDialogTitle":
             MessageLookupByLibrary.simpleMessage("Öğeyi Sil?"),
-        "deleteWeightCardSubtitle": MessageLookupByLibrary.simpleMessage(
-            "Bu gün için kaydedilen kiloyu kaldır."),
         "deleteWeightCardTitle":
             MessageLookupByLibrary.simpleMessage("Bu kiloyu sil"),
         "deltaWeightBody": MessageLookupByLibrary.simpleMessage(
@@ -228,8 +219,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "editWeightLabel":
             MessageLookupByLibrary.simpleMessage("Kiloyu düzenle"),
         "emptyValueLabel": MessageLookupByLibrary.simpleMessage("-"),
-        "energyConsumedLabel":
-            MessageLookupByLibrary.simpleMessage("Tüketilen enerji"),
         "energyLabel": MessageLookupByLibrary.simpleMessage("enerji"),
         "errorFetchingProductData": MessageLookupByLibrary.simpleMessage(
             "Ürün verileri alınırken hata oluştu"),
@@ -798,8 +787,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Porsiyon başına değerler kaydederken hesaplanır."),
         "recipeTotalsLabel":
             MessageLookupByLibrary.simpleMessage("Tarif toplamı"),
-        "recordWeightLabel":
-            MessageLookupByLibrary.simpleMessage("Kilomu güncelle"),
         "remainingToLoseLabel":
             MessageLookupByLibrary.simpleMessage("Hedefe kalan"),
         "remainingWeightLabel": MessageLookupByLibrary.simpleMessage("kalan"),
@@ -834,9 +821,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "searchDefaultLabel": MessageLookupByLibrary.simpleMessage(
             "Lütfen bir arama kelimesi girin"),
         "searchFoodPage": MessageLookupByLibrary.simpleMessage("Yiyecek"),
-        "searchFoodRecipeHint":
-            MessageLookupByLibrary.simpleMessage("Yiyecek, tarif ara..."),
-        "searchFoodTitle": MessageLookupByLibrary.simpleMessage("Yiyecek ara"),
         "searchLabel": MessageLookupByLibrary.simpleMessage("Ara"),
         "searchProductsPage": MessageLookupByLibrary.simpleMessage("Ürünler"),
         "searchRecentTabLabel": MessageLookupByLibrary.simpleMessage("Yeni"),
@@ -885,7 +869,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "settingsThemeSystemDefaultLabel":
             MessageLookupByLibrary.simpleMessage("Sistem varsayılanı"),
         "settingsVolumeLabel": MessageLookupByLibrary.simpleMessage("Hacim"),
-        "sevenDaysShortLabel": MessageLookupByLibrary.simpleMessage("7 g"),
         "showFewerFoods":
             MessageLookupByLibrary.simpleMessage("Daha az göster"),
         "showMoreFoods": m10,
@@ -896,28 +879,22 @@ class MessageLookup extends MessageLookupByLibrary {
         "snackExample": MessageLookupByLibrary.simpleMessage(
             "ör. elma, dondurma, çikolata ..."),
         "snackLabel": MessageLookupByLibrary.simpleMessage("Atıştırmalık"),
-        "studentAverage7Label":
-            MessageLookupByLibrary.simpleMessage("7 gün ort."),
         "studentConsistencyLabel":
             MessageLookupByLibrary.simpleMessage("Düzenlilik"),
-        "studentCurrentGoalLabel":
-            MessageLookupByLibrary.simpleMessage("Mevcut hedef"),
         "studentDayTab": MessageLookupByLibrary.simpleMessage("Gün"),
-        "studentDaysLogged": m11,
         "studentNoEntryLabel":
             MessageLookupByLibrary.simpleMessage("Kayıt yok"),
         "studentTrendTab": MessageLookupByLibrary.simpleMessage("Eğilim"),
         "subscriptionInactiveMessage": MessageLookupByLibrary.simpleMessage(
             "Aboneliğiniz artık aktif değil. Lütfen antrenörünüzle iletişime geçin."),
         "sugarLabel": MessageLookupByLibrary.simpleMessage("şeker"),
-        "supabaseError": m12,
+        "supabaseError": m11,
         "suppliedLabel": MessageLookupByLibrary.simpleMessage("tüketilen"),
-        "targetShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "targetWeightLabel": MessageLookupByLibrary.simpleMessage("Hedef kilo"),
         "todayLabel": MessageLookupByLibrary.simpleMessage("Bugün"),
         "trendAvgCaloriesLabel":
             MessageLookupByLibrary.simpleMessage("Ort. kalori"),
-        "trendDaysTracked": m13,
+        "trendDaysTracked": m12,
         "trendEvolutionTitle": MessageLookupByLibrary.simpleMessage("Gelişim"),
         "trendGoalLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "trendMacrosSubtitle":
@@ -934,23 +911,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "trendPeriod7d": MessageLookupByLibrary.simpleMessage("7 g"),
         "trendSingleWeighInLabel":
             MessageLookupByLibrary.simpleMessage("Dönemde tek tartım"),
-        "trendVsGoal": m14,
+        "trendVsGoal": m13,
         "unitLabel": MessageLookupByLibrary.simpleMessage("Birim"),
         "userNotConnected":
             MessageLookupByLibrary.simpleMessage("Kullanıcı bağlı değil."),
         "viewProductSheetButtonLabel":
             MessageLookupByLibrary.simpleMessage("Ürün sayfasını aç"),
         "websiteLabel": MessageLookupByLibrary.simpleMessage("web sitesi"),
-        "weekLabel": MessageLookupByLibrary.simpleMessage("hafta"),
-        "weekShortLabel": MessageLookupByLibrary.simpleMessage("hf."),
-        "weeklyAverageDeltaLabel":
-            MessageLookupByLibrary.simpleMessage("7g ort."),
         "weightAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("7 günlük ortalamadan fark"),
         "weightAverageLabel": MessageLookupByLibrary.simpleMessage("Ortalama"),
-        "weightDeletedSnackbar":
-            MessageLookupByLibrary.simpleMessage("Kilo silindi"),
-        "weightEntryDate": m15,
+        "weightEntryDate": m14,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
@@ -959,14 +930,14 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Tartımlar"),
         "weightNoMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Bu dönemde tartım yok"),
-        "weightPeriodAverage": m16,
+        "weightPeriodAverage": m15,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Kilonuz kaydedilemedi. Lütfen tekrar deneyin."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Kilo kaydedildi"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Kaydediliyor…"),
-        "yearsLabel": m17,
+        "yearsLabel": m16,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Dün")
       };
 }

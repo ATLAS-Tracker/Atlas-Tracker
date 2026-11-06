@@ -8,7 +8,6 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dar
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/add_meal/presentation/recipe_results_list.dart';
-import 'package:opennutritracker/features/add_meal/presentation/bloc/add_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recent_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/default_results_widget.dart';
@@ -37,7 +36,6 @@ class _AddMealScreenState extends State<AddMealScreen>
   late DateTime _day;
   bool _isIngredientSearch = false;
   late ProductsBloc _productsBloc;
-  late AddMealBloc _addMealBloc;
   late RecentMealBloc _recentMealBloc;
   late RecipeSearchBloc _recipeSearchBloc;
   late final ScrollController _productsScrollController;
@@ -46,7 +44,6 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   @override
   void initState() {
-    _addMealBloc = locator<AddMealBloc>()..add(InitializeAddMealEvent());
     _productsBloc = locator<ProductsBloc>();
     _recentMealBloc = locator<RecentMealBloc>();
     _recipeSearchBloc = locator<RecipeSearchBloc>();
@@ -73,7 +70,6 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   @override
   void dispose() {
-    _addMealBloc.close();
     _searchStringListener.dispose();
     _productsBloc.close();
     _recentMealBloc.close();
@@ -118,20 +114,12 @@ class _AddMealScreenState extends State<AddMealScreen>
               ])),
         ]),
         actions: [
-          BlocBuilder<AddMealBloc, AddMealState>(
-            bloc: _addMealBloc,
-            builder: (BuildContext context, AddMealState state) {
-              if (state is AddMealLoadedState) {
-                return IconButton(
-                  tooltip: S.of(context).customFoodTitle,
-                  onPressed: () => _onCustomAddButtonPressed(),
-                  icon: const Icon(Icons.edit_outlined),
-                  color: colorScheme.primary,
-                );
-              }
-              return const SizedBox();
-            },
-          )
+          IconButton(
+            tooltip: S.of(context).customFoodTitle,
+            onPressed: _onCustomAddButtonPressed,
+            icon: const Icon(Icons.edit_outlined),
+            color: colorScheme.primary,
+          ),
         ],
       ),
       body: SafeArea(

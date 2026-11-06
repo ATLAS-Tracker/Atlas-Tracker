@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/diary/presentation/widgets/diary_table_calendar.dart';
-import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -17,18 +16,14 @@ import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 
 class CalendarMealTypeSelector extends StatefulWidget {
-  final Function(DateTime) onDateSelected;
   final String mealName;
-  final String? idOfRecipeToModify;
   final String? imagePath;
   final DateTime? initialDay;
   final IntakeTypeEntity? initialType;
 
   const CalendarMealTypeSelector({
     super.key,
-    required this.onDateSelected,
     required this.mealName,
-    required this.idOfRecipeToModify,
     required this.imagePath,
     this.initialDay,
     this.initialType,
@@ -54,11 +49,10 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
     _currentMealIndex = (widget.initialType ?? IntakeTypeEntity.lunch).index;
   }
 
-  void _handleDateSelected(DateTime day, Map<String, TrackedDayEntity> _) {
+  void _handleDateSelected(DateTime day) {
     setState(() {
       _selectedDate = day;
     });
-    widget.onDateSelected(day);
   }
 
   void _goToPreviousMeal() {
@@ -95,7 +89,7 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
         context,
         mealName: widget.mealName,
         imagePath: widget.imagePath,
-        idOfRecipeToModify: widget.idOfRecipeToModify,
+        idOfRecipeToModify: null,
         type: _mealTypes[_currentMealIndex],
         day: _selectedDate,
         addToDiary: _addToDiary,

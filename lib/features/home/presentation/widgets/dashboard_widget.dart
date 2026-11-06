@@ -14,7 +14,6 @@ import 'package:opennutritracker/generated/l10n.dart';
 
 class DashboardWidget extends StatelessWidget {
   final double totalKcalDaily;
-  final double totalKcalLeft;
   final double totalKcalSupplied;
   final double totalCarbsIntake;
   final double totalFatsIntake;
@@ -24,14 +23,12 @@ class DashboardWidget extends StatelessWidget {
   final double totalProteinsGoal;
   final UserWeightEntity? userWeight;
   final double? weeklyWeightDelta;
-  final double targetWeight;
   final UserWeightGoalEntity userWeightGoal;
 
   const DashboardWidget({
     super.key,
     required this.totalKcalSupplied,
     required this.totalKcalDaily,
-    required this.totalKcalLeft,
     required this.totalCarbsIntake,
     required this.totalFatsIntake,
     required this.totalProteinsIntake,
@@ -40,7 +37,6 @@ class DashboardWidget extends StatelessWidget {
     required this.totalProteinsGoal,
     required this.userWeight,
     required this.weeklyWeightDelta,
-    required this.targetWeight,
     required this.userWeightGoal,
   });
 

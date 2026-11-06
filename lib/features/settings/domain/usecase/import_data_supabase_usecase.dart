@@ -55,8 +55,7 @@ class ImportDataSupabaseUsecase {
       String trackedDayJsonFileName,
       String userWeightJsonFileName,
       String recipesJsonFileName,
-      String userJsonFileName,
-      {bool deleteMissingLocalEntries = true}) async {
+      String userJsonFileName) async {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
@@ -183,14 +182,13 @@ class ImportDataSupabaseUsecase {
       final existingIntakes = await _intakeRepository.getAllIntakesDBO();
       final intakeMap = {for (final i in existingIntakes) i.id: i};
       final intakeIds = intakeDBOs.map((e) => e.id).toSet();
-      if (deleteMissingLocalEntries) {
-        for (final existing in existingIntakes) {
-          if (!intakeIds.contains(existing.id)) {
-            await _intakeRepository
-                .deleteIntake(IntakeEntity.fromIntakeDBO(existing));
-          }
+      for (final existing in existingIntakes) {
+        if (!intakeIds.contains(existing.id)) {
+          await _intakeRepository
+              .deleteIntake(IntakeEntity.fromIntakeDBO(existing));
         }
       }
+
       for (final dbo in intakeDBOs) {
         final current = intakeMap[dbo.id];
         if (current == null) {
@@ -242,16 +240,15 @@ class ImportDataSupabaseUsecase {
           .map((e) =>
               DateTime(e.date.year, e.date.month, e.date.day).toIso8601String())
           .toSet();
-      if (deleteMissingLocalEntries) {
-        for (final existing in existingWeights) {
-          final key = DateTime(
-                  existing.date.year, existing.date.month, existing.date.day)
-              .toIso8601String();
-          if (!weightKeys.contains(key)) {
-            await _userWeightRepository.deleteUserWeightByDate(existing.date);
-          }
+      for (final existing in existingWeights) {
+        final key =
+            DateTime(existing.date.year, existing.date.month, existing.date.day)
+                .toIso8601String();
+        if (!weightKeys.contains(key)) {
+          await _userWeightRepository.deleteUserWeightByDate(existing.date);
         }
       }
+
       for (final dbo in userWeightDBOs) {
         final key = DateTime(dbo.date.year, dbo.date.month, dbo.date.day)
             .toIso8601String();

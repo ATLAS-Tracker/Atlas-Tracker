@@ -261,26 +261,6 @@ class S {
     );
   }
 
-  /// `Search for food`
-  String get searchFoodTitle {
-    return Intl.message(
-      'Search for food',
-      name: 'searchFoodTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Search for a food, a recipe...`
-  String get searchFoodRecipeHint {
-    return Intl.message(
-      'Search for a food, a recipe...',
-      name: 'searchFoodRecipeHint',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Recipes`
   String get searchRecipesTabLabel {
     return Intl.message(
@@ -1708,16 +1688,6 @@ class S {
     return Intl.message(
       'energy',
       name: 'energyLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Energy consumed`
-  String get energyConsumedLabel {
-    return Intl.message(
-      'Energy consumed',
-      name: 'energyConsumedLabel',
       desc: '',
       args: [],
     );
@@ -5383,36 +5353,6 @@ class S {
     );
   }
 
-  /// `7-day avg`
-  String get studentAverage7Label {
-    return Intl.message(
-      '7-day avg',
-      name: 'studentAverage7Label',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `{count}/7 days`
-  String studentDaysLogged(Object count) {
-    return Intl.message(
-      '$count/7 days',
-      name: 'studentDaysLogged',
-      desc: '',
-      args: [count],
-    );
-  }
-
-  /// `Current goal`
-  String get studentCurrentGoalLabel {
-    return Intl.message(
-      'Current goal',
-      name: 'studentCurrentGoalLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Edit`
   String get editLabel {
     return Intl.message(
@@ -5428,16 +5368,6 @@ class S {
     return Intl.message(
       'Coming soon',
       name: 'comingSoonLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `7d`
-  String get sevenDaysShortLabel {
-    return Intl.message(
-      '7d',
-      name: 'sevenDaysShortLabel',
       desc: '',
       args: [],
     );
@@ -5613,26 +5543,6 @@ class S {
     );
   }
 
-  /// `Coach objective`
-  String get coachObjectiveLabel {
-    return Intl.message(
-      'Coach objective',
-      name: 'coachObjectiveLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Update my weight`
-  String get recordWeightLabel {
-    return Intl.message(
-      'Update my weight',
-      name: 'recordWeightLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `current weight`
   String get currentWeightLabel {
     return Intl.message(
@@ -5683,71 +5593,11 @@ class S {
     );
   }
 
-  /// `Coach`
-  String get coachFallbackName {
-    return Intl.message(
-      'Coach',
-      name: 'coachFallbackName',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `week`
-  String get weekLabel {
-    return Intl.message(
-      'week',
-      name: 'weekLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `wk.`
-  String get weekShortLabel {
-    return Intl.message(
-      'wk.',
-      name: 'weekShortLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `vs 7d avg`
-  String get weeklyAverageDeltaLabel {
-    return Intl.message(
-      'vs 7d avg',
-      name: 'weeklyAverageDeltaLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Target weight`
   String get targetWeightLabel {
     return Intl.message(
       'Target weight',
       name: 'targetWeightLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Current goal`
-  String get currentGoalLabel {
-    return Intl.message(
-      'Current goal',
-      name: 'currentGoalLabel',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Target`
-  String get targetShortLabel {
-    return Intl.message(
-      'Target',
-      name: 'targetShortLabel',
       desc: '',
       args: [],
     );
@@ -5958,26 +5808,6 @@ class S {
     return Intl.message(
       'Delete this weight',
       name: 'deleteWeightCardTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Remove the weight saved for this day.`
-  String get deleteWeightCardSubtitle {
-    return Intl.message(
-      'Remove the weight saved for this day.',
-      name: 'deleteWeightCardSubtitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Weight deleted`
-  String get weightDeletedSnackbar {
-    return Intl.message(
-      'Weight deleted',
-      name: 'weightDeletedSnackbar',
       desc: '',
       args: [],
     );

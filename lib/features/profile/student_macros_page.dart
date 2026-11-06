@@ -1,6 +1,5 @@
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
-import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'dart:async';
 import 'dart:math' as math;

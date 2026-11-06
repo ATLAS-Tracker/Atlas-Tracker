@@ -4,7 +4,7 @@ import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/utils/extensions.dart';
 
 class DiaryTableCalendar extends StatelessWidget {
-  final Function(DateTime, Map<String, TrackedDayEntity>) onDateSelected;
+  final ValueChanged<DateTime> onDateSelected;
   final Duration calendarDurationDays;
   final DateTime focusedDate;
   final DateTime currentDate;
@@ -125,7 +125,7 @@ class DiaryTableCalendar extends StatelessWidget {
 
   void _selectDate(DateTime date) {
     if (_canSelect(date)) {
-      onDateSelected(DateUtils.dateOnly(date), trackedDaysMap);
+      onDateSelected(DateUtils.dateOnly(date));
     }
   }
 }

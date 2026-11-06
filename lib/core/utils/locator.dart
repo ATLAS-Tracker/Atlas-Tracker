@@ -55,7 +55,6 @@ import 'package:opennutritracker/features/add_meal/data/data_sources/off_data_so
 import 'package:opennutritracker/features/add_meal/data/data_sources/sp_fdc_data_source.dart';
 import 'package:opennutritracker/features/add_meal/data/repository/products_repository.dart';
 import 'package:opennutritracker/features/add_meal/domain/usecase/search_products_usecase.dart';
-import 'package:opennutritracker/features/add_meal/presentation/bloc/add_meal_bloc.dart';
 import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/products_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recent_meal_bloc.dart';
@@ -63,7 +62,6 @@ import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_sear
 import 'package:opennutritracker/features/add_weight/presentation/bloc/weight_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/edit_meal/presentation/bloc/edit_meal_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_detail_bloc.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
@@ -350,14 +348,12 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
     () => MealDetailBloc(locator()),
   );
   locator.registerFactory<ScannerBloc>(() => ScannerBloc(locator()));
-  locator.registerFactory<EditMealBloc>(() => EditMealBloc());
-  locator.registerFactory<AddMealBloc>(() => AddMealBloc());
   locator.registerFactory<ProductsBloc>(
     () => ProductsBloc(locator()),
   );
   locator.registerFactory(() => RecentMealBloc(locator(), locator()));
   locator.registerFactory(
-    () => RecipeSearchBloc(locator(), locator()),
+    () => RecipeSearchBloc(locator()),
   );
   locator.registerLazySingleton(() => WeightBloc());
   locator.registerLazySingleton(

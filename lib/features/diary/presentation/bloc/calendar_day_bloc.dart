@@ -1,6 +1,5 @@
 import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -123,13 +122,12 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
     }
   }
 
-  Future<void> deleteIntakeItem(
-      BuildContext context, IntakeEntity intakeEntity, DateTime day) async {
+  Future<void> deleteIntakeItem(IntakeEntity intakeEntity) async {
     await _deleteIntakeUsecase.deleteIntake(intakeEntity);
   }
 
   Future<void> updateIntakeItem(
-      String intakeId, Map<String, dynamic> fields, DateTime day) async {
+      String intakeId, Map<String, dynamic> fields) async {
     await _updateIntakeUsecase.updateIntake(intakeId, fields);
   }
 
@@ -138,7 +136,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
     _updateDiaryPage(day);
   }
 
-  Future<void> deleteUserActivityItem(BuildContext context,
+  Future<void> deleteUserActivityItem(
       UserActivityEntity activityEntity, DateTime day) async {
     await _deleteUserActivityUsecase.deleteUserActivity(activityEntity);
     _addTrackedDayUsecase.reduceDayCalorieGoal(day, activityEntity.burnedKcal);

@@ -6,10 +6,6 @@ class GetMacroGoalUsecase {
   final MacroGoalRepository _macroGoalRepository =
       locator<MacroGoalRepository>();
 
-  static const defaultProteins = MacroGoalEntity.defaultProteins;
-  static const defaultCarbs = MacroGoalEntity.defaultCarbs;
-  static const defaultFats = MacroGoalEntity.defaultFats;
-
   GetMacroGoalUsecase();
 
   Future<double> getCarbsGoal({DateTime? day}) async {

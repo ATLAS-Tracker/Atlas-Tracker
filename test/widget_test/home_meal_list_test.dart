@@ -75,15 +75,18 @@ void main() {
               child: IntakeVerticalList(
         day: mealDay ?? day,
         title: 'Déjeuner',
-        listIcon: Icons.restaurant,
         addMealType: AddMealType.lunchType,
         intakeList: intakes,
-        compact: true,
         isCollapsible: journal,
         initiallyExpanded: !journal,
         foodPreviewLimit: journal ? null : previewLimit,
         onCopyMealToDateCallback: journal ? (_, __, ___) async {} : null,
         onDeleteIntakeCallback: (item, _) => onDelete?.call(item),
+        onDeleteAllIntakesCallback: (items) async {
+          for (final item in items) {
+            onDelete?.call(item);
+          }
+        },
         onItemTappedCallback: onTapped,
         onItemDragCallback: onDrag,
       ))),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
-import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
 import 'package:opennutritracker/core/presentation/widgets/edit_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
@@ -40,7 +39,6 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
   static const _calendarDurationDays = Duration(days: 365);
   final _currentDate = DateTime.now();
   var _selectedDate = DateTime.now();
-  var _focusedDate = DateTime.now();
 
   @override
   void initState() {
@@ -116,7 +114,7 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
               calendarDurationDays: _calendarDurationDays,
               currentDate: _currentDate,
               selectedDate: _selectedDate,
-              focusedDate: _focusedDate,
+              focusedDate: _selectedDate,
             ),
             const SizedBox(height: 18.0),
             BlocBuilder<CalendarDayBloc, CalendarDayState>(
@@ -185,8 +183,6 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                               IntakeVerticalList(
                                 day: _selectedDate,
                                 title: S.of(context).breakfastLabel,
-                                listIcon:
-                                    IntakeTypeEntity.breakfast.getIconData(),
                                 addMealType: AddMealType.breakfastType,
                                 intakeList: loadedDay.breakfastIntakeList,
                                 onDeleteIntakeCallback: onDeleteIntake,
@@ -194,20 +190,17 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                                 onItemLongPressedCallback:
                                     onIntakeItemLongPressed,
                                 onItemTappedCallback: onIntakeItemTapped,
-                                onCopyIntakeCallback: onCopyIntake,
                                 onCopyMealToDateCallback: onCopyMealToDate,
                                 trackedDayEntity: loadedDay.trackedDayEntity,
                                 isDropZone: false,
                                 isCollapsible: true,
                                 initiallyExpanded: true,
-                                compact: true,
                                 foodPreviewLimit: null,
                                 horizontalMargin: 0,
                               ),
                               IntakeVerticalList(
                                 day: _selectedDate,
                                 title: S.of(context).lunchLabel,
-                                listIcon: IntakeTypeEntity.lunch.getIconData(),
                                 addMealType: AddMealType.lunchType,
                                 intakeList: loadedDay.lunchIntakeList,
                                 onDeleteIntakeCallback: onDeleteIntake,
@@ -215,20 +208,17 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                                 onItemLongPressedCallback:
                                     onIntakeItemLongPressed,
                                 onItemTappedCallback: onIntakeItemTapped,
-                                onCopyIntakeCallback: onCopyIntake,
                                 onCopyMealToDateCallback: onCopyMealToDate,
                                 trackedDayEntity: loadedDay.trackedDayEntity,
                                 isDropZone: false,
                                 isCollapsible: true,
                                 initiallyExpanded: true,
-                                compact: true,
                                 foodPreviewLimit: null,
                                 horizontalMargin: 0,
                               ),
                               IntakeVerticalList(
                                 day: _selectedDate,
                                 title: S.of(context).dinnerLabel,
-                                listIcon: IntakeTypeEntity.dinner.getIconData(),
                                 addMealType: AddMealType.dinnerType,
                                 intakeList: loadedDay.dinnerIntakeList,
                                 onDeleteIntakeCallback: onDeleteIntake,
@@ -236,20 +226,17 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                                 onItemLongPressedCallback:
                                     onIntakeItemLongPressed,
                                 onItemTappedCallback: onIntakeItemTapped,
-                                onCopyIntakeCallback: onCopyIntake,
                                 onCopyMealToDateCallback: onCopyMealToDate,
                                 trackedDayEntity: loadedDay.trackedDayEntity,
                                 isDropZone: false,
                                 isCollapsible: true,
                                 initiallyExpanded: true,
-                                compact: true,
                                 foodPreviewLimit: null,
                                 horizontalMargin: 0,
                               ),
                               IntakeVerticalList(
                                 day: _selectedDate,
                                 title: S.of(context).snackLabel,
-                                listIcon: IntakeTypeEntity.snack.getIconData(),
                                 addMealType: AddMealType.snackType,
                                 intakeList: loadedDay.snackIntakeList,
                                 onDeleteIntakeCallback: onDeleteIntake,
@@ -257,13 +244,11 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
                                 onItemLongPressedCallback:
                                     onIntakeItemLongPressed,
                                 onItemTappedCallback: onIntakeItemTapped,
-                                onCopyIntakeCallback: onCopyIntake,
                                 onCopyMealToDateCallback: onCopyMealToDate,
                                 trackedDayEntity: loadedDay.trackedDayEntity,
                                 isDropZone: false,
                                 isCollapsible: true,
                                 initiallyExpanded: true,
-                                compact: true,
                                 foodPreviewLimit: null,
                                 horizontalMargin: 0,
                               ),
@@ -280,13 +265,9 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
         ));
   }
 
-  void _onDateSelected(
-    DateTime newDate,
-    Map<String, TrackedDayEntity> trackedDaysMap,
-  ) {
+  void _onDateSelected(DateTime newDate) {
     setState(() {
       _selectedDate = newDate;
-      _focusedDate = newDate;
       _calendarDayBloc.add(LoadCalendarDayEvent(newDate));
     });
   }
@@ -314,7 +295,6 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
         await _calendarDayBloc.updateIntakeItem(
           intakeEntity.id,
           {'amount': updatedAmount},
-          _selectedDate,
         );
         _refreshSelectedDay();
         if (!context.mounted) {
@@ -355,23 +335,6 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
         refresh: _refreshSelectedDay);
   }
 
-  Future<void> onCopyIntake(
-    IntakeEntity intake,
-    TrackedDayEntity? trackedDayEntity,
-    AddMealType? type,
-  ) async {
-    final targetMealType = type ?? _addMealTypeFromIntake(intake.type);
-    await _mealDetailBloc.addIntake(
-      context,
-      intake.unit,
-      intake.amount.toString(),
-      targetMealType.getIntakeType(),
-      intake.meal,
-      DateTime.now(),
-    );
-    _refreshSelectedDay();
-  }
-
   Future<void> onCopyMealToDate(
     List<IntakeEntity> intakes,
     DateTime targetDay,
@@ -396,31 +359,14 @@ class _DiaryPageState extends State<DiaryPage> with WidgetsBindingObserver {
     );
   }
 
-  AddMealType _addMealTypeFromIntake(IntakeTypeEntity type) {
-    switch (type) {
-      case IntakeTypeEntity.breakfast:
-        return AddMealType.breakfastType;
-      case IntakeTypeEntity.lunch:
-        return AddMealType.lunchType;
-      case IntakeTypeEntity.dinner:
-        return AddMealType.dinnerType;
-      case IntakeTypeEntity.snack:
-        return AddMealType.snackType;
-    }
-  }
-
   Future<void> onDeleteIntake(
       IntakeEntity intake, TrackedDayEntity? trackedDayEntity) async {
     await onDeleteIntakes([intake]);
   }
 
   Future<void> onDeleteIntakes(List<IntakeEntity> intakes) async {
-    final selectedDay = _selectedDate;
-    await deleteIntakesWithUndo(
-        context,
-        intakes,
-        (item) => _calendarDayBloc.deleteIntakeItem(context, item, selectedDay),
-        _refreshSelectedDay);
+    await deleteIntakesWithUndo(context, intakes,
+        _calendarDayBloc.deleteIntakeItem, _refreshSelectedDay);
   }
 
   void _refreshSelectedDay() {
