@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/weight_chart_card.dart';
 import 'package:opennutritracker/core/data/dbo/config_dbo.dart';
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'dart:async';
@@ -156,6 +157,7 @@ void main() {
     await pumpScreen(tester);
     await tester.tap(find.text(S.current.historyLabel));
     await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.edit_outlined), findsNothing);
     await tester.tap(find.byKey(const ValueKey('edit-weight-previous')));
     await tester.pumpAndSettle();
     expect(
@@ -321,8 +323,7 @@ void main() {
     expect(delete, findsNothing);
   });
 
-  testWidgets(
-      'chart average uses recorded weights rather than interpolated days',
+  testWidgets('chart shows recorded weights without average or legend',
       (tester) async {
     savedWeights = [
       entry('a', 52, day),
@@ -331,16 +332,16 @@ void main() {
     ];
     await pumpScreen(tester);
     expect(
-        find.text(S.current.weightPeriodAverage('54,0', 'kg')), findsOneWidget);
+        find.text(S.current.weightPeriodAverage('54,0', 'kg')), findsNothing);
     final chart =
         tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
-    expect((chart.primaryYAxis as NumericAxis).plotBands.single.start, 54);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
     final series = chart.series.first;
     final points = series.dataSource! as List<WeightData>;
     expect(points.where((point) => point.weight != null), hasLength(3),
         reason: 'only recorded weights are presented as measured points');
     expect(points.last.weight, 52);
-    expect(find.text(S.current.weightMeasurementsLabel), findsOneWidget);
+    expect(find.text(S.current.weightMeasurementsLabel), findsNothing);
   });
 
   testWidgets('all-time chart reuses the history already loaded',
@@ -363,7 +364,66 @@ void main() {
         tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
     final points = chart.series.first.dataSource! as List<WeightData>;
     expect(points.map((p) => p.weight), [50, 54]);
-    expect((chart.primaryYAxis as NumericAxis).plotBands.single.start, 52);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+  });
+
+  testWidgets(
+      'finite chart periods keep real points sorted and inside the selected days',
+      (tester) async {
+    savedWeights = [
+      entry('today-old', 52, day),
+      entry('oldest', 50, day.subtract(const Duration(days: 13))),
+      entry('outside', 90, day.subtract(const Duration(days: 14))),
+      entry('future', 80, day.add(const Duration(days: 1))),
+      entry('today-new', 55, day),
+    ];
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.lastFourteenDaysLabel).last);
+    await tester.pumpAndSettle();
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    final points = chart.series.first.dataSource! as List<WeightData>;
+    expect(points.map((point) => point.weight), [50, 55]);
+    expect(points.map((point) => point.date),
+        [day.subtract(const Duration(days: 13)), day]);
+    expect(
+        identical(chart.series.first.dataSource, chart.series.last.dataSource),
+        isTrue);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+  });
+
+  testWidgets(
+      'weight adjustments keep the selected chart without rereading history',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.allTimeLabel).last);
+    await tester.pumpAndSettle();
+    clearInteractions(getWeight);
+    await tester.ensureVisible(find.text('+1'));
+    await tester.tap(find.text('+1'));
+    await tester.pumpAndSettle();
+    verifyNever(() => getWeight.getAllUserWeights());
+    verifyNever(() => getWeight.getWeightsFromPastDays(any(), any(),
+        includeToday: any(named: 'includeToday')));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'an older weigh-in does not expose deletion for an unrecorded day',
+      (tester) async {
+    savedWeights = [
+      entry('previous', 54, day.subtract(const Duration(days: 1)))
+    ];
+    await pumpScreen(tester);
+    expect(delete, findsNothing);
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    expect(
+        (chart.series.first.dataSource! as List<WeightData>).single.weight, 54);
   });
 
   testWidgets('no measurements shows an honest empty state without a mean line',
@@ -411,6 +471,10 @@ void main() {
         'weight page fits a narrow screen and enlarged text, dark=$dark',
         (tester) async {
       await pumpScreen(tester, dark: dark, scale: 1.3, width: 320);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text(S.current.historyLabel));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }

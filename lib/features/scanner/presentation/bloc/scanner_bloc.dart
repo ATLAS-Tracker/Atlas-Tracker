@@ -11,12 +11,10 @@ part 'scanner_state.dart';
 
 class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
   final SearchProductByBarcodeUseCase _searchProductUseCase;
-  bool _loading = false;
 
   ScannerBloc(this._searchProductUseCase) : super(ScannerInitial()) {
     on<ScannerLoadProductEvent>((event, emit) async {
-      if (_loading) return;
-      _loading = true;
+      if (state is ScannerLoadingState) return;
       emit(ScannerLoadingState());
 
       try {
@@ -30,8 +28,6 @@ class ScannerBloc extends Bloc<ScannerEvent, ScannerState> {
         } else {
           emit(const ScannerFailedState(ScannerFailedStateType.error));
         }
-      } finally {
-        _loading = false;
       }
     });
   }

@@ -38,4 +38,23 @@ void main() {
         ScannerFailedStateType.productNotFound);
     await bloc.close();
   });
+  test('scanner can retry after an error without a second loading flag',
+      () async {
+    final search = MockSearch();
+    when(() => search.searchProductByBarcode('123'))
+        .thenThrow(StateError('offline'));
+    final bloc = ScannerBloc(search);
+    final failed =
+        bloc.stream.firstWhere((state) => state is ScannerFailedState);
+    bloc.add(const ScannerLoadProductEvent(barcode: '123'));
+    await failed;
+    when(() => search.searchProductByBarcode('123'))
+        .thenAnswer((_) async => MealEntity.empty());
+    final loaded =
+        bloc.stream.firstWhere((state) => state is ScannerLoadedState);
+    bloc.add(const ScannerLoadProductEvent(barcode: '123'));
+    await loaded;
+    verify(() => search.searchProductByBarcode('123')).called(2);
+    await bloc.close();
+  });
 }

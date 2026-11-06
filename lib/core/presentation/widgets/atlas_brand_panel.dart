@@ -26,9 +26,9 @@ class AtlasBrandPanel extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: atlasBrandShadowColor,
-            blurRadius: atlasBrandShadowBlurRadius,
-            offset: atlasBrandShadowOffset,
+            color: _atlasBrandShadowColor,
+            blurRadius: _atlasBrandShadowBlurRadius,
+            offset: _atlasBrandShadowOffset,
           ),
         ],
       ),
@@ -37,26 +37,26 @@ class AtlasBrandPanel extends StatelessWidget {
         child: Stack(
           children: [
             Positioned(
-              right: atlasBrandBubbleOuterRight,
-              top: atlasBrandBubbleOuterTop,
+              right: _atlasBrandBubbleOuterRight,
+              top: _atlasBrandBubbleOuterTop,
               child: Container(
-                width: atlasBrandBubbleOuterSize,
-                height: atlasBrandBubbleOuterSize,
+                width: _atlasBrandBubbleOuterSize,
+                height: _atlasBrandBubbleOuterSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: atlasBrandBubbleColor,
+                  color: _atlasBrandBubbleColor,
                 ),
               ),
             ),
             Positioned(
-              right: atlasBrandBubbleInnerRight,
-              top: atlasBrandBubbleInnerTop,
+              right: _atlasBrandBubbleInnerRight,
+              top: _atlasBrandBubbleInnerTop,
               child: Container(
-                width: atlasBrandBubbleInnerSize,
-                height: atlasBrandBubbleInnerSize,
+                width: _atlasBrandBubbleInnerSize,
+                height: _atlasBrandBubbleInnerSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: atlasBrandBubbleColor,
+                  color: _atlasBrandBubbleColor,
                 ),
               ),
             ),
@@ -75,3 +75,14 @@ Color atlasBrandOnSurface(ColorScheme colors) =>
     colors.brightness == Brightness.dark
         ? lightColorScheme.onPrimary
         : colors.onPrimary;
+
+const Color _atlasBrandShadowColor = Color(0x240045d9);
+const Offset _atlasBrandShadowOffset = Offset(0, 14);
+const double _atlasBrandShadowBlurRadius = 28;
+const Color _atlasBrandBubbleColor = Color(0x1400a8ff);
+const double _atlasBrandBubbleOuterSize = 260;
+const double _atlasBrandBubbleInnerSize = 180;
+const double _atlasBrandBubbleOuterRight = -112;
+const double _atlasBrandBubbleOuterTop = -18;
+const double _atlasBrandBubbleInnerRight = -42;
+const double _atlasBrandBubbleInnerTop = 36;

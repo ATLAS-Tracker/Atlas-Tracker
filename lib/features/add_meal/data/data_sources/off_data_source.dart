@@ -13,7 +13,7 @@ import 'package:opennutritracker/features/scanner/data/product_not_found_excepti
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 class OFFDataSource {
-  static const _timeoutDuration = Duration(seconds: 20); // TODO lower timeout
+  static const _barcodeTimeout = Duration(seconds: 20);
   final log = Logger('OFFDataSource');
 
   /// OFF matches products containing ANY typed word, so the hits are ranked
@@ -58,7 +58,7 @@ class OFFDataSource {
     final userAgentString = await AppConst.getUserAgentString();
     final httpClient = ONTHttpClient(userAgentString, http.Client());
 
-    final response = await httpClient.get(searchUrl).timeout(_timeoutDuration);
+    final response = await httpClient.get(searchUrl);
     log.fine('Fetching OFF results from: $searchUrl');
     if (response.statusCode != OFFConst.offHttpSuccessCode) {
       log.warning('Failed OFF call: ${response.statusCode}');
@@ -162,8 +162,7 @@ class OFFDataSource {
       final userAgentString = await AppConst.getUserAgentString();
       final httpClient = ONTHttpClient(userAgentString, http.Client());
 
-      final response =
-          await httpClient.get(searchUrl).timeout(_timeoutDuration);
+      final response = await httpClient.get(searchUrl).timeout(_barcodeTimeout);
       log.fine('Fetching OFF result from: $searchUrl');
       if (response.statusCode == OFFConst.offHttpSuccessCode) {
         final productResponse = OFFProductResponseDTO.fromJson(

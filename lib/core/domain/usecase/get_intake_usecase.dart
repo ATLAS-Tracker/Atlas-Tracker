@@ -9,33 +9,28 @@ class GetIntakeUsecase {
 
   Future<List<IntakeEntity>> getIntakeByDay(
           IntakeTypeEntity type, DateTime day) =>
-      _getIntakeByDay(type, day);
-
-  Future<List<IntakeEntity>> _getIntakeByDay(
-      IntakeTypeEntity type, DateTime day) async {
-    return await _intakeRepository.getIntakeByDateAndType(type, day);
-  }
+      _intakeRepository.getIntakeByDateAndType(type, day);
 
   Future<List<IntakeEntity>> getBreakfastIntakeByDay(day) async =>
-      await _getIntakeByDay(IntakeTypeEntity.breakfast, day);
+      await getIntakeByDay(IntakeTypeEntity.breakfast, day);
 
   Future<List<IntakeEntity>> getTodayBreakfastIntake() async =>
       getBreakfastIntakeByDay(DateTime.now());
 
   Future<List<IntakeEntity>> getLunchIntakeByDay(day) async =>
-      await _getIntakeByDay(IntakeTypeEntity.lunch, day);
+      await getIntakeByDay(IntakeTypeEntity.lunch, day);
 
   Future<List<IntakeEntity>> getTodayLunchIntake() async =>
       await getLunchIntakeByDay(DateTime.now());
 
   Future<List<IntakeEntity>> getDinnerIntakeByDay(day) async =>
-      await _getIntakeByDay(IntakeTypeEntity.dinner, day);
+      await getIntakeByDay(IntakeTypeEntity.dinner, day);
 
   Future<List<IntakeEntity>> getTodayDinnerIntake() async =>
       await getDinnerIntakeByDay(DateTime.now());
 
   Future<List<IntakeEntity>> getSnackIntakeByDay(day) async =>
-      await _getIntakeByDay(IntakeTypeEntity.snack, day);
+      await getIntakeByDay(IntakeTypeEntity.snack, day);
 
   Future<List<IntakeEntity>> getTodaySnackIntake() async =>
       await getSnackIntakeByDay(DateTime.now());

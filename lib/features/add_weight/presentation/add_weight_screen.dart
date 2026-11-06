@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/presentation/widgets/weight_chart_card.dart';
 import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
 import 'package:opennutritracker/core/presentation/widgets/atlas_surface_card.dart';
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
@@ -23,7 +24,6 @@ import 'package:opennutritracker/features/add_weight/presentation/bloc/weight_bl
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
-import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:opennutritracker/features/add_weight/presentation/widgets/weight_trend_color.dart';
 
 String _formatWeight(double weight, {bool signed = false}) =>
@@ -104,15 +104,10 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
       return WeightData(date, weight);
     }).reversed.toList();
 
-    final averageWeight = await _getWeightUsecase.getAverageWeight(
-      _day,
-      _summaryDays,
-    );
     final snapshot = await _getWeightUsecase.getSnapshot(_day);
     final userData = await _getUserUsecase.getUserData();
 
     return WeightSummary(
-      averageWeight: averageWeight,
       lastRecordedWeight: snapshot.current?.weight,
       weeklyWeightDelta: snapshot.delta,
       userWeightGoal: userData.goal,
@@ -122,17 +117,6 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
 
   double _roundDecimal(double number) {
     return (number * 10).round() / 10;
-  }
-
-  bool _hasSavedWeightForDay(WeightSummary summary) {
-    return summary.weightDataList.any((point) {
-      final pointDate = DateTime(
-        point.date.year,
-        point.date.month,
-        point.date.day,
-      );
-      return pointDate == _day && point.weight != null;
-    });
   }
 
   void _changeWeightBy(double delta) {
@@ -204,10 +188,9 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
                   const SizedBox(height: 22),
                   _WeightEvolutionCard(
                     day: _day,
-                    initialData: weightSummary.weightDataList,
-                    averageWeight: weightSummary.averageWeight,
+                    initialData: weightSummary.recordedWeights,
                   ),
-                  if (_hasSavedWeightForDay(weightSummary)) ...[
+                  if (weightSummary.weightDataList.last.weight != null) ...[
                     const SizedBox(height: 16),
                     _DeleteWeightCard(
                       onPressed: _isEditable || _isSaving
@@ -349,155 +332,101 @@ class _WeightHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final s = S.of(context);
     final brandOnSurface = atlasBrandOnSurface(colorScheme);
-    final brandSecondary = brandOnSurface.withValues(alpha: 0.78);
+    final brandTertiary = brandOnSurface.withValues(alpha: 0.58);
+    final trendColor = delta == null
+        ? colorScheme.onSurfaceVariant
+        : weightTrendColor(deltaKg: delta!, goal: goal, colors: colorScheme);
+    final trendIcon = delta == null || delta == 0
+        ? Icons.trending_flat_rounded
+        : delta! > 0
+            ? Icons.trending_up_rounded
+            : Icons.trending_down_rounded;
 
     return AtlasBrandPanel(
-      padding: const EdgeInsets.fromLTRB(26, 24, 26, 24),
-      borderRadius: BorderRadius.circular(22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Text(
+            capitalizeFirst(s.currentWeightLabel),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: brandTertiary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text.rich(
+              TextSpan(children: [
+                TextSpan(
+                    text: currentWeight == null
+                        ? '—'
+                        : _formatWeight(currentWeight!)),
+                TextSpan(
+                  text: ' $unit',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: brandOnSurface.withValues(alpha: 0.78),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ]),
+              style: theme.textTheme.displayMedium?.copyWith(
+                color: brandOnSurface,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Tooltip(
+              message: s.weightAverageDeltaLabel,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      capitalizeFirst(S.of(context).currentWeightLabel),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: brandSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                                text: currentWeight == null
-                                    ? '—'
-                                    : _formatWeight(currentWeight!)),
-                            TextSpan(
-                              text: ' $unit',
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: brandOnSurface,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: trendColor.withValues(
+                          alpha: colorScheme.brightness == Brightness.dark
+                              ? 0.22
+                              : 0.14,
                         ),
-                        style: theme.textTheme.displaySmall?.copyWith(
-                          color: brandOnSurface,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: -1.2,
-                        ),
+                        shape: BoxShape.circle,
                       ),
+                      child: Icon(trendIcon, color: trendColor, size: 24),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(width: 14),
                     Text(
                       delta == null
                           ? '—'
                           : '${_formatWeight(delta!, signed: true)} $unit',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        color: brandOnSurface,
-                        fontWeight: FontWeight.w800,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: trendColor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 18),
-              _ScaleIconCard(color: colorScheme.primary),
-            ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(S.of(context).weightAverageDeltaLabel,
-              style:
-                  theme.textTheme.bodySmall?.copyWith(color: brandSecondary)),
-          const SizedBox(height: 16),
-          Text('${S.of(context).goalLabel} : ${goal.getName(context)}',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                  color: brandOnSurface, fontWeight: FontWeight.w600)),
         ],
       ),
     );
-  }
-}
-
-class _ScaleIconCard extends StatelessWidget {
-  final Color color;
-
-  const _ScaleIconCard({required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 86,
-      height: 86,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onPrimary,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Center(
-        child: Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: CustomPaint(
-            painter: _ScaleGlyphPainter(
-              dialColor: Theme.of(context).colorScheme.onPrimary,
-              needleColor: color,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ScaleGlyphPainter extends CustomPainter {
-  final Color dialColor;
-  final Color needleColor;
-
-  const _ScaleGlyphPainter({
-    required this.dialColor,
-    required this.needleColor,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = dialColor;
-    final dialRect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * 0.35),
-      width: size.width * 0.58,
-      height: size.height * 0.28,
-    );
-    canvas.drawOval(dialRect, paint);
-
-    final needlePaint = Paint()
-      ..color = needleColor
-      ..strokeWidth = 2.2
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(size.width / 2, size.height * 0.35),
-      Offset(size.width / 2, size.height * 0.27),
-      needlePaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _ScaleGlyphPainter oldDelegate) {
-    return oldDelegate.dialColor != dialColor ||
-        oldDelegate.needleColor != needleColor;
   }
 }
 
@@ -552,7 +481,7 @@ class _WeightSelectorCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  Icons.monitor_weight_outlined,
+                  Icons.monitor_weight_rounded,
                   color: colorScheme.primary,
                   size: 21,
                 ),
@@ -639,55 +568,21 @@ class _WeightSelectorCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              const desiredButtonWidth = 76.0;
-              const desiredGap = 22.0;
-              const minGap = 12.0;
-              const minButtonWidth = 52.0;
-              final widthAtMinimumGaps =
-                  (constraints.maxWidth - (minGap * 3)) / 4;
-              final buttonWidth = widthAtMinimumGaps < minButtonWidth
-                  ? widthAtMinimumGaps.clamp(40.0, minButtonWidth)
-                  : widthAtMinimumGaps.clamp(
-                      minButtonWidth,
-                      desiredButtonWidth,
-                    );
-              final remainingSpace = constraints.maxWidth - (buttonWidth * 4);
-              final gap = remainingSpace <= minGap * 3
-                  ? (remainingSpace / 3).clamp(0.0, minGap)
-                  : (remainingSpace / 3).clamp(minGap, desiredGap);
-
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _StepButton(
-                    width: buttonWidth,
-                    label: '-1',
-                    onPressed: isReadOnly ? null : () => onStepChanged(-1),
-                  ),
-                  SizedBox(width: gap),
-                  _StepButton(
-                    width: buttonWidth,
-                    label: '-0,5',
-                    onPressed: isReadOnly ? null : () => onStepChanged(-0.5),
-                  ),
-                  SizedBox(width: gap),
-                  _StepButton(
-                    width: buttonWidth,
-                    label: '+0,5',
-                    onPressed: isReadOnly ? null : () => onStepChanged(0.5),
-                  ),
-                  SizedBox(width: gap),
-                  _StepButton(
-                    width: buttonWidth,
-                    label: '+1',
-                    onPressed: isReadOnly ? null : () => onStepChanged(1),
-                  ),
-                ],
-              );
-            },
-          ),
+          Row(children: [
+            for (final (index, step) in <(String, double)>[
+              ('-1', -1),
+              ('-0,5', -0.5),
+              ('+0,5', 0.5),
+              ('+1', 1),
+            ].indexed) ...[
+              if (index > 0) const SizedBox(width: 12),
+              Expanded(
+                  child: _StepButton(
+                      label: step.$1,
+                      onPressed:
+                          isReadOnly ? null : () => onStepChanged(step.$2))),
+            ],
+          ]),
           const SizedBox(height: 28),
           FilledButton.icon(
             key: const ValueKey('save-weight'),
@@ -790,12 +685,10 @@ class _WeightAdjustButton extends StatelessWidget {
 }
 
 class _StepButton extends StatelessWidget {
-  final double width;
   final String label;
   final VoidCallback? onPressed;
 
   const _StepButton({
-    required this.width,
     required this.label,
     required this.onPressed,
   });
@@ -806,7 +699,6 @@ class _StepButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return SizedBox(
-      width: width,
       height: 48,
       child: OutlinedButton(
         onPressed: onPressed,
@@ -835,29 +727,13 @@ class _StepButton extends StatelessWidget {
   }
 }
 
-enum _WeightChartRange {
-  sevenDays(days: 7),
-  fourteenDays(days: 14),
-  oneMonth(days: 31),
-  threeMonths(days: 92),
-  sixMonths(days: 183),
-  oneYear(days: 365),
-  all(days: null);
-
-  final int? days;
-
-  const _WeightChartRange({required this.days});
-}
-
 class _WeightEvolutionCard extends StatefulWidget {
   final DateTime day;
   final List<WeightData> initialData;
-  final double averageWeight;
 
   const _WeightEvolutionCard({
     required this.day,
     required this.initialData,
-    required this.averageWeight,
   });
 
   @override
@@ -866,7 +742,7 @@ class _WeightEvolutionCard extends StatefulWidget {
 
 class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
   final GetWeightUsecase _getWeightUsecase = locator<GetWeightUsecase>();
-  _WeightChartRange _selectedRange = _WeightChartRange.sevenDays;
+  WeightChartRange _selectedRange = WeightChartRange.sevenDays;
   Future<List<WeightData>>? _chartDataFuture;
 
   @override
@@ -880,413 +756,87 @@ class _WeightEvolutionCardState extends State<_WeightEvolutionCard> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.day != widget.day ||
         oldWidget.initialData != widget.initialData) {
-      _chartDataFuture = _selectedRange == _WeightChartRange.sevenDays
+      _chartDataFuture = _selectedRange == WeightChartRange.sevenDays
           ? Future.value(widget.initialData)
           : _loadChartData(_selectedRange);
     }
   }
 
-  Future<List<WeightData>> _loadChartData(_WeightChartRange range) async {
-    if (range == _WeightChartRange.sevenDays) {
+  Future<List<WeightData>> _loadChartData(WeightChartRange range) async {
+    if (range == WeightChartRange.sevenDays) {
       return widget.initialData;
     }
 
-    final int? days = range.days;
-    if (days == null) {
-      final weights = await _getWeightUsecase.getAllUserWeights();
-      final eligibleDates = weights
-          .map((entry) =>
-              DateTime(entry.date.year, entry.date.month, entry.date.day))
-          .where((date) => !date.isAfter(widget.day))
-          .toList();
-      if (eligibleDates.isEmpty) {
-        return widget.initialData;
+    final days = range.days;
+    final weights = days == null
+        ? await _getWeightUsecase.getAllUserWeights()
+        : await _getWeightUsecase.getWeightsFromPastDays(widget.day, days,
+            includeToday: true);
+    final firstDay = days == null
+        ? null
+        : DateTime(
+            widget.day.year, widget.day.month, widget.day.day - days + 1);
+    final byDate = <DateTime, double>{};
+    for (final entry in weights) {
+      final date = DateUtils.dateOnly(entry.date);
+      if (date.isAfter(widget.day) ||
+          (firstDay != null && date.isBefore(firstDay))) {
+        continue;
       }
-      eligibleDates.sort();
-      final firstDate = eligibleDates.first;
-      final totalDays = widget.day.difference(firstDate).inDays + 1;
-      return _buildDenseSeries(totalDays, weights);
+      byDate[date] = entry.weight;
     }
-
-    final savedWeights = await _getWeightUsecase.getWeightsFromPastDays(
-      widget.day,
-      days,
-      includeToday: true,
-    );
-    return _buildDenseSeries(days, savedWeights);
+    if (days == null && byDate.isEmpty) return widget.initialData;
+    return [
+      for (final entry in byDate.entries) WeightData(entry.key, entry.value)
+    ]..sort((a, b) => a.date.compareTo(b.date));
   }
 
-  List<WeightData> _buildDenseSeries(
-      int days, List<UserWeightEntity> savedWeights) {
-    final weightsMap = {
-      for (final entry in savedWeights)
-        DateTime(entry.date.year, entry.date.month, entry.date.day):
-            entry.weight,
-    };
-
-    final rawData = List.generate(days, (i) {
-      final date = DateTime(
-        widget.day.year,
-        widget.day.month,
-        widget.day.day,
-      ).subtract(Duration(days: i));
-      return WeightData(date, weightsMap[date]);
-    }).reversed.toList();
-
-    return rawData;
-  }
-
-  String _rangeLabel(BuildContext context, _WeightChartRange range) {
+  String _rangeLabel(BuildContext context, WeightChartRange range) {
     final s = S.of(context);
     switch (range) {
-      case _WeightChartRange.sevenDays:
+      case WeightChartRange.sevenDays:
         return s.lastSevenDaysLabel;
-      case _WeightChartRange.fourteenDays:
+      case WeightChartRange.fourteenDays:
         return s.lastFourteenDaysLabel;
-      case _WeightChartRange.oneMonth:
+      case WeightChartRange.oneMonth:
         return s.lastMonthLabel;
-      case _WeightChartRange.threeMonths:
+      case WeightChartRange.threeMonths:
         return s.lastThreeMonthsLabel;
-      case _WeightChartRange.sixMonths:
+      case WeightChartRange.sixMonths:
         return s.lastSixMonthsLabel;
-      case _WeightChartRange.oneYear:
+      case WeightChartRange.oneYear:
         return s.lastYearLabel;
-      case _WeightChartRange.all:
+      case WeightChartRange.all:
         return s.allTimeLabel;
     }
   }
 
-  DateTimeIntervalType _xAxisIntervalType(_WeightChartRange range) {
-    switch (range) {
-      case _WeightChartRange.sevenDays:
-      case _WeightChartRange.fourteenDays:
-      case _WeightChartRange.oneMonth:
-      case _WeightChartRange.threeMonths:
-        return DateTimeIntervalType.days;
-      case _WeightChartRange.sixMonths:
-      case _WeightChartRange.oneYear:
-      case _WeightChartRange.all:
-        return DateTimeIntervalType.months;
-    }
-  }
-
-  double _xAxisInterval(_WeightChartRange range, int pointCount) {
-    switch (range) {
-      case _WeightChartRange.sevenDays:
-        return 2;
-      case _WeightChartRange.fourteenDays:
-        return 4;
-      case _WeightChartRange.oneMonth:
-        return 10;
-      case _WeightChartRange.threeMonths:
-        return 30;
-      case _WeightChartRange.sixMonths:
-        return 2;
-      case _WeightChartRange.oneYear:
-        return 3;
-      case _WeightChartRange.all:
-        return pointCount > 730 ? 6 : 3;
-    }
-  }
-
-  DateFormat _dateFormat(_WeightChartRange range) {
-    switch (range) {
-      case _WeightChartRange.sevenDays:
-      case _WeightChartRange.fourteenDays:
-      case _WeightChartRange.oneMonth:
-        return DateFormat('dd/MM');
-      case _WeightChartRange.threeMonths:
-      case _WeightChartRange.sixMonths:
-      case _WeightChartRange.oneYear:
-      case _WeightChartRange.all:
-        return DateFormat('MMM yy');
-    }
-  }
-
-  List<WeightData> _recordedDisplayData(List<WeightData> rawData) {
-    return rawData
-        .where((point) => point.weight != null)
-        .map(
-          (point) => WeightData(
-            point.date,
-            point.weight!,
-          ),
-        )
-        .toList();
-  }
-
-  double _safeAverage(List<WeightData> chartData) {
-    final weights = chartData
-        .where((point) => point.weight != null)
-        .map((point) => point.weight!)
-        .toList();
-    if (weights.isEmpty) return widget.averageWeight;
-    return weights.reduce((a, b) => a + b) / weights.length;
-  }
-
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return AtlasSurfaceCard(
-      padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
-      child: FutureBuilder<List<WeightData>>(
+  Widget build(BuildContext context) => FutureBuilder<List<WeightData>>(
         future: _chartDataFuture,
-        initialData: _selectedRange == _WeightChartRange.sevenDays
+        initialData: _selectedRange == WeightChartRange.sevenDays
             ? widget.initialData
             : null,
-        builder: (context, snapshot) {
-          final rawData = snapshot.data ?? widget.initialData;
-          final chartData = _recordedDisplayData(rawData);
-          final recordedData = _recordedDisplayData(rawData);
-          final isDenseRange = chartData.length > 31;
-          final displayedAverage = _safeAverage(recordedData);
-          final yValues = chartData
-              .where((point) => point.weight != null)
-              .map((point) => point.weight!)
-              .toList();
-          final minWeight = yValues.isEmpty
-              ? displayedAverage - 2
-              : yValues.reduce((a, b) => a < b ? a : b);
-          final maxWeight = yValues.isEmpty
-              ? displayedAverage + 2
-              : yValues.reduce((a, b) => a > b ? a : b);
-          final paddedMin = ((minWeight - 0.8) * 2).floor() / 2;
-          final paddedMax = ((maxWeight + 0.8) * 2).ceil() / 2;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  Text(
-                    S.of(context).evolutionLabel,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  ChartSelector(
-                    style: ChartSelectorStyle.dropdown,
-                    selectedIndex: _selectedRange.index,
-                    labels: [
-                      for (final range in _WeightChartRange.values)
-                        _rangeLabel(context, range)
-                    ],
-                    onSelected: (index) {
-                      final range = _WeightChartRange.values[index];
-                      if (range == _selectedRange) return;
-                      setState(() {
-                        _selectedRange = range;
-                        _chartDataFuture = _loadChartData(range);
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              if (recordedData.isNotEmpty)
-                Text(
-                    S.of(context).weightPeriodAverage(
-                        _formatWeight(displayedAverage), S.of(context).kgLabel),
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: colorScheme.onSurfaceVariant)),
-              const SizedBox(height: 18),
-              if (recordedData.isEmpty)
-                Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Text(S.of(context).weightNoMeasurementsLabel,
-                        textAlign: TextAlign.center))
-              else
-                SizedBox(
-                  height: 230,
-                  child: SfCartesianChart(
-                    margin: EdgeInsets.zero,
-                    enableAxisAnimation: false,
-                    plotAreaBorderWidth: 0,
-                    primaryXAxis: DateTimeAxis(
-                      dateFormat: _dateFormat(_selectedRange),
-                      intervalType: _xAxisIntervalType(_selectedRange),
-                      interval:
-                          _xAxisInterval(_selectedRange, chartData.length),
-                      majorTickLines: const MajorTickLines(size: 0),
-                      majorGridLines: MajorGridLines(
-                        width: 0.7,
-                        color:
-                            colorScheme.outlineVariant.withValues(alpha: 0.14),
-                      ),
-                      axisLine: const AxisLine(width: 0),
-                      labelStyle: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      labelIntersectAction: AxisLabelIntersectAction.hide,
-                      maximum:
-                          chartData.last.date.add(const Duration(hours: 12)),
-                      minimum: chartData.first.date
-                          .subtract(const Duration(hours: 12)),
-                    ),
-                    primaryYAxis: NumericAxis(
-                      plotBands: [
-                        PlotBand(
-                          start: displayedAverage,
-                          end: displayedAverage,
-                          borderWidth: 1,
-                          borderColor: colorScheme.onSurfaceVariant
-                              .withValues(alpha: 0.5),
-                          dashArray: const [4, 4],
-                          shouldRenderAboveSeries: true,
-                        )
-                      ],
-                      desiredIntervals: 4,
-                      numberFormat: numberFormatter(decimals: 1),
-                      maximum:
-                          paddedMax == paddedMin ? paddedMax + 1 : paddedMax,
-                      minimum:
-                          paddedMax == paddedMin ? paddedMin - 1 : paddedMin,
-                      majorTickLines: const MajorTickLines(size: 0),
-                      majorGridLines: MajorGridLines(
-                        width: 0,
-                        color: colorScheme.outlineVariant.withValues(alpha: 0),
-                      ),
-                      axisLine: const AxisLine(width: 0),
-                      labelStyle: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    tooltipBehavior: TooltipBehavior(
-                      enable: !isDenseRange,
-                      canShowMarker: false,
-                      color: colorScheme.surface.withValues(alpha: 0),
-                      elevation: 0,
-                      builder: (data, point, series, pointIndex, seriesIndex) {
-                        final weightPoint = data as WeightData;
-                        final unit = S.of(context).kgLabel;
-                        return ChartTooltip(
-                            date: weightPoint.date,
-                            lines: [_formatWeight(weightPoint.weight ?? 0)],
-                            unit: unit);
-                      },
-                    ),
-                    trackballBehavior: TrackballBehavior(
-                      enable: isDenseRange,
-                      activationMode: ActivationMode.singleTap,
-                      tooltipDisplayMode: TrackballDisplayMode.nearestPoint,
-                      lineType: TrackballLineType.vertical,
-                      lineWidth: 0.8,
-                      lineColor: colorScheme.primary.withValues(alpha: 0.20),
-                      lineDashArray: const [4, 4],
-                      markerSettings: TrackballMarkerSettings(
-                        markerVisibility: TrackballVisibilityMode.visible,
-                        color: colorScheme.primary,
-                        borderColor: colorScheme.surface,
-                        borderWidth: 2,
-                        height: 9,
-                        width: 9,
-                      ),
-                      tooltipSettings: InteractiveTooltip(
-                        color: colorScheme.surface.withValues(alpha: 0),
-                        borderWidth: 0,
-                      ),
-                      builder: (context, details) {
-                        final point = details.point;
-                        final date = point?.x;
-                        final weight = point?.y;
-                        if (date is! DateTime || weight is! num) {
-                          return const SizedBox.shrink();
-                        }
-                        final unit = S.of(context).kgLabel;
-                        return ChartTooltip(
-                            date: date,
-                            lines: [_formatWeight(weight.toDouble())],
-                            unit: unit);
-                      },
-                    ),
-                    series: <CartesianSeries<WeightData, DateTime>>[
-                      SplineAreaSeries<WeightData, DateTime>(
-                        xValueMapper: (WeightData point, _) => point.date,
-                        yValueMapper: (WeightData point, _) => point.weight,
-                        dataSource: chartData,
-                        enableTooltip: false,
-                        splineType: SplineType.monotonic,
-                        animationDuration: 0,
-                        borderColor: colorScheme.primary,
-                        borderWidth: isDenseRange ? 2.4 : 2.8,
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            colorScheme.primary.withValues(
-                              alpha: isDenseRange ? 0.20 : 0.24,
-                            ),
-                            colorScheme.primary.withValues(
-                              alpha: isDenseRange ? 0.075 : 0.09,
-                            ),
-                            colorScheme.primary.withValues(alpha: 0.015),
-                          ],
-                          stops: const [0, 0.58, 1],
-                        ),
-                        markerSettings: const MarkerSettings(isVisible: false),
-                      ),
-                      ScatterSeries<WeightData, DateTime>(
-                        xValueMapper: (WeightData point, _) => point.date,
-                        yValueMapper: (WeightData point, _) => point.weight,
-                        dataSource: recordedData,
-                        enableTooltip: true,
-                        enableTrackball: false,
-                        animationDuration: 0,
-                        color: colorScheme.primary,
-                        markerSettings: MarkerSettings(
-                          isVisible:
-                              recordedData.isNotEmpty && chartData.length <= 31,
-                          width: _selectedRange == _WeightChartRange.sevenDays
-                              ? 11
-                              : 7,
-                          height: _selectedRange == _WeightChartRange.sevenDays
-                              ? 11
-                              : 7,
-                          color: colorScheme.primary,
-                          borderColor: colorScheme.surface,
-                          borderWidth: 2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              if (recordedData.isNotEmpty) ...[
-                const SizedBox(height: 12),
-                Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 20,
-                    runSpacing: 8,
-                    children: [
-                      Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.circle, size: 8, color: colorScheme.primary),
-                        const SizedBox(width: 6),
-                        Text(S.of(context).weightMeasurementsLabel,
-                            style: theme.textTheme.bodySmall),
-                      ]),
-                      Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.more_horiz,
-                            size: 20, color: colorScheme.onSurfaceVariant),
-                        const SizedBox(width: 6),
-                        Text(S.of(context).weightAverageLabel,
-                            style: theme.textTheme.bodySmall),
-                      ]),
-                    ]),
+        builder: (context, snapshot) => WeightChartCard(
+          data: snapshot.data ?? widget.initialData,
+          range: _selectedRange,
+          selector: ChartSelector(
+              style: ChartSelectorStyle.dropdown,
+              selectedIndex: _selectedRange.index,
+              labels: [
+                for (final range in WeightChartRange.values)
+                  _rangeLabel(context, range)
               ],
-            ],
-          );
-        },
-      ),
-    );
-  }
+              onSelected: (index) {
+                final range = WeightChartRange.values[index];
+                if (range == _selectedRange) return;
+                setState(() {
+                  _selectedRange = range;
+                  _chartDataFuture = _loadChartData(range);
+                });
+              }),
+        ),
+      );
 }
 
 class _DeleteWeightCard extends StatelessWidget {
@@ -1356,7 +906,7 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
     final entries = <_WeightHistoryEntry>[];
     for (final weight in filteredWeights) {
       final delta = WeightSnapshot.at(weight.date, weights).delta;
-      entries.add(_WeightHistoryEntry(weight: weight, delta: delta));
+      entries.add((weight: weight, delta: delta));
     }
     return entries;
   }
@@ -1404,49 +954,21 @@ class _WeightHistoryCardState extends State<_WeightHistoryCard> {
                   ),
                 ),
               )
-            else
-              _WeightHistoryListCard(
-                entries: entries,
-                unit: unit,
-                userWeightGoal: widget.userWeightGoal,
-                onEdit: widget.onEdit,
-              ),
+            else ...[
+              for (var index = 0; index < entries.length; index++) ...[
+                _WeightHistoryTile(
+                    entry: entries[index],
+                    unit: unit,
+                    userWeightGoal: widget.userWeightGoal,
+                    onEdit: widget.onEdit == null
+                        ? null
+                        : () => widget.onEdit!(entries[index].weight.date)),
+                if (index != entries.length - 1) const SizedBox(height: 12),
+              ],
+            ],
           ],
         );
       },
-    );
-  }
-}
-
-class _WeightHistoryListCard extends StatelessWidget {
-  final List<_WeightHistoryEntry> entries;
-  final String unit;
-  final UserWeightGoalEntity userWeightGoal;
-  final ValueChanged<DateTime>? onEdit;
-
-  const _WeightHistoryListCard({
-    required this.entries,
-    required this.unit,
-    required this.userWeightGoal,
-    this.onEdit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var index = 0; index < entries.length; index++) ...[
-          _WeightHistoryTile(
-            entry: entries[index],
-            unit: unit,
-            userWeightGoal: userWeightGoal,
-            onEdit: onEdit == null
-                ? null
-                : () => onEdit!(entries[index].weight.date),
-          ),
-          if (index != entries.length - 1) const SizedBox(height: 12),
-        ],
-      ],
     );
   }
 }
@@ -1485,67 +1007,70 @@ class _WeightHistoryTile extends StatelessWidget {
         : weightTrendColor(
             deltaKg: deltaKg, goal: userWeightGoal, colors: colorScheme);
 
-    return AtlasSurfaceCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      radius: 22,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (onEdit != null)
-            IconButton(
-                key: ValueKey('edit-weight-${entry.weight.id}'),
-                tooltip: S.of(context).editWeightLabel,
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined)),
-          Expanded(
-            child: Text(
-              dateLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: colorScheme.onSurface,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          SizedBox(
-            width: 138,
+    return Semantics(
+      button: onEdit != null,
+      label: onEdit == null ? null : S.of(context).editWeightLabel,
+      child: InkWell(
+        key: ValueKey('edit-weight-${entry.weight.id}'),
+        onTap: onEdit,
+        borderRadius: BorderRadius.circular(22),
+        child: AtlasSurfaceCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            radius: 22,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 60,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '${_formatWeight(entry.weight.weight)} $unit',
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
-                      ),
+                Expanded(
+                  child: Text(
+                    dateLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.2,
                     ),
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: 10),
                 SizedBox(
-                  width: 72,
-                  child: _WeightHistoryDeltaBadge(
-                    delta: displayedDelta,
-                    unit: unit,
-                    color: variationColor,
-                    icon: deltaKg == null ? null : _variationIcon(deltaKg),
+                  width: 138,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            '${_formatWeight(entry.weight.weight)} $unit',
+                            textAlign: TextAlign.right,
+                            maxLines: 1,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      SizedBox(
+                        width: 72,
+                        child: _WeightHistoryDeltaBadge(
+                          delta: displayedDelta,
+                          unit: unit,
+                          color: variationColor,
+                          icon:
+                              deltaKg == null ? null : _variationIcon(deltaKg),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
+            )),
       ),
     );
   }
@@ -1607,15 +1132,7 @@ class _WeightHistoryDeltaBadge extends StatelessWidget {
   }
 }
 
-class _WeightHistoryEntry {
-  final UserWeightEntity weight;
-  final double? delta;
-
-  const _WeightHistoryEntry({
-    required this.weight,
-    required this.delta,
-  });
-}
+typedef _WeightHistoryEntry = ({UserWeightEntity weight, double? delta});
 
 class AddWeightScreenArguments {
   final DateTime day;
@@ -1624,22 +1141,18 @@ class AddWeightScreenArguments {
   AddWeightScreenArguments({required this.day, required this.isReadOnly});
 }
 
-class WeightData {
-  final DateTime date;
-  final double? weight;
-
-  WeightData(this.date, this.weight);
-}
-
 class WeightSummary {
-  final double averageWeight;
   final double? lastRecordedWeight;
   final double? weeklyWeightDelta;
   final UserWeightGoalEntity userWeightGoal;
   final List<WeightData> weightDataList;
+  // Stable input prevents a weight adjustment from reloading the chart's period.
+  late final List<WeightData> recordedWeights = [
+    for (final point in weightDataList)
+      if (point.weight != null) point,
+  ];
 
   WeightSummary({
-    required this.averageWeight,
     required this.lastRecordedWeight,
     required this.weeklyWeightDelta,
     required this.userWeightGoal,

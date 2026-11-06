@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:opennutritracker/features/add_meal/data/repository/products_repository.dart';
@@ -47,5 +48,17 @@ void main() {
     stubSupabase(() => Future.error(Exception('offline')));
 
     expect(search(), throwsStateError);
+  });
+  testWidgets(
+      'the 10-second text search deadline keeps the other source available',
+      (tester) async {
+    final pending = Completer<List<MealEntity>>();
+    final food = MealEntity.empty();
+    stubOff(() => pending.future);
+    stubSupabase(() async => [food]);
+    final result = search();
+    await tester.pump(const Duration(seconds: 11));
+    expect((await result).results, [food]);
+    pending.complete([]);
   });
 }

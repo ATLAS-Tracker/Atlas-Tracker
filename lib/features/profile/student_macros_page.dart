@@ -1,3 +1,5 @@
+import 'package:opennutritracker/core/presentation/widgets/atlas_surface_card.dart';
+import 'package:opennutritracker/core/presentation/widgets/weight_chart_card.dart';
 import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
 import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
@@ -320,14 +322,12 @@ class _InfoCard extends StatelessWidget {
   final IconData icon;
   final Widget child;
   final bool fill;
-  final Widget? trailing;
 
   const _InfoCard({
     required this.title,
     required this.icon,
     required this.child,
     this.fill = true,
-    this.trailing,
   });
 
   @override
@@ -352,10 +352,6 @@ class _InfoCard extends StatelessWidget {
                     style: theme.textTheme.titleSmall
                         ?.copyWith(fontWeight: FontWeight.w800)),
               ),
-              if (trailing != null)
-                Flexible(
-                  child: FittedBox(fit: BoxFit.scaleDown, child: trailing),
-                ),
             ],
           ),
           SizedBox(height: fill ? 10 : 16),

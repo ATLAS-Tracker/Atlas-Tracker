@@ -12,16 +12,6 @@ const List<Color> atlasBrandGradientColors = [
   Color(0xff0454f2),
   Color(0xff003fce),
 ];
-const Color atlasBrandShadowColor = Color(0x240045d9);
-const Offset atlasBrandShadowOffset = Offset(0, 14);
-const double atlasBrandShadowBlurRadius = 28;
-const Color atlasBrandBubbleColor = Color(0x1400a8ff);
-const double atlasBrandBubbleOuterSize = 260;
-const double atlasBrandBubbleInnerSize = 180;
-const double atlasBrandBubbleOuterRight = -112;
-const double atlasBrandBubbleOuterTop = -18;
-const double atlasBrandBubbleInnerRight = -42;
-const double atlasBrandBubbleInnerTop = 36;
 
 class MacroVisual {
   final Color color;

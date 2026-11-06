@@ -1,3 +1,6 @@
+import 'package:opennutritracker/core/presentation/widgets/weight_chart_card.dart';
+import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -95,6 +98,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text(S.current.studentConsistencyLabel), findsOneWidget);
     expect(find.text('85,3 kg'), findsOneWidget);
+    final weightCard = find.byType(WeightChartCard);
+    expect(weightCard, findsOneWidget);
+    final chart = tester.widget<SfCartesianChart>(find.descendant(
+        of: weightCard, matching: find.byType(SfCartesianChart)));
+    expect(chart.series.first, isA<SplineAreaSeries<WeightData, DateTime>>());
+    expect(chart.series.last, isA<ScatterSeries<WeightData, DateTime>>());
+    expect(
+        (chart.series.first.dataSource! as List<WeightData>)
+            .map((p) => p.weight),
+        [84.9, 85.3]);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+    final calories = find.descendant(
+        of: weightCard, matching: find.text(S.current.caloriesLabel));
+    await tester.ensureVisible(calories);
+    await tester.tap(calories);
+    await tester.pumpAndSettle();
+    expect(weightCard, findsNothing);
+    final metricSelector = find.byWidgetPredicate((widget) =>
+        widget is ChartSelector && widget.style == ChartSelectorStyle.compact);
+    await tester.tap(find.descendant(
+        of: metricSelector, matching: find.text(S.current.weightLabel)));
+    await tester.pumpAndSettle();
+    expect(weightCard, findsOneWidget);
     expect(tester.takeException(), isNull);
     // Les valeurs du résumé sont toutes collées au bord droit.
     expect(find.text(S.current.trendDaysTracked(0, 7)), findsOneWidget);

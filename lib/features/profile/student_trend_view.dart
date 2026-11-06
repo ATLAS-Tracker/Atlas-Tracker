@@ -125,18 +125,19 @@ class _TrendViewState extends State<_TrendView> {
                 widget.state.macros, _dateOnly(DateTime.now()))),
         const SizedBox(height: 12),
         _TrendChartCard(
+            range: WeightChartRange.values[_period],
             data: TrendData(
-          days: [
-            ...data.days,
-            TrendDay(_dateOnly(DateTime.now()),
-                weight: _num(
-                    widget.state.macros[_dayKey(DateTime.now())], 'weight'))
-          ],
-          calorieGoal: data.calorieGoal,
-          carbsGoal: data.carbsGoal,
-          fatGoal: data.fatGoal,
-          proteinGoal: data.proteinGoal,
-        )),
+              days: [
+                ...data.days,
+                TrendDay(_dateOnly(DateTime.now()),
+                    weight: _num(
+                        widget.state.macros[_dayKey(DateTime.now())], 'weight'))
+              ],
+              calorieGoal: data.calorieGoal,
+              carbsGoal: data.carbsGoal,
+              fatGoal: data.fatGoal,
+              proteinGoal: data.proteinGoal,
+            )),
         const SizedBox(height: 12),
         _TrendMacrosCard(data: data),
       ],
@@ -308,8 +309,9 @@ class _TrendStatRow extends StatelessWidget {
 
 class _TrendChartCard extends StatefulWidget {
   final TrendData data;
+  final WeightChartRange range;
 
-  const _TrendChartCard({required this.data});
+  const _TrendChartCard({required this.data, required this.range});
 
   @override
   State<_TrendChartCard> createState() => _TrendChartCardState();
@@ -321,27 +323,46 @@ class _TrendChartCardState extends State<_TrendChartCard> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    return _InfoCard(
-      title: s.trendEvolutionTitle,
-      icon: Icons.show_chart_rounded,
-      fill: false,
-      trailing: ChartSelector(
-          style: ChartSelectorStyle.compact,
-          labels: [s.weightLabel, s.caloriesLabel],
-          selectedIndex: _metric,
-          onSelected: (index) => setState(() => _metric = index)),
+    final selector = ChartSelector(
+        style: ChartSelectorStyle.compact,
+        labels: [s.weightLabel, s.caloriesLabel],
+        selectedIndex: _metric,
+        onSelected: (index) => setState(() => _metric = index));
+    if (_metric == 0) {
+      final points = [
+        for (final day in widget.data.days)
+          if (day.weight != null) WeightData(day.date, day.weight!)
+      ];
+      return Column(children: [
+        WeightChartCard(data: points, range: widget.range, selector: selector),
+        if (points.length == 1)
+          Text(s.trendSingleWeighInLabel,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600)),
+      ]);
+    }
+    final theme = Theme.of(context);
+    return AtlasSurfaceCard(
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: 220,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: _metric == 0
-                  ? _WeightChart(key: const ValueKey('w'), data: widget.data)
-                  : _CaloriesChart(key: const ValueKey('c'), data: widget.data),
-            ),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              Text(s.evolutionLabel,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w900)),
+              selector,
+            ],
           ),
+          const SizedBox(height: 18),
+          SizedBox(height: 230, child: _CaloriesChart(data: widget.data)),
         ],
       ),
     );
@@ -408,80 +429,10 @@ NumericAxis _valueAxis(BuildContext context,
   );
 }
 
-class _WeightChart extends StatelessWidget {
-  final TrendData data;
-
-  const _WeightChart({super.key, required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    final s = S.of(context);
-    final colors = Theme.of(context).colorScheme;
-    // Only real weigh-ins: no interpolated points.
-    final points = data.days.where((d) => d.weight != null).toList();
-    if (points.isEmpty) return _ChartEmpty(s.noWeighInLabel);
-
-    return Column(
-      children: [
-        Expanded(
-          child: SfCartesianChart(
-            margin: EdgeInsets.zero,
-            plotAreaBorderWidth: 0,
-            primaryXAxis: _dateAxis(context, data),
-            primaryYAxis: _valueAxis(context),
-            tooltipBehavior: TooltipBehavior(
-              enable: true,
-              color: Colors.transparent,
-              elevation: 0,
-              builder: (d, _, __, ___, ____) => ChartTooltip(
-                inverse: true,
-                date: (d as TrendDay).date,
-                lines: ['${formatNumber(d.weight!, decimals: 1)} ${s.kgLabel}'],
-              ),
-            ),
-            series: [
-              LineSeries<TrendDay, DateTime>(
-                dataSource: points,
-                xValueMapper: (d, _) => d.date,
-                yValueMapper: (d, _) => d.weight,
-                color: colors.primary,
-                width: 2.5,
-                animationDuration: 600,
-                markerSettings: MarkerSettings(
-                  isVisible: points.length <= 31,
-                  height: 6,
-                  width: 6,
-                  color: colors.primary,
-                  borderColor: colors.surface,
-                  borderWidth: 1.5,
-                ),
-                trendlines: [
-                  if (points.length >= 5)
-                    Trendline(
-                      type: TrendlineType.linear,
-                      color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-                      width: 1.2,
-                      dashArray: const [4, 4],
-                      enableTooltip: false,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        if (points.length == 1)
-          Text(s.trendSingleWeighInLabel,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: colors.onSurfaceVariant, fontWeight: FontWeight.w600)),
-      ],
-    );
-  }
-}
-
 class _CaloriesChart extends StatelessWidget {
   final TrendData data;
 
-  const _CaloriesChart({super.key, required this.data});
+  const _CaloriesChart({required this.data});
 
   @override
   Widget build(BuildContext context) {

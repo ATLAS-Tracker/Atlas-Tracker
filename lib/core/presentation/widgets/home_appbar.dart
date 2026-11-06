@@ -65,7 +65,7 @@ class _HomeAppbarState extends State<HomeAppbar> {
           children: [
             const SizedBox(width: 46, height: 46, child: DynamicOntLogo()),
             const SizedBox(width: 8),
-            _BrandName(title: S.of(context).appTitle),
+            const _BrandName(),
           ],
         ),
       ),
@@ -97,16 +97,10 @@ class _HomeAppbarState extends State<HomeAppbar> {
 }
 
 class _BrandName extends StatelessWidget {
-  final String title;
-
-  const _BrandName({required this.title});
+  const _BrandName();
 
   @override
   Widget build(BuildContext context) {
-    final parts = title.trim().split(RegExp(r'\s+'));
-    final firstLine = parts.isNotEmpty ? parts.first : 'ATLAS';
-    final secondLine =
-        parts.length > 1 ? parts.sublist(1).join(' ') : 'TRACKER';
     final textTheme = Theme.of(context).textTheme;
 
     return Column(
@@ -114,7 +108,7 @@ class _BrandName extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          firstLine,
+          'ATLAS',
           style: textTheme.titleMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.w800,
@@ -123,7 +117,7 @@ class _BrandName extends StatelessWidget {
           ),
         ),
         Text(
-          secondLine,
+          'TRACKER',
           style: textTheme.titleMedium?.copyWith(
             color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w800,
