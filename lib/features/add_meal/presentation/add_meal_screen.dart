@@ -489,6 +489,9 @@ class _RecentMealsPane extends StatelessWidget {
               return MealItemCard(
                 day: day,
                 mealEntity: filteredMeals[index],
+                lastIntake: state.lastIntakes[filteredMeals[index].code ??
+                    filteredMeals[index].name ??
+                    ''],
                 addMealType: mealType,
                 onReturn: () =>
                     bloc.add(const LoadRecentMealEvent(searchString: '')),

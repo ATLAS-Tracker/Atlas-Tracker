@@ -51,6 +51,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   late DateTime _day;
   late IntakeTypeEntity intakeTypeEntity;
   IntakeEntity? _intakeToEdit;
+  IntakeEntity? _initialIntake;
 
   final quantityTextController = TextEditingController();
 
@@ -76,6 +77,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
       _day = args.day;
       intakeTypeEntity = args.intakeTypeEntity;
       _intakeToEdit = args.intakeToEdit;
+      _initialIntake = args.initialIntake;
 
       if (args.postNavigationAction != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -460,14 +462,15 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     );
   }
 
-  /// Serving first, else 100 g/ml (OFF package sizes like a 1 kg jar are not
+  /// Last intake first, then serving, else 100 g/ml (OFF package sizes are not
   /// a portion), else the quantity of custom foods. Only metric
   /// units are offered (the app targets France).
   void _applyInitialUnitAndQuantity() {
-    if (_intakeToEdit != null) {
-      _initialUnit = MealEntity.metricUnit(_intakeToEdit!.unit);
+    final initialIntake = _intakeToEdit ?? _initialIntake;
+    if (initialIntake != null) {
+      _initialUnit = MealEntity.metricUnit(initialIntake.unit);
       _initialQuantity =
-          formatQuantity(_intakeToEdit!.amount).replaceAll('\u202f', '');
+          formatQuantity(initialIntake.amount).replaceAll('\u202f', '');
     } else if (meal.hasServingValues) {
       _initialUnit = UnitDropdownItem.serving.toString();
       _initialQuantity = "1";
@@ -562,7 +565,8 @@ class MealDetailScreenArguments {
   final DateTime day;
   final void Function(BuildContext)? postNavigationAction;
   final IntakeEntity? intakeToEdit;
+  final IntakeEntity? initialIntake;
 
   MealDetailScreenArguments(this.mealEntity, this.intakeTypeEntity, this.day,
-      {this.postNavigationAction, this.intakeToEdit});
+      {this.postNavigationAction, this.intakeToEdit, this.initialIntake});
 }

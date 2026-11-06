@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.dart';
@@ -19,6 +20,7 @@ class MealItemCard extends StatelessWidget {
   final MealEntity mealEntity;
   final VoidCallback? onDelete;
   final VoidCallback? onReturn;
+  final IntakeEntity? lastIntake;
 
   const MealItemCard(
       {super.key,
@@ -26,6 +28,7 @@ class MealItemCard extends StatelessWidget {
       required this.mealEntity,
       this.onDelete,
       this.onReturn,
+      this.lastIntake,
       required this.addMealType});
 
   @override
@@ -121,7 +124,8 @@ class MealItemCard extends StatelessWidget {
   Future<void> _onItemPressed(BuildContext context) async {
     await Navigator.of(context).pushNamed(NavigationOptions.mealDetailRoute,
         arguments: MealDetailScreenArguments(
-            mealEntity, addMealType.getIntakeType(), day));
+            mealEntity, addMealType.getIntakeType(), day,
+            initialIntake: lastIntake));
     if (context.mounted) onReturn?.call();
   }
 

@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
+import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -102,6 +106,91 @@ void main() {
     expect(find.text('130 kcal'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final selection in [(160.0, 'g'), (250.0, 'ml'), (3.0, 'serving')]) {
+    testWidgets('recent card restores last quantity and unit: $selection',
+        (tester) async {
+      bloc = MealDetailBloc(MockAddIntake());
+      locator.registerSingleton<MealDetailBloc>(bloc);
+      final meal = MealEntity.empty().copyWith(
+        code: 'recent-product',
+        servingQuantity: selection.$2 == 'serving' ? 20 : null,
+        servingUnit: selection.$2 == 'serving' ? 'g' : null,
+        name: 'Produit récent',
+        mealQuantity: '500',
+        mealUnit: selection.$2 == 'ml' ? 'ml' : 'g',
+        source: MealSourceEntity.off,
+        nutriments: const MealNutrimentsEntity(
+          energyKcalPerQuantity: 100,
+          carbohydratesPerQuantity: 10,
+          fatPerQuantity: 3,
+          proteinsPerQuantity: 5,
+          sugarsPerQuantity: null,
+          saturatedFatPerQuantity: null,
+          fiberPerQuantity: null,
+          mealOrRecipe: MealOrRecipeEntity.meal,
+        ),
+      );
+      final fullProduct = Completer<MealEntity>();
+      final search = MockSearchByBarcode();
+      when(() => search.searchProductByBarcode(any()))
+          .thenAnswer((_) => fullProduct.future);
+      locator.registerSingleton<SearchProductByBarcodeUseCase>(search);
+      final lastIntake = IntakeEntity(
+        id: 'previous-consumption',
+        unit: selection.$2,
+        amount: selection.$1,
+        type: IntakeTypeEntity.dinner,
+        meal: meal,
+        dateTime: DateTime(2026, 11, 5),
+      );
+      await tester.pumpWidget(MaterialApp(
+        locale: const Locale('fr'),
+        supportedLocales: S.delegate.supportedLocales,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        home: Scaffold(
+            body: MealItemCard(
+          day: DateTime(2026, 11, 6),
+          addMealType: AddMealType.lunchType,
+          mealEntity: meal,
+          lastIntake: lastIntake,
+        )),
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const MealDetailScreen(),
+        ),
+      ));
+      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.pumpAndSettle();
+      expect(
+          tester
+              .widget<TextFormField>(find.byType(TextFormField))
+              .controller!
+              .text,
+          selection.$1.toInt().toString());
+      expect(bloc.state.selectedUnit, selection.$2);
+      fullProduct.complete(meal.copyWith(
+          servingQuantity: 20,
+          servingUnit: selection.$2 == 'ml' ? 'ml' : 'g',
+          servingSize: '20 ${selection.$2 == 'ml' ? 'ml' : 'g'}'));
+      await tester.pumpAndSettle();
+      expect(
+          tester
+              .widget<TextFormField>(find.byType(TextFormField))
+              .controller!
+              .text,
+          selection.$1.toInt().toString());
+      expect(bloc.state.selectedUnit, selection.$2);
+      expect(double.parse(bloc.state.totalQuantityConverted),
+          selection.$1 * (selection.$2 == 'serving' ? 20 : 1));
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   for (final keyboard in [false, true]) {
     testWidgets(

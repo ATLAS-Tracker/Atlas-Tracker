@@ -118,6 +118,38 @@ void main() {
       expect(recents, List.from(["3", "2", "1"]));
     });
 
+    for (final sameTimestamp in [false, true]) {
+      test('recent quantity uses last same-day intake, tied=$sameTimestamp',
+          () async {
+        final hive = HiveDBProvider();
+        hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+        hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+        hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+        final repo = IntakeRepository(IntakeDataSource(hive));
+        final date = DateTime(2026, 11, 6);
+        final entries = sameTimestamp
+            ? [(100.0, 10), (160.0, 10)]
+            : [(160.0, 12), (100.0, 10)];
+        for (final entry in entries) {
+          await repo.addAllIntakeDBOs([
+            IntakeDBO.fromIntakeEntity(IntakeEntity(
+              id: 'entry-${entry.$1}',
+              amount: entry.$1,
+              unit: 'g',
+              type: IntakeTypeEntity.lunch,
+              meal: MealEntityFixtures.mealOne,
+              dateTime: date,
+              updatedAt: DateTime.utc(2026, 11, 6, entry.$2),
+            ))
+          ]);
+        }
+        final recents = await repo.getRecentIntake();
+        expect(recents, hasLength(1));
+        expect(recents.single.amount, 160);
+        expect(recents.single.unit, 'g');
+      });
+    }
+
     test('deletion survives restart, rejects stale import and allows undo',
         () async {
       final hive = HiveDBProvider(userId: 'owner');

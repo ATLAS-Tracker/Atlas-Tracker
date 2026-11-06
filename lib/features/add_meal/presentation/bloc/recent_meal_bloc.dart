@@ -35,7 +35,10 @@ class RecentMealBloc extends Bloc<RecentMealEvent, RecentMealState> {
                 ((meal.name ?? '').toLowerCase().contains(searchString) ||
                     (meal.brands ?? '').toLowerCase().contains(searchString)))
             .toList();
-        emit(RecentMealLoadedState(recentMeals: meals));
+        emit(RecentMealLoadedState(recentMeals: meals, lastIntakes: {
+          for (final intake in recentIntake)
+            intake.meal.code ?? intake.meal.name ?? '': intake,
+        }));
       } catch (error) {
         log.severe(error);
         emit(RecentMealFailedState());

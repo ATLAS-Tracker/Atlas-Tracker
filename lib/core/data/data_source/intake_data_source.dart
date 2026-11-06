@@ -131,13 +131,19 @@ class IntakeDataSource {
   }
 
   Future<List<IntakeDBO>> getRecentlyAddedIntake({int number = 100}) async {
-    final intakeList = _hive.intakeBox.values.toList();
+    final intakeList = _hive.intakeBox.values.indexed.toList();
 
-    //  sort list by date (newest first) and filter unique intake
-    intakeList.sort((a, b) => (-1) * a.dateTime.compareTo(b.dateTime));
+    // Same-day entries use the last write, then insertion order for ties.
+    intakeList.sort((a, b) {
+      final byDate = b.$2.dateTime.compareTo(a.$2.dateTime);
+      if (byDate != 0) return byDate;
+      final byUpdate = b.$2.updatedAt.compareTo(a.$2.updatedAt);
+      return byUpdate != 0 ? byUpdate : b.$1.compareTo(a.$1);
+    });
 
     final filterCodes = <String>{};
     final uniqueIntake = intakeList
+        .map((entry) => entry.$2)
         .where((intake) =>
             filterCodes.add(intake.meal.code ?? intake.meal.name ?? ""))
         .toList();
