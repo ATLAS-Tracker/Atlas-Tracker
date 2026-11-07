@@ -112,7 +112,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         final totalFatsGoal = await _getMacroGoalUsecase.getFatsGoal();
         final totalProteinsGoal = await _getMacroGoalUsecase.getProteinsGoal();
 
-        final weightSnapshot = await _getWeightUsecase.getSnapshot(currentDay);
+        final weightSnapshot = (await _getWeightUsecase.getSnapshot(currentDay))
+            .onlyOn(currentDay);
         final userWeight = weightSnapshot.current;
         final weeklyWeightDelta = weightSnapshot.delta;
         final userData = await _getUserUsecase.getUserData();

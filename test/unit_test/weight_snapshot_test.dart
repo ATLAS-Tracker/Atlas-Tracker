@@ -24,6 +24,18 @@ void main() {
     expect(snapshot.delta, -2);
   });
 
+  test('onlyOn hides a weigh-in from another day', () {
+    final history = [entry(23, 78), entry(24, 79)];
+    final yesterdayOnly = WeightSnapshot.at(DateTime(2026, 10, 25), history)
+        .onlyOn(DateTime(2026, 10, 25));
+    expect(yesterdayOnly.current, isNull);
+    expect(yesterdayOnly.delta, isNull);
+    final today = WeightSnapshot.at(DateTime(2026, 10, 24), history)
+        .onlyOn(DateTime(2026, 10, 24));
+    expect(today.current!.weight, 79);
+    expect(today.delta, 1);
+  });
+
   test('no history means no invented weight or trend', () {
     expect(WeightSnapshot.at(DateTime(2026, 10, 25), []).current, isNull);
     final only = WeightSnapshot.at(DateTime(2026, 10, 25), [entry(24, 78)]);

@@ -104,7 +104,7 @@ class _AddWeightScreenState extends State<AddWeightScreen> {
       return WeightData(date, weight);
     }).reversed.toList();
 
-    final snapshot = await _getWeightUsecase.getSnapshot(_day);
+    final snapshot = (await _getWeightUsecase.getSnapshot(_day)).onlyOn(_day);
     final userData = await _getUserUsecase.getUserData();
 
     return WeightSummary(

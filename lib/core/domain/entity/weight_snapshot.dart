@@ -11,6 +11,14 @@ class WeightSnapshot {
       ? null
       : current!.weight - previousAverage!;
 
+  /// Empty unless the latest weigh-in was recorded on [day].
+  WeightSnapshot onlyOn(DateTime day) => current != null &&
+          current!.date.year == day.year &&
+          current!.date.month == day.month &&
+          current!.date.day == day.day
+      ? this
+      : const WeightSnapshot(null, null);
+
   factory WeightSnapshot.at(DateTime day, Iterable<UserWeightEntity> history) {
     DateTime dateOnly(DateTime date) =>
         DateTime(date.year, date.month, date.day);
