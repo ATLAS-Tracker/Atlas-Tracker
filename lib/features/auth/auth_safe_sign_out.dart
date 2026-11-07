@@ -44,8 +44,11 @@ Future<void> safeSignOut(BuildContext context) async {
   bool exportOk = true;
 
   try {
-    if (userId != null) {
-      // ——— Toujours exporter ———
+    // An empty journal (fresh install) must not overwrite a full backup that
+    // restoreLegacyBackupOnce may still need.
+    if (userId != null && locator<HiveDBProvider>().intakeBox.isEmpty) {
+      _log.fine('Journal vide – sauvegarde existante conservée');
+    } else if (userId != null) {
       Future<bool> doExport() => exportUsecase.exportData(
             ExportImportBloc.exportZipFileName,
             ExportImportBloc.userActivityJsonFileName,
