@@ -7,6 +7,11 @@ class AddWeightUsecase {
   AddWeightUsecase(this._userWeightRepository);
 
   Future<void> addUserWeight(UserWeightEntity userWeightEntity) async {
+    if (!userWeightEntity.weight.isFinite ||
+        userWeightEntity.weight <= 0 ||
+        userWeightEntity.weight > 400) {
+      throw ArgumentError.value(userWeightEntity.weight, 'weight');
+    }
     return await _userWeightRepository.addUserWeight(userWeightEntity);
   }
 }

@@ -28,8 +28,9 @@ class _ProfilePhotoPickerState extends State<ProfilePhotoPicker> {
   void initState() {
     super.initState();
     if (widget.initialImagePath != null) {
-      PathHelper.localImagePath(widget.initialImagePath!).then((path) {
-        if (mounted) {
+      PathHelper.localImagePath(widget.initialImagePath!).then((path) async {
+        final exists = await File(path).exists();
+        if (mounted && exists) {
           setState(() {
             _imagePath = path;
           });

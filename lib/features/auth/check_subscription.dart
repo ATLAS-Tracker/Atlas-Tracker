@@ -21,7 +21,8 @@ class SubscriptionService {
           .from('subscription')
           .select('is_subscribed')
           .eq('id', userId)
-          .maybeSingle();
+          .maybeSingle()
+          .timeout(const Duration(seconds: 8));
 
       final isSubscribed = row?['is_subscribed'] as bool? ?? false;
 

@@ -14,8 +14,7 @@ class ConfigDBO extends HiveObject {
   bool hasAcceptedPolicy;
   @HiveField(2)
   bool hasAcceptedSendAnonymousData;
-  @HiveField(3)
-  bool? usesImperialUnits;
+  // Hive field 3 is retired; the other field IDs must remain unchanged.
   @HiveField(4)
   double? userKcalAdjustment;
   @HiveField(5)
@@ -28,15 +27,17 @@ class ConfigDBO extends HiveObject {
   DateTime? lastDataUpdate;
   @HiveField(9)
   bool supabaseSyncEnabled;
+  @HiveField(10, defaultValue: false)
+  bool hasExplicitCrashConsent;
 
   ConfigDBO(this.hasAcceptedDisclaimer, this.hasAcceptedPolicy,
       this.hasAcceptedSendAnonymousData,
-      {this.usesImperialUnits = false,
-      this.userKcalAdjustment,
+      {this.userKcalAdjustment,
       this.lastDataUpdate,
+      this.hasExplicitCrashConsent = false,
       this.supabaseSyncEnabled = true});
 
-  factory ConfigDBO.empty() => ConfigDBO(true, false, true)
+  factory ConfigDBO.empty() => ConfigDBO(true, false, false)
     ..userCarbGoal = 250
     ..userProteinGoal = 120
     ..userFatGoal = 60
@@ -46,7 +47,7 @@ class ConfigDBO extends HiveObject {
       entity.hasAcceptedDisclaimer,
       entity.hasAcceptedPolicy,
       entity.hasAcceptedSendAnonymousData,
-      usesImperialUnits: entity.usesImperialUnits,
+      hasExplicitCrashConsent: entity.hasAcceptedSendAnonymousData,
       lastDataUpdate: entity.lastDataUpdate,
       supabaseSyncEnabled: entity.supabaseSyncEnabled);
 

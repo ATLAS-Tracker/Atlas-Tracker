@@ -1,5 +1,7 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
+import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
@@ -13,9 +15,9 @@ import 'package:opennutritracker/core/domain/usecase/get_intake_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_tracked_day_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_user_activity_usecase.dart';
 import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/update_intake_usecase.dart';
 import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 
 part 'calendar_day_event.dart';
 
@@ -30,6 +32,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
   final AddTrackedDayUsecase _addTrackedDayUsecase;
   final GetWeightUsecase _getUserWeightUsecase;
   final DeleteUserWeightUsecase _deleteUserWeightUsecase;
+  final UpdateIntakeUsecase _updateIntakeUsecase;
 
   DateTime? _currentDay;
 
@@ -41,7 +44,8 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
       this._deleteUserWeightUsecase,
       this._getTrackedDayUsecase,
       this._addTrackedDayUsecase,
-      this._getUserWeightUsecase)
+      this._getUserWeightUsecase,
+      this._updateIntakeUsecase)
       : super(CalendarDayInitial()) {
     on<LoadCalendarDayEvent>((event, emit) async {
       emit(CalendarDayLoading());
@@ -59,40 +63,73 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
 
   Future<void> _loadCalendarDay(
       DateTime day, Emitter<CalendarDayState> emit) async {
-    final userActivities =
-        await _getUserActivityUsecase.getUserActivityByDay(day);
+    try {
+      final userActivities =
+          await _getUserActivityUsecase.getUserActivityByDay(day);
 
-    final breakfastIntakeList =
-        await _getIntakeUsecase.getBreakfastIntakeByDay(day);
+      final breakfastIntakeList =
+          await _getIntakeUsecase.getBreakfastIntakeByDay(day);
 
-    final lunchIntakeList = await _getIntakeUsecase.getLunchIntakeByDay(day);
-    final dinnerIntakeList = await _getIntakeUsecase.getDinnerIntakeByDay(day);
-    final snackIntakeList = await _getIntakeUsecase.getSnackIntakeByDay(day);
+      final lunchIntakeList = await _getIntakeUsecase.getLunchIntakeByDay(day);
+      final dinnerIntakeList =
+          await _getIntakeUsecase.getDinnerIntakeByDay(day);
+      final snackIntakeList = await _getIntakeUsecase.getSnackIntakeByDay(day);
 
-    final trackedDayEntity = await _getTrackedDayUsecase.getTrackedDay(day);
+      final storedDay = await _getTrackedDayUsecase.getTrackedDay(day);
+      final intakes = [
+        ...breakfastIntakeList,
+        ...lunchIntakeList,
+        ...dinnerIntakeList,
+        ...snackIntakeList,
+      ];
+      final goals = locator<GetMacroGoalUsecase>();
+      final carbs = await goals.getCarbsGoal(day: day);
+      final fats = await goals.getFatsGoal(day: day);
+      final proteins = await goals.getProteinsGoal(day: day);
+      // Like HomeBloc: calculate consumption from each food and its quantity.
+      final trackedDayEntity = TrackedDayEntity(
+        day: day,
+        calorieGoal: macroCalories(carbs: carbs, fat: fats, protein: proteins),
+        carbsGoal: carbs,
+        fatGoal: fats,
+        proteinGoal: proteins,
+        caloriesTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalKcal),
+        carbsTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalCarbsGram),
+        fatTracked:
+            intakes.fold<double>(0, (sum, food) => sum + food.totalFatsGram),
+        proteinTracked: intakes.fold<double>(
+            0, (sum, food) => sum + food.totalProteinsGram),
+        caloriesBurned: storedDay?.caloriesBurned ?? 0,
+        updatedAt: storedDay?.updatedAt,
+      );
 
-    final userWeightEntity =
-        await _getUserWeightUsecase.getUserWeightByDate(day);
+      final weightSnapshot = await _getUserWeightUsecase.getSnapshot(day);
+      final userWeightEntity = weightSnapshot.current;
+      final weeklyWeightDelta = weightSnapshot.delta;
 
-    emit(CalendarDayLoaded(
-        trackedDayEntity,
-        userActivities,
-        breakfastIntakeList,
-        lunchIntakeList,
-        dinnerIntakeList,
-        snackIntakeList,
-        userWeightEntity));
+      emit(CalendarDayLoaded(
+          trackedDayEntity,
+          userActivities,
+          breakfastIntakeList,
+          lunchIntakeList,
+          dinnerIntakeList,
+          snackIntakeList,
+          userWeightEntity,
+          weeklyWeightDelta: weeklyWeightDelta));
+    } catch (_) {
+      emit(CalendarDayError());
+    }
   }
 
-  Future<void> deleteIntakeItem(
-      BuildContext context, IntakeEntity intakeEntity, DateTime day) async {
+  Future<void> deleteIntakeItem(IntakeEntity intakeEntity) async {
     await _deleteIntakeUsecase.deleteIntake(intakeEntity);
-    await _addTrackedDayUsecase.removeDayCaloriesTracked(
-        day, intakeEntity.totalKcal);
-    await _addTrackedDayUsecase.removeDayMacrosTracked(day,
-        carbsTracked: intakeEntity.totalCarbsGram,
-        fatTracked: intakeEntity.totalFatsGram,
-        proteinTracked: intakeEntity.totalProteinsGram);
+  }
+
+  Future<void> updateIntakeItem(
+      String intakeId, Map<String, dynamic> fields) async {
+    await _updateIntakeUsecase.updateIntake(intakeId, fields);
   }
 
   Future<void> deleteUserWeightItem(DateTime day) async {
@@ -100,7 +137,7 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
     _updateDiaryPage(day);
   }
 
-  Future<void> deleteUserActivityItem(BuildContext context,
+  Future<void> deleteUserActivityItem(
       UserActivityEntity activityEntity, DateTime day) async {
     await _deleteUserActivityUsecase.deleteUserActivity(activityEntity);
     _addTrackedDayUsecase.reduceDayCalorieGoal(day, activityEntity.burnedKcal);
@@ -120,7 +157,6 @@ class CalendarDayBloc extends Bloc<CalendarDayEvent, CalendarDayState> {
   }
 
   Future<void> _updateDiaryPage(DateTime day) async {
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(LoadCalendarDayEvent(day));
+    refreshJournalViews(day: day, includeHome: false);
   }
 }

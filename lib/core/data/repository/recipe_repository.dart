@@ -1,6 +1,8 @@
 import 'package:opennutritracker/core/domain/entity/recipe_entity.dart';
 import 'package:opennutritracker/core/data/data_source/recipe_data_source.dart';
 import 'package:opennutritracker/core/data/dbo/recipe_dbo.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 
 class RecipeRepository {
   final RecipesDataSource _dataSource;
@@ -14,8 +16,8 @@ class RecipeRepository {
   }
 
   /// Supprimer une recette par son code ou nom
-  Future<void> deleteRecipe(String key) async {
-    await _dataSource.deleteRecipe(key);
+  Future<void> deleteRecipe(String key, {DateTime? deletedAt}) async {
+    await _dataSource.deleteRecipe(key, deletedAt: deletedAt);
   }
 
   /// Mettre à jour une recette
@@ -33,8 +35,23 @@ class RecipeRepository {
   /// Récupérer toutes les recettes
   Future<List<RecipeEntity>> getAllRecipes() async {
     final list = await _dataSource.getAllRecipes();
-    return list.map((r) => r.toEntity()).toList();
+    return list
+        .map((r) => r.toEntity())
+        .where(
+            (recipe) => recipe.meal.mealOrRecipe == MealOrRecipeEntity.recipe)
+        .toList();
   }
+
+  // The archive already stores the meal/recipe discriminator, so saved foods
+  // share its persistence and backup format without creating journal entries.
+  Future<void> saveFood(MealEntity food) =>
+      addRecipe(RecipeEntity(meal: food, ingredients: const []));
+
+  Future<List<MealEntity>> getSavedFoods() async =>
+      (await _dataSource.getAllRecipes())
+          .map((row) => row.toEntity().meal)
+          .where((meal) => meal.mealOrRecipe == MealOrRecipeEntity.meal)
+          .toList();
 
   /// Récupérer toutes les recettes au format DBO
   Future<List<RecipesDBO>> getAllRecipeDBOs() async {

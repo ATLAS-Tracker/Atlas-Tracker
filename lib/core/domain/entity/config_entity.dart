@@ -5,7 +5,6 @@ class ConfigEntity extends Equatable {
   final bool hasAcceptedDisclaimer;
   final bool hasAcceptedPolicy;
   final bool hasAcceptedSendAnonymousData;
-  final bool usesImperialUnits;
   final double? userKcalAdjustment;
   final double? userCarbGoal;
   final double? userProteinGoal;
@@ -15,8 +14,7 @@ class ConfigEntity extends Equatable {
 
   const ConfigEntity(this.hasAcceptedDisclaimer, this.hasAcceptedPolicy,
       this.hasAcceptedSendAnonymousData,
-      {this.usesImperialUnits = false,
-      this.userKcalAdjustment,
+      {this.userKcalAdjustment,
       this.userCarbGoal,
       this.userProteinGoal,
       this.userFatGoal,
@@ -26,8 +24,7 @@ class ConfigEntity extends Equatable {
   factory ConfigEntity.fromConfigDBO(ConfigDBO dbo) => ConfigEntity(
         dbo.hasAcceptedDisclaimer,
         dbo.hasAcceptedPolicy,
-        dbo.hasAcceptedSendAnonymousData,
-        usesImperialUnits: dbo.usesImperialUnits ?? false,
+        dbo.hasAcceptedSendAnonymousData && dbo.hasExplicitCrashConsent,
         userKcalAdjustment: dbo.userKcalAdjustment,
         userCarbGoal: dbo.userCarbGoal,
         userProteinGoal: dbo.userProteinGoal,
@@ -41,7 +38,6 @@ class ConfigEntity extends Equatable {
         hasAcceptedDisclaimer,
         hasAcceptedPolicy,
         hasAcceptedSendAnonymousData,
-        usesImperialUnits,
         userKcalAdjustment,
         userCarbGoal,
         userProteinGoal,

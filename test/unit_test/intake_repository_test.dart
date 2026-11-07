@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:convert';
+import 'package:opennutritracker/core/data/data_source/macro_goal_dbo.dart';
+import 'package:opennutritracker/core/data/dbo/tracked_day_dbo.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:opennutritracker/core/data/data_source/intake_data_source.dart';
@@ -10,16 +14,18 @@ import 'package:opennutritracker/core/data/repository/intake_repository.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/data/sync_metadata.dart';
 
 import '../fixture/meal_entity_fixtures.dart';
+import '../fixture/intake_for_recipe_fixtures.dart';
 
 void main() {
   group('IntakeRepository test', () {
-    setUp(() {
+    late Directory directory;
+    setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
-      // final temp = await getTemporaryDirectory();
-      Hive.init(".");
       Hive.registerAdapter(IntakeDBOAdapter());
+      Hive.registerAdapter(TrackedDayDBOAdapter());
       Hive.registerAdapter(IntakeTypeDBOAdapter());
       Hive.registerAdapter(MealDBOAdapter());
       Hive.registerAdapter(MealSourceDBOAdapter());
@@ -27,8 +33,77 @@ void main() {
       Hive.registerAdapter(MealOrRecipeDBOAdapter());
     });
 
-    tearDown(() {
-      Hive.deleteFromDisk();
+    setUp(() async {
+      directory =
+          await Directory.systemTemp.createTemp('atlas_intake_repository_');
+      Hive.init(directory.path);
+    });
+
+    tearDown(() async {
+      await Hive.close();
+      await directory.delete(recursive: true);
+    });
+
+    test('moving an intake preserves its ID and repairs both days', () async {
+      final hive = HiveDBProvider();
+      hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+      final repo = IntakeRepository(IntakeDataSource(hive));
+      final source = DateTime(2026, 11, 1);
+      final target = DateTime(2026, 11, 2);
+      final intake = IntakeEntity(
+          id: 'move',
+          unit: 'g',
+          amount: 100,
+          type: IntakeTypeEntity.breakfast,
+          meal: IntakeForRecipeFixtures.chicken.meal!,
+          dateTime: source);
+      await repo.addIntake(intake);
+      await repo.updateIntake(
+          'move', {'dateTime': target, 'type': IntakeTypeEntity.dinner});
+      expect(hive.intakeBox.length, 1);
+      final moved = (await repo.getIntakeById('move'))!;
+      expect(moved.dateTime, target);
+      expect(moved.type, IntakeTypeEntity.dinner);
+      expect(hive.trackedDayBox.get('2026-11-01')!.caloriesTracked, 0);
+      expect(hive.trackedDayBox.get('2026-11-02')!.caloriesTracked,
+          intake.totalKcal);
+    });
+
+    test('batch import keeps newest versions and removes legacy duplicates',
+        () async {
+      final hive = HiveDBProvider();
+      hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+      final repo = IntakeRepository(IntakeDataSource(hive));
+      final day = DateTime(2026, 11, 1);
+      IntakeDBO row(String id, int version, double amount, DateTime date) =>
+          IntakeDBO.fromIntakeEntity(IntakeEntity(
+              id: id,
+              unit: 'g',
+              amount: amount,
+              type: IntakeTypeEntity.lunch,
+              meal: IntakeForRecipeFixtures.chicken.meal!,
+              dateTime: date,
+              updatedAt: DateTime.utc(2026, 11, 1, version)));
+      await hive.intakeBox.put(1, row('same', 1, 100, day));
+      await hive.intakeBox.put(2, row('same', 2, 200, day));
+      await hive.intakeBox.put(3, row('keep', 4, 100, day));
+      final target = day.add(const Duration(days: 1));
+      await repo.addAllIntakeDBOs([
+        row('same', 3, 300, target),
+        row('same', 1, 100, day),
+        row('keep', 1, 999, target),
+        row('new', 1, 100, target),
+      ]);
+      expect(hive.intakeBox.length, 3);
+      expect(hive.intakeBox.containsKey(1), isFalse);
+      expect((await repo.getIntakeById('same'))!.amount, 300);
+      expect((await repo.getIntakeById('keep'))!.amount, 100);
+      expect(hive.trackedDayBox.get('2026-11-01')!.caloriesTracked, 165);
+      expect(hive.trackedDayBox.get('2026-11-02')!.caloriesTracked, 660);
     });
 
     test('returns last added first', () async {
@@ -36,6 +111,8 @@ void main() {
 
       final hive = HiveDBProvider();
       hive.intakeBox = box;
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
       final repo = IntakeRepository(IntakeDataSource(hive));
 
       await repo.addIntake(
@@ -74,6 +151,71 @@ void main() {
 
       final recents = (await repo.getRecentIntake()).map((e) => e.id).toList();
       expect(recents, List.from(["3", "2", "1"]));
+    });
+
+    for (final sameTimestamp in [false, true]) {
+      test('recent quantity uses last same-day intake, tied=$sameTimestamp',
+          () async {
+        final hive = HiveDBProvider();
+        hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+        hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+        hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+        final repo = IntakeRepository(IntakeDataSource(hive));
+        final date = DateTime(2026, 11, 6);
+        final entries = sameTimestamp
+            ? [(100.0, 10), (160.0, 10)]
+            : [(160.0, 12), (100.0, 10)];
+        for (final entry in entries) {
+          await repo.addAllIntakeDBOs([
+            IntakeDBO.fromIntakeEntity(IntakeEntity(
+              id: 'entry-${entry.$1}',
+              amount: entry.$1,
+              unit: 'g',
+              type: IntakeTypeEntity.lunch,
+              meal: MealEntityFixtures.mealOne,
+              dateTime: date,
+              updatedAt: DateTime.utc(2026, 11, 6, entry.$2),
+            ))
+          ]);
+        }
+        final recents = await repo.getRecentIntake();
+        expect(recents, hasLength(1));
+        expect(recents.single.amount, 160);
+        expect(recents.single.unit, 'g');
+      });
+    }
+
+    test('deletion survives restart, rejects stale import and allows undo',
+        () async {
+      final hive = HiveDBProvider(userId: 'owner');
+      hive.intakeBox = await Hive.openBox<IntakeDBO>('intakes');
+      hive.macroGoalBox = await Hive.openBox<MacroGoalDbo>('goals');
+      hive.trackedDayBox = await Hive.openBox<TrackedDayDBO>('days');
+      hive.syncMetadataBox = await Hive.openBox<String>('sync');
+      final repo = IntakeRepository(IntakeDataSource(hive));
+      final intake = IntakeEntity(
+          id: 'deleted',
+          unit: 'g',
+          amount: 100,
+          type: IntakeTypeEntity.lunch,
+          meal: IntakeForRecipeFixtures.chicken.meal!,
+          dateTime: DateTime(2026, 11, 1));
+      await repo.addIntake(intake);
+      final stale = IntakeDBO.fromJson(
+          jsonDecode(jsonEncode(hive.intakeBox.values.single.toJson()))
+              as Map<String, dynamic>);
+      await repo.deleteIntake(intake);
+      await hive.syncMetadataBox!.close();
+      hive.syncMetadataBox = await Hive.openBox<String>('sync');
+      final deleted = SyncMetadata(hive.syncMetadataBox)
+          .deletedAt('user_intakes', intake.id);
+      expect(deleted, isNotNull);
+      await repo.addAllIntakeDBOs([stale]);
+      expect(hive.intakeBox.values, isEmpty);
+      await repo.addIntake(intake);
+      expect(hive.intakeBox.values.single.updatedAt.isAfter(deleted!), isTrue);
+      expect(hive.intakeBox.length, 1);
+      expect(hive.trackedDayBox.get('2026-11-01')!.caloriesTracked, 165);
     });
   });
 }

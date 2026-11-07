@@ -1,0 +1,481 @@
+import 'package:opennutritracker/core/presentation/widgets/weight_chart_card.dart';
+import 'package:opennutritracker/core/data/dbo/config_dbo.dart';
+import 'package:opennutritracker/core/domain/entity/weight_snapshot.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:opennutritracker/core/domain/entity/config_entity.dart';
+import 'package:opennutritracker/core/domain/entity/user_weight_entity.dart';
+import 'package:opennutritracker/core/domain/usecase/add_weight_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/get_config_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/get_weight_usecase.dart';
+import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/editable_text_widget.dart';
+import 'package:opennutritracker/core/styles/color_schemes.dart';
+import 'package:opennutritracker/core/styles/fonts.dart';
+import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/features/add_weight/presentation/add_weight_screen.dart';
+import 'package:opennutritracker/features/add_weight/presentation/bloc/weight_bloc.dart';
+import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
+import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
+import 'package:opennutritracker/generated/l10n.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import '../fixture/user_entity_fixtures.dart';
+
+class MockAddWeight extends Mock implements AddWeightUsecase {}
+
+class MockGetWeight extends Mock implements GetWeightUsecase {}
+
+class MockGetUser extends Mock implements GetUserUsecase {}
+
+class MockGetConfig extends Mock implements GetConfigUsecase {}
+
+class MockHome extends Mock implements HomeBloc {}
+
+class MockCalendar extends Mock implements CalendarDayBloc {}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  final day = DateTime(2026, 10, 22);
+  late MockGetConfig config;
+  late MockAddWeight addWeight;
+  late MockGetWeight getWeight;
+  late MockHome home;
+  late MockCalendar calendar;
+  late WeightBloc weightBloc;
+  late List<UserWeightEntity> savedWeights;
+
+  UserWeightEntity entry(String id, double value, DateTime date) =>
+      UserWeightEntity(id: id, weight: value, date: date);
+
+  setUpAll(() async {
+    registerFallbackValue(day);
+    registerFallbackValue(entry('fallback', 54.4, day));
+    final fonts = FontLoader('Poppins')
+      ..addFont(rootBundle.load('fonts/Poppins-Regular.ttf'))
+      ..addFont(rootBundle.load('fonts/Poppins-Bold.ttf'));
+    await fonts.load();
+  });
+
+  setUp(() async {
+    addWeight = MockAddWeight();
+    getWeight = MockGetWeight();
+    home = MockHome();
+    calendar = MockCalendar();
+    final user = MockGetUser();
+    config = MockGetConfig();
+    savedWeights = [
+      entry('today', 54.4, day),
+      entry('previous', 54.2, day.subtract(const Duration(days: 1)))
+    ];
+    when(() => getWeight.getWeightsFromPastDays(any(), any(),
+            includeToday: any(named: 'includeToday')))
+        .thenAnswer((_) async => savedWeights);
+    when(() => getWeight.getSnapshot(any()))
+        .thenAnswer((_) async => WeightSnapshot.at(day, savedWeights));
+    when(() => getWeight.getAllUserWeights())
+        .thenAnswer((_) async => savedWeights);
+    when(() => getWeight.getUserWeightByDate(any())).thenAnswer((call) async {
+      final matches = savedWeights.where((entry) => DateUtils.isSameDay(
+          entry.date, call.positionalArguments.first as DateTime));
+      return matches.isEmpty ? null : matches.first;
+    });
+    when(() => getWeight.getAverageWeight(any(), any()))
+        .thenAnswer((_) async => 54.1);
+    when(() => getWeight.getLastUserWeight(any()))
+        .thenAnswer((_) async => 54.4);
+    when(() => user.getUserData()).thenAnswer((_) async =>
+        UserEntityFixtures.elderlyLowActiveMaleWantingToGainWeight);
+    when(() => config.getConfig())
+        .thenAnswer((_) async => const ConfigEntity(true, true, false));
+    when(() => addWeight.addUserWeight(any())).thenAnswer((_) async {});
+    when(() => calendar.deleteUserWeightItem(any())).thenAnswer((_) async {
+      savedWeights = [];
+    });
+    locator.registerSingleton<GetWeightUsecase>(getWeight);
+    locator.registerSingleton<AddWeightUsecase>(addWeight);
+    locator.registerSingleton<GetUserUsecase>(user);
+    locator.registerSingleton<GetConfigUsecase>(config);
+    locator.registerSingleton<HomeBloc>(home);
+    locator.registerSingleton<CalendarDayBloc>(calendar);
+  });
+
+  tearDown(() async {
+    await weightBloc.close();
+    await locator.reset();
+  });
+
+  Widget screen({bool readOnly = false, bool dark = false, double scale = 1}) =>
+      MaterialApp(
+        locale: const Locale('fr'),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        theme: ThemeData(
+            colorScheme: dark ? darkColorScheme : lightColorScheme,
+            textTheme: appTextTheme),
+        builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.linear(scale)),
+            child: child!),
+        onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            settings: settings.arguments is AddWeightScreenArguments
+                ? settings
+                : RouteSettings(
+                    arguments: AddWeightScreenArguments(
+                        day: day, isReadOnly: readOnly)),
+            builder: (_) => const AddWeightScreen()),
+      );
+  Future<void> pumpScreen(WidgetTester tester,
+      {bool readOnly = false,
+      bool dark = false,
+      double scale = 1,
+      double width = 412}) async {
+    weightBloc = WeightBloc();
+    locator.registerSingleton<WeightBloc>(weightBloc);
+    await tester.binding.setSurfaceSize(Size(width, 1200));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester
+        .pumpWidget(screen(readOnly: readOnly, dark: dark, scale: scale));
+    await tester.pumpAndSettle();
+  }
+
+  final saveButton = find.byKey(const ValueKey('save-weight'));
+  final saved = find.byKey(const ValueKey('weight-saved'));
+  final delete = find.byKey(const ValueKey('delete-weight'));
+
+  testWidgets('history edit saves to the selected historical day',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.historyLabel));
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.edit_outlined), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('edit-weight-previous')));
+    await tester.pumpAndSettle();
+    expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('weight-entry-date')))
+            .data,
+        contains('21 octobre 2026'));
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '54,5');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.date, day.subtract(const Duration(days: 1)));
+    expect(value.id, 'previous');
+    expect(value.weight, 54.5);
+  });
+
+  testWidgets('supports measured weights up to 400 kg', (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '399,9');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 399.9);
+  });
+
+  testWidgets('deleted weight can be restored with its original day and ID',
+      (tester) async {
+    await pumpScreen(tester);
+    final original = savedWeights.first;
+    await tester.scrollUntilVisible(delete, 200,
+        scrollable: find.byType(Scrollable).first);
+    await tester.ensureVisible(delete);
+    await tester.pumpAndSettle();
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogOKLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.undoLabel));
+    await tester.pumpAndSettle();
+    final restored = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(restored.id, original.id);
+    expect(restored.date, original.date);
+    expect(restored.weight, original.weight);
+  });
+
+  testWidgets(
+      'save waits for persistence, blocks duplicate taps and confirms the saved value',
+      (tester) async {
+    final pending = Completer<void>();
+    when(() => addWeight.addUserWeight(any()))
+        .thenAnswer((_) => pending.future);
+    await pumpScreen(tester);
+    final date = tester
+        .widget<Text>(find.byKey(const ValueKey('weight-entry-date')))
+        .data!;
+    expect(date, contains('22 octobre 2026'));
+    expect(saved, findsNothing);
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pump();
+    expect(tester.widget<FilledButton>(saveButton).onPressed, isNull);
+    expect(
+        tester
+            .widget<EditableTextWidget>(find.byType(EditableTextWidget))
+            .disabledEnter,
+        isTrue);
+    expect(saved, findsNothing);
+    await tester.tap(saveButton);
+    pending.complete();
+    await tester.pumpAndSettle();
+    expect(saved, findsOneWidget);
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 54.4);
+    expect(value.date, day);
+    await tester.ensureVisible(find.byIcon(Icons.add));
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+    expect(saved, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('failed saves show an error, allow retry and never show success',
+      (tester) async {
+    when(() => addWeight.addUserWeight(any()))
+        .thenThrow(StateError('test write failure'));
+    await pumpScreen(tester);
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    expect(find.text(S.current.weightSaveError), findsOneWidget);
+    expect(saved, findsNothing);
+    expect(tester.widget<FilledButton>(saveButton).onPressed, isNotNull);
+    verifyNever(() => home.add(const LoadItemsEvent()));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('saving while editing persists the entered comma-decimal value',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '54,8');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 54.8);
+    expect(saved, findsOneWidget);
+  });
+
+  testWidgets('read-only mode disables editing, saving and deletion',
+      (tester) async {
+    await pumpScreen(tester, readOnly: true);
+    expect(tester.widget<FilledButton>(saveButton).onPressed, isNull);
+    expect(
+        tester
+            .widget<EditableTextWidget>(find.byType(EditableTextWidget))
+            .disabledEnter,
+        isTrue);
+    await tester.scrollUntilVisible(delete, 200,
+        scrollable: find.byType(Scrollable).first);
+    expect(tester.widget<TextButton>(delete).onPressed, isNull);
+  });
+
+  testWidgets(
+      'the compact delete action keeps its confirmation and clears saved feedback',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    expect(saved, findsOneWidget);
+    await tester.ensureVisible(delete);
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    expect(find.byType(DeleteDialog), findsOneWidget);
+    await tester.tap(find.text(S.current.dialogCancelLabel));
+    await tester.pumpAndSettle();
+    verifyNever(() => calendar.deleteUserWeightItem(any()));
+    expect(saved, findsOneWidget);
+    await tester.tap(delete);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.dialogOKLabel));
+    await tester.pumpAndSettle();
+    verify(() => calendar.deleteUserWeightItem(day)).called(1);
+    expect(saved, findsNothing);
+    expect(delete, findsNothing);
+  });
+
+  testWidgets('chart shows recorded weights without average or legend',
+      (tester) async {
+    savedWeights = [
+      entry('a', 52, day),
+      entry('b', 50, day.subtract(const Duration(days: 1))),
+      entry('c', 60, day.subtract(const Duration(days: 6)))
+    ];
+    await pumpScreen(tester);
+    expect(
+        find.text(S.current.weightPeriodAverage('54,0', 'kg')), findsNothing);
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+    final series = chart.series.first;
+    final points = series.dataSource! as List<WeightData>;
+    expect(points.where((point) => point.weight != null), hasLength(3),
+        reason: 'only recorded weights are presented as measured points');
+    expect(points.last.weight, 52);
+    expect(find.text(S.current.weightMeasurementsLabel), findsNothing);
+  });
+
+  testWidgets('all-time chart reuses the history already loaded',
+      (tester) async {
+    savedWeights = [
+      entry('past', 50, day.subtract(const Duration(days: 20))),
+      entry('today', 54, day),
+      entry('future', 80, day.add(const Duration(days: 1))),
+    ];
+    await pumpScreen(tester);
+    clearInteractions(getWeight);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.allTimeLabel).last);
+    await tester.pumpAndSettle();
+    verify(() => getWeight.getAllUserWeights()).called(1);
+    verifyNever(() => getWeight.getWeightsFromPastDays(any(), any(),
+        includeToday: any(named: 'includeToday')));
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    final points = chart.series.first.dataSource! as List<WeightData>;
+    expect(points.map((p) => p.weight), [50, 54]);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+  });
+
+  testWidgets(
+      'finite chart periods keep real points sorted and inside the selected days',
+      (tester) async {
+    savedWeights = [
+      entry('today-old', 52, day),
+      entry('oldest', 50, day.subtract(const Duration(days: 13))),
+      entry('outside', 90, day.subtract(const Duration(days: 14))),
+      entry('future', 80, day.add(const Duration(days: 1))),
+      entry('today-new', 55, day),
+    ];
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.lastFourteenDaysLabel).last);
+    await tester.pumpAndSettle();
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    final points = chart.series.first.dataSource! as List<WeightData>;
+    expect(points.map((point) => point.weight), [50, 55]);
+    expect(points.map((point) => point.date),
+        [day.subtract(const Duration(days: 13)), day]);
+    expect(
+        identical(chart.series.first.dataSource, chart.series.last.dataSource),
+        isTrue);
+    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
+  });
+
+  testWidgets(
+      'weight adjustments keep the selected chart without rereading history',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.tap(find.text(S.current.lastSevenDaysLabel));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(S.current.allTimeLabel).last);
+    await tester.pumpAndSettle();
+    clearInteractions(getWeight);
+    await tester.ensureVisible(find.text('+1'));
+    await tester.tap(find.text('+1'));
+    await tester.pumpAndSettle();
+    verifyNever(() => getWeight.getAllUserWeights());
+    verifyNever(() => getWeight.getWeightsFromPastDays(any(), any(),
+        includeToday: any(named: 'includeToday')));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+      'an older weigh-in does not expose deletion for an unrecorded day',
+      (tester) async {
+    savedWeights = [
+      entry('previous', 54, day.subtract(const Duration(days: 1)))
+    ];
+    await pumpScreen(tester);
+    expect(delete, findsNothing);
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    expect(
+        (chart.series.first.dataSource! as List<WeightData>).single.weight, 54);
+  });
+
+  testWidgets('no measurements shows an honest empty state without a mean line',
+      (tester) async {
+    savedWeights = [];
+    await pumpScreen(tester);
+    expect(find.text(S.current.weightNoMeasurementsLabel), findsOneWidget);
+    expect(find.byType(SfCartesianChart), findsNothing);
+  });
+
+  testWidgets('profile weight is not shown as a target', (tester) async {
+    await pumpScreen(tester);
+    expect(find.text(S.current.weightGoalShortLabel), findsNothing);
+    expect(find.text(S.current.remainingToLoseLabel), findsNothing);
+  });
+
+  testWidgets('legacy imperial preference displays and saves kilograms',
+      (tester) async {
+    final legacy = ConfigDBO.fromJson({
+      'hasAcceptedDisclaimer': true,
+      'hasAcceptedPolicy': true,
+      'hasAcceptedSendAnonymousData': false,
+      'usesImperialUnits': true,
+    });
+    when(() => config.getConfig())
+        .thenAnswer((_) async => ConfigEntity.fromConfigDBO(legacy));
+    await pumpScreen(tester);
+    expect(
+        tester.widget<EditableTextWidget>(find.byType(EditableTextWidget)).unit,
+        'kg');
+    await tester.tap(find.byType(EditableTextWidget));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), '72,5');
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
+    final value = verify(() => addWeight.addUserWeight(captureAny()))
+        .captured
+        .single as UserWeightEntity;
+    expect(value.weight, 72.5);
+  });
+
+  for (final dark in [false, true]) {
+    testWidgets(
+        'weight page fits a narrow screen and enlarged text, dark=$dark',
+        (tester) async {
+      await pumpScreen(tester, dark: dark, scale: 1.3, width: 320);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text(S.current.historyLabel));
+      await tester.pumpAndSettle();
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+}

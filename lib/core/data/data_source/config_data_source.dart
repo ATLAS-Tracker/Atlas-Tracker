@@ -28,16 +28,17 @@ class ConfigDataSource {
 
   Future<void> addConfig(ConfigDBO configDBO) async {
     _log.fine('Adding new config item to db');
-    _hive.configBox.put(_configKey, configDBO);
+    await _hive.configBox.put(_configKey, configDBO);
   }
 
   Future<void> setConfigAcceptedAnonymousData(
       bool hasAcceptedAnonymousData) async {
     _log.fine(
         'Updating config hasAcceptedAnonymousData to $hasAcceptedAnonymousData');
-    final config = _hive.configBox.get(_configKey);
-    config?.hasAcceptedSendAnonymousData = hasAcceptedAnonymousData;
-    await config?.save();
+    final config = _hive.configBox.get(_configKey) ?? ConfigDBO.empty();
+    config.hasAcceptedSendAnonymousData = hasAcceptedAnonymousData;
+    config.hasExplicitCrashConsent = true;
+    await _hive.configBox.put(_configKey, config);
   }
 
   Future<AppThemeDBO> getAppTheme() async {
@@ -49,13 +50,6 @@ class ConfigDataSource {
     _log.fine('Updating config appTheme to $appTheme');
     final config = _hive.commonConfigBox.get(_commonConfigKey);
     config?.selectedAppTheme = appTheme;
-    await config?.save();
-  }
-
-  Future<void> setConfigUsesImperialUnits(bool usesImperialUnits) async {
-    _log.fine('Updating config usesImperialUnits to $usesImperialUnits');
-    final config = _hive.configBox.get(_configKey);
-    config?.usesImperialUnits = usesImperialUnits;
     await config?.save();
   }
 
@@ -115,7 +109,9 @@ class ConfigDataSource {
 
   Future<bool> getHasAcceptedAnonymousData() async {
     final config = _hive.configBox.get(_configKey);
-    return config?.hasAcceptedSendAnonymousData ?? true;
+    return config != null &&
+        config.hasExplicitCrashConsent &&
+        config.hasAcceptedSendAnonymousData;
   }
 
   Future<void> setLastDataUpdate(DateTime date) async {

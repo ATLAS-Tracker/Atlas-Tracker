@@ -6,49 +6,24 @@ class GetMacroGoalUsecase {
   final MacroGoalRepository _macroGoalRepository =
       locator<MacroGoalRepository>();
 
-  static const double defaultProteins = 120.0;
-  static const double defaultCarbs = 250.0;
-  static const double defaultFats = 60.0;
-
   GetMacroGoalUsecase();
 
-  bool isDayAfterTarget(DateTime day, DateTime target) {
-    final dayOnly = DateTime(day.year, day.month, day.day);
-    final targetDateOnly = DateTime(target.year, target.month, target.day);
-    return dayOnly.isAfter(targetDateOnly) || dayOnly == targetDateOnly;
-  }
-
   Future<double> getCarbsGoal({DateTime? day}) async {
-    final macroGoal = await _macroGoalRepository.getMacroGoal();
-    final dateToCheck = day ?? DateTime.now();
-
-    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
-      return macroGoal.newCarbsGoal;
-    }
-
-    return macroGoal?.oldCarbsGoal ?? defaultCarbs;
+    return MacroGoalEntity.forDay(
+            await _macroGoalRepository.getMacroGoal(), day ?? DateTime.now())
+        .carbs;
   }
 
   Future<double> getFatsGoal({DateTime? day}) async {
-    final macroGoal = await _macroGoalRepository.getMacroGoal();
-    final dateToCheck = day ?? DateTime.now();
-
-    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
-      return macroGoal.newFatsGoal;
-    }
-
-    return macroGoal?.oldFatsGoal ?? defaultFats;
+    return MacroGoalEntity.forDay(
+            await _macroGoalRepository.getMacroGoal(), day ?? DateTime.now())
+        .fats;
   }
 
   Future<double> getProteinsGoal({DateTime? day}) async {
-    final macroGoal = await _macroGoalRepository.getMacroGoal();
-    final dateToCheck = day ?? DateTime.now();
-
-    if (macroGoal != null && isDayAfterTarget(dateToCheck, macroGoal.date)) {
-      return macroGoal.newProteinsGoal;
-    }
-
-    return macroGoal?.oldProteinsGoal ?? defaultProteins;
+    return MacroGoalEntity.forDay(
+            await _macroGoalRepository.getMacroGoal(), day ?? DateTime.now())
+        .proteins;
   }
 
   /// Optionnel : récupérer l'entité complète

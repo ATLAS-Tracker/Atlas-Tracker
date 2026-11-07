@@ -35,27 +35,20 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       final userConfig = await _getConfigUsecase.getConfig();
       final commonConfig = await _getConfigUsecase.getCommonConfig();
       final appVersion = await AppConst.getVersionNumber();
-      final usesImperialUnits = userConfig.usesImperialUnits;
 
-      emit(SettingsLoadedState(
-          appVersion,
-          userConfig.hasAcceptedSendAnonymousData,
-          commonConfig.appTheme,
-          usesImperialUnits));
+      emit(SettingsLoadedState(appVersion,
+          userConfig.hasAcceptedSendAnonymousData, commonConfig.appTheme));
     });
   }
 
-  void setHasAcceptedAnonymousData(bool hasAcceptedAnonymousData) {
-    _addConfigUsecase
+  Future<void> setHasAcceptedAnonymousData(
+      bool hasAcceptedAnonymousData) async {
+    await _addConfigUsecase
         .setConfigHasAcceptedAnonymousData(hasAcceptedAnonymousData);
   }
 
   void setAppTheme(AppThemeEntity appTheme) async {
     await _addConfigUsecase.setConfigAppTheme(appTheme);
-  }
-
-  void setUsesImperialUnits(bool usesImperialUnits) {
-    _addConfigUsecase.setConfigUsesImperialUnits(usesImperialUnits);
   }
 
   Future<double> getKcalAdjustment() async {
@@ -104,5 +97,3 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     }
   }
 }
-
-enum SystemDropDownType { metric, imperial }

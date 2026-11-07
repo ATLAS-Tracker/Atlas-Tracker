@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/data/tracked_day_totals.dart';
 import 'dart:typed_data';
 import 'dart:async';
 
@@ -23,14 +24,13 @@ import 'package:opennutritracker/core/data/dbo/user_gender_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/user_pal_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/user_weight_goal_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/user_role_dbo.dart';
-import 'package:opennutritracker/features/sync/tracked_day_change_isolate.dart';
-import 'package:opennutritracker/features/sync/user_weight_change_isolate.dart';
 import 'package:opennutritracker/core/utils/secure_app_storage_provider.dart';
 import 'package:opennutritracker/core/data/data_source/config_data_source.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/data_source/steps_date_dbo.dart';
 
 class HiveDBProvider extends ChangeNotifier {
+  HiveDBProvider({String? userId}) : _userId = userId;
   static final Logger _log = Logger('HiveDBProvider');
   static const configBoxName = 'ConfigBox';
   static const commonConfigBoxName = 'commonConfigBox';
@@ -44,6 +44,7 @@ class HiveDBProvider extends ChangeNotifier {
   static const dailyStepsBoxName = 'DailyStepsBox';
   static const stepsDateBoxName = 'steps_date';
   static const stepsDateEntryKey = 'steps_date';
+  static const syncMetadataBoxName = 'SyncMetadataBox';
 
   String? _userId;
   String? get activeUserId => _userId;
@@ -56,12 +57,11 @@ class HiveDBProvider extends ChangeNotifier {
   late Box<UserDBO> userBox;
   late Box<TrackedDayDBO> trackedDayBox;
   late Box<RecipesDBO> recipeBox;
-  late TrackedDayChangeIsolate trackedDayWatcher;
-  late UserWeightChangeIsolate userWeightWatcher;
   late Box<UserWeightDbo> userWeightBox;
   late Box<MacroGoalDbo> macroGoalBox;
   late Box<int> dailyStepsBox;
   late Box<StepsDateDbo> stepsDateBox;
+  Box<String>? syncMetadataBox;
 
   List<StreamSubscription<BoxEvent>>? _updateSubs;
 
@@ -111,14 +111,13 @@ class HiveDBProvider extends ChangeNotifier {
       // Close previously opened boxes and watcher if any
       if (Hive.isBoxOpen(_boxName(configBoxName))) {
         _log.fine('🔒 Closing boxes for user=$_userId');
-        await trackedDayWatcher.stop();
-        await userWeightWatcher.stop();
         await stopUpdateWatchers();
 
         await Future.wait([
           configBox.close(),
           intakeBox.close(),
           recipeBox.close(),
+          if (syncMetadataBox != null) syncMetadataBox!.close(),
           userActivityBox.close(),
           userBox.close(),
           trackedDayBox.close(),
@@ -156,15 +155,20 @@ class HiveDBProvider extends ChangeNotifier {
       configBox = await openBox(configBoxName);
       intakeBox = await openBox(intakeBoxName);
       recipeBox = await openBox(recipeBoxName);
+      syncMetadataBox = await openBox<String>(syncMetadataBoxName);
       userActivityBox = await openBox(userActivityBoxName);
       userBox = await openBox(userBoxName);
       trackedDayBox = await openBox(trackedDayBoxName);
-      trackedDayWatcher = TrackedDayChangeIsolate(trackedDayBox);
-      await trackedDayWatcher.start();
-      userWeightBox = await openBox(userWeightBoxName);
-      userWeightWatcher = UserWeightChangeIsolate(userWeightBox);
-      await userWeightWatcher.start();
       macroGoalBox = await openBox(macroGoalBoxName);
+      final migrations = await Hive.openBox<bool>(_boxName('MigrationsBox'));
+      try {
+        await TrackedDayTotals(intakeBox, trackedDayBox, macroGoalBox)
+            .migrate(migrations);
+      } finally {
+        await migrations.close();
+      }
+      userWeightBox = await openBox(userWeightBoxName);
+
       dailyStepsBox = await openBox(dailyStepsBoxName);
       stepsDateBox = await openBox(stepsDateBoxName);
 
@@ -234,6 +238,7 @@ class HiveDBProvider extends ChangeNotifier {
       configBox.clear(),
       intakeBox.clear(),
       recipeBox.clear(),
+      if (syncMetadataBox != null) syncMetadataBox!.clear(),
       userActivityBox.clear(),
       userBox.clear(),
       trackedDayBox.clear(),
@@ -267,14 +272,13 @@ class HiveDBProvider extends ChangeNotifier {
     _log.info('🗑️ Deleting Hive database for user=$_userId');
 
     if (Hive.isBoxOpen(_boxName(configBoxName))) {
-      await trackedDayWatcher.stop();
-      await userWeightWatcher.stop();
       await stopUpdateWatchers();
 
       await Future.wait([
         configBox.close(),
         intakeBox.close(),
         recipeBox.close(),
+        if (syncMetadataBox != null) syncMetadataBox!.close(),
         userActivityBox.close(),
         userBox.close(),
         trackedDayBox.close(),
@@ -292,10 +296,12 @@ class HiveDBProvider extends ChangeNotifier {
       _deleteBox(userBoxName),
       _deleteBox(trackedDayBoxName),
       _deleteBox(recipeBoxName),
+      _deleteBox(syncMetadataBoxName),
       _deleteBox(userWeightBoxName),
       _deleteBox(macroGoalBoxName),
       _deleteBox(dailyStepsBoxName),
       _deleteBox(stepsDateBoxName),
+      _deleteBox('MigrationsBox'),
     ]);
 
     _log.info('✅ Hive database deleted for user=$_userId');
@@ -309,8 +315,6 @@ class HiveDBProvider extends ChangeNotifier {
 
   @override
   void dispose() {
-    trackedDayWatcher.stop();
-    userWeightWatcher.stop();
     stopUpdateWatchers();
     super.dispose();
   }

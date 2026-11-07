@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/core/domain/entity/user_entity.dart';
 import 'package:opennutritracker/core/domain/entity/user_weight_goal_entity.dart';
 import 'package:opennutritracker/core/utils/calc/tdee_calc.dart';
@@ -9,7 +10,7 @@ class CalorieGoalCalc {
 
   static double getDailyKcalLeft(
           double totalKcalGoal, double totalKcalIntake) =>
-      totalKcalGoal - totalKcalIntake;
+      remainingCalories(totalKcalGoal, totalKcalIntake).toDouble();
 
   static double getTdee(UserEntity userEntity) =>
       TDEECalc.getTDEEKcalIOM2005(userEntity);

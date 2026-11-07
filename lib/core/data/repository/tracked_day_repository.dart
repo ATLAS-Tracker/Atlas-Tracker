@@ -83,21 +83,6 @@ class TrackedDayRepository {
     await _trackedDayDataSource.saveAllTrackedDays(trackedDaysDBO);
   }
 
-  Future<void> addDayTrackedCalories(DateTime day, double addCalories) async {
-    if (await _trackedDayDataSource.hasTrackedDay(day)) {
-      await _trackedDayDataSource.addDayCaloriesTracked(day, addCalories);
-    }
-  }
-
-  Future<void> removeDayTrackedCalories(
-    DateTime day,
-    double addCalories,
-  ) async {
-    if (await _trackedDayDataSource.hasTrackedDay(day)) {
-      await _trackedDayDataSource.decreaseDayCaloriesTracked(day, addCalories);
-    }
-  }
-
   Future<void> addDayCaloriesBurned(DateTime day, double calories) async {
     await _trackedDayDataSource.addDayCaloriesBurned(day, calories);
   }
@@ -145,34 +130,6 @@ class TrackedDayRepository {
       carbsAmount: carbGoal,
       fatAmount: fatGoal,
       proteinAmount: proteinGoal,
-    );
-  }
-
-  Future<void> addDayMacrosTracked(
-    DateTime day, {
-    double? carbsTracked,
-    double? fatTracked,
-    double? proteinTracked,
-  }) async {
-    await _trackedDayDataSource.addDayMacroTracked(
-      day,
-      carbsAmount: carbsTracked,
-      fatAmount: fatTracked,
-      proteinAmount: proteinTracked,
-    );
-  }
-
-  Future<void> removeDayMacrosTracked(
-    DateTime day, {
-    double? carbsTracked,
-    double? fatTracked,
-    double? proteinTracked,
-  }) async {
-    await _trackedDayDataSource.removeDayMacroTracked(
-      day,
-      carbsAmount: carbsTracked,
-      fatAmount: fatTracked,
-      proteinAmount: proteinTracked,
     );
   }
 

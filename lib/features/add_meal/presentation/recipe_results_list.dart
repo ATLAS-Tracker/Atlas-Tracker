@@ -1,27 +1,35 @@
-import 'dart:io';
+import 'package:opennutritracker/features/add_meal/presentation/widgets/search_empty_state.dart';
+import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/default_results_widget.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/no_results_widget.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/utils/locator.dart';
+import 'package:opennutritracker/core/domain/usecase/get_recipe_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/add_recipe_usecase.dart';
+import 'package:opennutritracker/core/domain/usecase/delete_recipe_usecase.dart';
+import 'package:opennutritracker/core/presentation/widgets/delete_dialog.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
+import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
 
 class RecipeResultsList extends StatefulWidget {
   final DateTime day;
   final AddMealType mealType;
   final RecipeSearchBloc bloc;
+  final bool showCreateButton;
 
   const RecipeResultsList({
     super.key,
     required this.day,
     required this.mealType,
     required this.bloc,
+    this.showCreateButton = true,
   });
 
   @override
@@ -36,19 +44,20 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
     widget.bloc.add(const LoadRecipeSearchEvent(searchString: ""));
   }
 
-  // 👇 Fonction pour supprimer un fichier local si le chemin n’est pas une URL distante
-  void _deleteImageIfLocal(String? path) async {
-    if (path != null) {
-      final imageFile = File(path);
-      if (await imageFile.exists()) {
-        try {
-          await imageFile.delete();
-          _log.fine('🗑️ Image deleted : $path');
-        } catch (e) {
-          _log.fine('⚠️ Error with image suppression : $e');
-        }
-      }
-    }
+  Future<void> _deleteRecipe(MealEntity meal) async {
+    if (meal.code == null) return;
+    final confirmed = await showDialog<bool>(
+        context: context, builder: (_) => const DeleteDialog());
+    if (confirmed != true) return;
+    final recipe = await locator<GetRecipeUsecase>().getRecipeById(meal.code!);
+    if (recipe == null) return;
+    await locator<DeleteRecipeUsecase>().deleteRecipe(meal.code!);
+    _onRecipeRefreshButtonPressed();
+    if (!mounted) return;
+    showUndo(context, () async {
+      await locator<AddRecipeUsecase>().addRecipe(recipe);
+      if (mounted) _onRecipeRefreshButtonPressed();
+    });
   }
 
   @override
@@ -56,127 +65,140 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
     _log.fine("Recipe result list build method");
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
+        if (widget.showCreateButton)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: FilledButton.icon(
+              key: const ValueKey('create-recipe'),
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                await Navigator.of(context).pushNamed(
+                    NavigationOptions.createMealRoute,
+                    arguments: CreateMealContext(
+                        widget.day, widget.mealType.getIntakeType()));
+                if (mounted) _onRecipeRefreshButtonPressed();
+              },
+              icon: const Icon(Icons.add_rounded),
+              label: Text(S.of(context).createRecipeLabel),
+              style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16))),
+            ),
+          ),
+        Expanded(
+            child: BlocBuilder<RecipeSearchBloc, RecipeSearchState>(
           bloc: widget.bloc,
           builder: (context, state) {
             if (state is RecipeInitial) {
-              return const DefaultsResultsWidget();
+              return const SearchEmptyState.initial();
             } else if (state is RecipeLoadingState) {
-              return const Padding(
-                padding: EdgeInsets.only(top: 32),
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             } else if (state is RecipeLoadedState) {
               return state.recipes.isNotEmpty
-                  ? Flexible(
-                      child: Stack(
-                        children: [
-                          ListView.builder(
-                            itemCount: state.recipes.length,
-                            itemBuilder: (context, index) {
-                              final recipe = state.recipes[index];
-                              return LongPressDraggable(
-                                data: recipe,
-                                onDragStarted: () {
-                                  setState(() {
-                                    _isDragging = true;
-                                  });
-                                },
-                                onDraggableCanceled: (_, __) {
-                                  setState(() {
-                                    _isDragging = false;
-                                  });
-                                },
-                                onDragEnd: (_) {
-                                  setState(() {
-                                    _isDragging = false;
-                                  });
-                                },
-                                feedback: Material(
-                                  color: Colors.transparent,
-                                  child: ConstrainedBox(
-                                    constraints:
-                                        const BoxConstraints(maxWidth: 300),
-                                    child: Opacity(
-                                      opacity: 0.85,
-                                      child: MealItemCard(
-                                        day: widget.day,
-                                        mealEntity: recipe,
-                                        addMealType: widget.mealType,
-                                        usesImperialUnits:
-                                            state.usesImperialUnits,
-                                      ),
+                  ? Stack(
+                      children: [
+                        ListView.builder(
+                          itemCount: state.recipes.length,
+                          itemBuilder: (context, index) {
+                            final recipe = state.recipes[index];
+                            return LongPressDraggable(
+                              data: recipe,
+                              onDragStarted: () {
+                                setState(() {
+                                  _isDragging = true;
+                                });
+                              },
+                              onDraggableCanceled: (_, __) {
+                                setState(() {
+                                  _isDragging = false;
+                                });
+                              },
+                              onDragEnd: (_) {
+                                setState(() {
+                                  _isDragging = false;
+                                });
+                              },
+                              feedback: Material(
+                                color: Colors.transparent,
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 300),
+                                  child: Opacity(
+                                    opacity: 0.85,
+                                    child: MealItemCard(
+                                      day: widget.day,
+                                      mealEntity: recipe,
+                                      addMealType: widget.mealType,
                                     ),
                                   ),
                                 ),
-                                childWhenDragging: Opacity(
-                                  opacity: 0.3,
-                                  child: MealItemCard(
-                                    day: widget.day,
-                                    mealEntity: recipe,
-                                    addMealType: widget.mealType,
-                                    usesImperialUnits: state.usesImperialUnits,
-                                  ),
-                                ),
+                              ),
+                              childWhenDragging: Opacity(
+                                opacity: 0.3,
                                 child: MealItemCard(
                                   day: widget.day,
                                   mealEntity: recipe,
                                   addMealType: widget.mealType,
-                                  usesImperialUnits: state.usesImperialUnits,
-                                ),
-                              );
-                            },
-                          ),
-                          if (_isDragging)
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Container(
-                                height: 70,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .error
-                                    .withValues(alpha: 0.3),
-                                child: DragTarget(
-                                  onWillAcceptWithDetails: (data) => true,
-                                  onAcceptWithDetails: (details) {
-                                    setState(() {
-                                      _isDragging = false;
-                                    });
-
-                                    final draggedData = details.data;
-
-                                    if (draggedData is MealEntity) {
-                                      _deleteImageIfLocal(draggedData.url);
-
-                                      if (draggedData.code != null) {
-                                        widget.bloc.add(DeleteRecipeEvent(
-                                            recipeId: draggedData.code!));
-                                      }
-                                    }
-                                  },
-                                  onLeave: (data) {
-                                    setState(() {
-                                      _isDragging = false;
-                                    });
-                                  },
-                                  builder:
-                                      (context, candidateData, rejectedData) {
-                                    return const Center(
-                                      child: Icon(
-                                        Icons.delete_outline,
-                                        size: 36,
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
+                              child: MealItemCard(
+                                onDelete: () => _deleteRecipe(recipe),
+                                onReturn: _onRecipeRefreshButtonPressed,
+                                day: widget.day,
+                                mealEntity: recipe,
+                                addMealType: widget.mealType,
+                              ),
+                            );
+                          },
+                        ),
+                        if (_isDragging)
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: Container(
+                              height: 70,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .error
+                                  .withValues(alpha: 0.3),
+                              child: DragTarget(
+                                onWillAcceptWithDetails: (data) => true,
+                                onAcceptWithDetails: (details) {
+                                  setState(() {
+                                    _isDragging = false;
+                                  });
+
+                                  final draggedData = details.data;
+
+                                  if (draggedData is MealEntity) {
+                                    if (draggedData.code != null) {
+                                      _deleteRecipe(draggedData);
+                                    }
+                                  }
+                                },
+                                onLeave: (data) {
+                                  setState(() {
+                                    _isDragging = false;
+                                  });
+                                },
+                                builder:
+                                    (context, candidateData, rejectedData) {
+                                  return const Center(
+                                    child: Icon(
+                                      Icons.delete_outline,
+                                      size: 36,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
                     )
-                  : const Center(child: NoResultsWidget());
+                  : const Center(child: SearchEmptyState());
             } else if (state is RecipeFailedState) {
               return ErrorDialog(
                 errorText: S.of(context).errorRecipeLabel,
@@ -186,7 +208,7 @@ class _RecipeResultsListState extends State<RecipeResultsList> {
               return const SizedBox();
             }
           },
-        ),
+        )),
       ],
     );
   }

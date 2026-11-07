@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/app_theme_entity.dart';
@@ -5,11 +7,10 @@ import 'package:opennutritracker/core/presentation/widgets/app_banner_version.da
 import 'package:opennutritracker/core/utils/app_const.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/theme_mode_provider.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
+import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:opennutritracker/features/profile/profile_page.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
-import 'package:opennutritracker/features/settings/presentation/widgets/calculations_dialog.dart';
 import 'package:opennutritracker/features/auth/auth_safe_sign_out.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -27,15 +28,11 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late SettingsBloc _settingsBloc;
   late ProfileBloc _profileBloc;
-  late HomeBloc _homeBloc;
-  late DiaryBloc _diaryBloc;
 
   @override
   void initState() {
     _settingsBloc = locator<SettingsBloc>();
     _profileBloc = locator<ProfileBloc>();
-    _homeBloc = locator<HomeBloc>();
-    _diaryBloc = locator<DiaryBloc>();
     super.initState();
   }
 
@@ -54,16 +51,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             return ListView(
               children: [
                 const SizedBox(height: 16.0),
-                ListTile(
-                  leading: const Icon(Icons.ac_unit_outlined),
-                  title: Text(S.of(context).settingsUnitsLabel),
-                  onTap: () =>
-                      _showUnitsDialog(context, state.usesImperialUnits),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.calculate_outlined),
-                  title: Text(S.of(context).settingsCalculationsLabel),
-                  onTap: () => _showCalculationsDialog(context),
+                // Coaches have no profile tab ("My students" replaces it).
+                BlocBuilder<ProfileBloc, ProfileState>(
+                  bloc: _profileBloc,
+                  builder: (context, profileState) {
+                    if (profileState is ProfileInitial) {
+                      _profileBloc.add(LoadProfileEvent());
+                    }
+                    if (profileState is! ProfileLoadedState ||
+                        profileState.userEntity.role != UserRoleEntity.coach) {
+                      return const SizedBox.shrink();
+                    }
+                    return ListTile(
+                      leading: const Icon(Icons.account_circle_outlined),
+                      title: Text(S.of(context).profileLabel),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => Scaffold(
+                            appBar:
+                                AppBar(title: Text(S.of(context).profileLabel)),
+                            body: const ProfilePage(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.brightness_medium_outlined),
@@ -89,7 +101,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.logout),
                   title: Text(S.of(context).logOutLabel),
-                  onTap: () => safeSignOut(context),
+                  onTap: () async {
+                    final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                                scrollable: true,
+                                title: Text(S.of(context).logOutLabel),
+                                content:
+                                    Text(S.of(context).signOutConfirmMessage),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: Text(
+                                          S.of(context).dialogCancelLabel)),
+                                  FilledButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: Text(S.of(context).logOutLabel)),
+                                ]));
+                    if (confirmed == true && context.mounted) {
+                      await safeSignOut(context);
+                    }
+                  },
                 ),
                 const SizedBox(height: 32.0),
                 AppBannerVersion(versionNumber: state.versionNumber),
@@ -100,72 +134,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         },
       ),
     );
-  }
-
-  void _showUnitsDialog(BuildContext context, bool usesImperialUnits) async {
-    SystemDropDownType selectedUnit = usesImperialUnits
-        ? SystemDropDownType.imperial
-        : SystemDropDownType.metric;
-    final shouldUpdate = await showDialog<bool?>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).settingsUnitsLabel),
-          content: Wrap(
-            children: [
-              Column(
-                children: [
-                  DropdownButtonFormField(
-                    value: selectedUnit,
-                    decoration: InputDecoration(
-                      enabled: true,
-                      filled: false,
-                      labelText: S.of(context).settingsSystemLabel,
-                    ),
-                    onChanged: (value) {
-                      selectedUnit = value ?? SystemDropDownType.metric;
-                    },
-                    items: [
-                      DropdownMenuItem(
-                        value: SystemDropDownType.metric,
-                        child: Text(S.of(context).settingsMetricLabel),
-                      ),
-                      DropdownMenuItem(
-                        value: SystemDropDownType.imperial,
-                        child: Text(S.of(context).settingsImperialLabel),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: Text(S.of(context).dialogOKLabel),
-            ),
-          ],
-        );
-      },
-    );
-    if (shouldUpdate == true) {
-      _settingsBloc.setUsesImperialUnits(
-        selectedUnit == SystemDropDownType.imperial,
-      );
-      _settingsBloc.add(LoadSettingsEvent());
-
-      // Update blocs
-      _profileBloc.add(LoadProfileEvent());
-      _homeBloc.add(LoadItemsEvent());
-      _diaryBloc.add(const LoadDiaryYearEvent());
-    }
-  }
-
-  void _showCalculationsDialog(BuildContext context) {
-    showDialog(context: context, builder: (context) => CalculationsDialog());
   }
 
   void _showThemeDialog(BuildContext context, AppThemeEntity currentAppTheme) {
@@ -302,6 +270,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text(S.of(context).settingsPrivacySettings),
+          scrollable: true,
           content: StatefulBuilder(
             builder: (
               BuildContext context,
@@ -309,6 +278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ) {
               return SwitchListTile(
                 title: Text(S.of(context).sendAnonymousUserData),
+                subtitle: Text(S.of(context).crashReportsConsentHelp),
                 value: switchActive,
                 onChanged: (bool value) {
                   setState(() {
@@ -327,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             TextButton(
               onPressed: () async {
-                _settingsBloc.setHasAcceptedAnonymousData(switchActive);
+                await _settingsBloc.setHasAcceptedAnonymousData(switchActive);
                 await FirebaseCrashlytics.instance
                     .setCrashlyticsCollectionEnabled(switchActive);
                 _settingsBloc.add(LoadSettingsEvent());

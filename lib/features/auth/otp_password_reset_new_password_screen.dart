@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'validate_password.dart';
+import 'auth_error_message.dart';
 
 class OtpPasswordResetNewPasswordScreen extends StatefulWidget {
   const OtpPasswordResetNewPasswordScreen({super.key});
@@ -31,7 +33,7 @@ class _OtpPasswordResetNewPasswordScreenState
   Future<void> _reset() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
-    final newPass = _passwordCtrl.text.trim();
+    final newPass = _passwordCtrl.text;
     try {
       await _supabase.auth.updateUser(UserAttributes(password: newPass));
       await _supabase.auth.signOut();
@@ -42,7 +44,8 @@ class _OtpPasswordResetNewPasswordScreenState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(authErrorMessage(context, e))));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -51,8 +54,8 @@ class _OtpPasswordResetNewPasswordScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New password')),
-      body: Padding(
+      appBar: AppBar(title: Text(S.of(context).resetPasswordTitle)),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
@@ -63,9 +66,12 @@ class _OtpPasswordResetNewPasswordScreenState
                 controller: _passwordCtrl,
                 obscureText: _obscure1,
                 decoration: InputDecoration(
-                  labelText: 'Password',
+                  labelText: S.of(context).resetPasswordNewLabel,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: _obscure1
+                        ? S.of(context).showPasswordLabel
+                        : S.of(context).hidePasswordLabel,
                     icon: Icon(
                         _obscure1 ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setState(() => _obscure1 = !_obscure1),
@@ -78,16 +84,20 @@ class _OtpPasswordResetNewPasswordScreenState
                 controller: _confirmCtrl,
                 obscureText: _obscure2,
                 decoration: InputDecoration(
-                  labelText: 'Confirm password',
+                  labelText: S.of(context).resetPasswordConfirmLabel,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: _obscure2
+                        ? S.of(context).showPasswordLabel
+                        : S.of(context).hidePasswordLabel,
                     icon: Icon(
                         _obscure2 ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setState(() => _obscure2 = !_obscure2),
                   ),
                 ),
-                validator: (v) =>
-                    v == _passwordCtrl.text ? null : 'Passwords do not match',
+                validator: (v) => v == _passwordCtrl.text
+                    ? null
+                    : S.of(context).resetPasswordNoMatch,
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -96,7 +106,7 @@ class _OtpPasswordResetNewPasswordScreenState
                   onPressed: _loading ? null : _reset,
                   child: _loading
                       ? const CircularProgressIndicator()
-                      : const Text('Reset'),
+                      : Text(S.of(context).resetPasswordButton),
                 ),
               ),
             ],
