@@ -10,6 +10,7 @@ import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dar
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
 import 'package:opennutritracker/features/profile/presentation/bloc/profile_bloc.dart';
 import 'journal_sync_engine.dart';
+import 'legacy_backup_restore.dart';
 import 'profile_remote_sync.dart';
 
 /// Runs after the local UI is available. Each remote request has a deadline;
@@ -33,6 +34,13 @@ Future<void> synchronizeUserData(SupabaseClient client) async {
         Logger('StartupUserSync')
             .warning('Coach goals deferred: ${error.runtimeType}');
       }
+    }
+    if (!owns()) return;
+    try {
+      await restoreLegacyBackupOnce(client, owner);
+    } catch (error) {
+      Logger('StartupUserSync')
+          .warning('Legacy backup restore deferred: ${error.runtimeType}');
     }
     if (!owns()) return;
     await locator<JournalSyncEngine>().sync();
