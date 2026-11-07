@@ -1,3 +1,4 @@
+import 'package:opennutritracker/core/domain/entity/intake_type_entity.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -60,5 +61,15 @@ void main() {
         }),
       ),
     );
+  });
+  test('converted recipe ingredients are stored in grams rather than portions',
+      () async {
+    await bloc.addIntake('serving', '60', IntakeTypeEntity.lunch,
+        IntakeForRecipeFixtures.chicken.meal!, DateTime(2026, 11, 3));
+    final ingredient = bloc.getListOfIntakeForRecipeEntity().single;
+    expect(ingredient.unit, 'g');
+    expect(ingredient.amount, 60);
+    expect(bloc.computeMacros()['totalKcal'], closeTo(99, 0.001));
+    await bloc.close();
   });
 }

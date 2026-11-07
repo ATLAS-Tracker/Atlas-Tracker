@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:opennutritracker/core/utils/supported_language.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_food_nutriment_dto.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_const.dart';
@@ -26,17 +25,6 @@ class SpFdcFoodDTO {
 
   @JsonKey(name: SPConst.fdcFoodPictureUrl)
   final String? pictureUrl;
-
-  String? getLocaleDescription(SupportedLanguage supportedLanguage) {
-    switch (supportedLanguage) {
-      case SupportedLanguage.en:
-        return descriptionEn;
-      case SupportedLanguage.fr:
-        return descriptionFr;
-      case SupportedLanguage.de:
-        return descriptionDe;
-    }
-  }
 
   double? get servingSize {
     return portions[0].gramWeight;

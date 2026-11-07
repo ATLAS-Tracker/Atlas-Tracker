@@ -1,69 +1,84 @@
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/utils/custom_icons.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
-class MealSearchBar extends StatelessWidget {
+class MealSearchBar extends StatefulWidget {
   final ValueNotifier<String> searchStringListener;
-  final Function(String) onSearchSubmit;
-  final Function() onBarcodePressed;
+  final ValueChanged<String> onSearchSubmit;
+  final VoidCallback onBarcodePressed;
 
-  final _searchTextController = TextEditingController();
-
-  MealSearchBar(
+  const MealSearchBar(
       {super.key,
       required this.searchStringListener,
       required this.onSearchSubmit,
       required this.onBarcodePressed});
 
   @override
+  State<MealSearchBar> createState() => _MealSearchBarState();
+}
+
+class _MealSearchBarState extends State<MealSearchBar> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.searchStringListener.value);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Flexible(
-          flex: 1,
-          child: TextField(
-              controller: _searchTextController,
-              textInputAction: TextInputAction.search,
-              onChanged: (input) {
-                searchStringListener.value = input;
-              },
-              onSubmitted: onSearchSubmit,
-              decoration: InputDecoration(
-                hintText: S.of(context).searchLabel,
-                prefixIcon: const Icon(Icons.search_outlined),
-                suffixIcon: IconButton(
-                  icon: const Icon(CustomIcons.barcode_scan),
-                  onPressed: () {
-                    onBarcodePressed();
-                  },
-                ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.secondary,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
-              )),
-        ),
-        const SizedBox(width: 8.0),
-        IconButton(
-          onPressed: () {
-            FocusManager.instance.primaryFocus?.unfocus(); // Hide Keyboard
-            onSearchSubmit(_searchTextController.text);
+        Expanded(
+            child: TextField(
+          autofocus: true,
+          controller: _controller,
+          textInputAction: TextInputAction.search,
+          onChanged: (input) {
+            widget.searchStringListener.value = input;
+            widget.onSearchSubmit(input);
           },
-          icon: const Icon(Icons.search_outlined),
+          onSubmitted: widget.onSearchSubmit,
+          style: Theme.of(context).textTheme.bodyMedium,
+          decoration: InputDecoration(
+            hintText: S.of(context).searchLabel,
+            hintMaxLines: 1,
+            hintStyle: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: colors.onSurfaceVariant),
+            prefixIcon: Icon(Icons.search_rounded,
+                color: colors.onSurfaceVariant, size: 23),
+            filled: true,
+            fillColor: colors.surfaceContainerLowest,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+            enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(
+                    color: colors.onSurface.withValues(alpha: 0.08))),
+            focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: colors.primary, width: 1.5)),
+          ),
+        )),
+        const SizedBox(width: 10),
+        IconButton.filled(
+          constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
           style: IconButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              backgroundColor: Theme.of(context).colorScheme.primary),
-        )
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16))),
+          tooltip: S.of(context).scanProductLabel,
+          icon: const Icon(Icons.qr_code_scanner_rounded, size: 25),
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            widget.onBarcodePressed();
+          },
+        ),
       ],
     );
   }

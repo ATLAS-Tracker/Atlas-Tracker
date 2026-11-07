@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_dialog_widgets.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +18,7 @@ class ManageAccountDialog extends StatefulWidget {
 class _ManageAccountDialogState extends State<ManageAccountDialog> {
   bool _syncEnabled = true;
   bool _saving = false;
+  bool _deleting = false;
 
   final _addConfig = locator<AddConfigUsecase>();
   final _configRepo = locator<ConfigRepository>();
@@ -50,8 +52,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       if (saved != value) {
         setState(() => _syncEnabled = saved);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(S.of(context).savePreferenceFailed)),
+          SnackBar(content: Text(S.of(context).savePreferenceFailed)),
         );
       }
     } catch (e) {
@@ -67,42 +68,62 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(S.of(context).manageAccountTitle),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(S.of(context).manageAccountDescription),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: Text(S.of(context).manageAccountEnableSync),
-              value: _syncEnabled,
-              onChanged: _saving ? null : _toggleSync,
+    return PopScope(
+        canPop: !_deleting,
+        child: AlertDialog(
+          title: ProfileDialogTitle(
+              title: S.of(context).manageAccountTitle,
+              icon: Icons.manage_accounts_outlined,
+              color: Theme.of(context).colorScheme.primary),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(S.of(context).manageAccountDescription),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: Icon(Icons.cloud_sync_outlined,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text(S.of(context).manageAccountEnableSync),
+                  value: _syncEnabled,
+                  onChanged: _saving || _deleting ? null : _toggleSync,
+                ),
+                const SizedBox(height: 8),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error),
+                  icon: _deleting
+                      ? const SizedBox.square(
+                          dimension: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.delete_outline_rounded),
+                  onPressed: _deleting ? null : () => _confirmDelete(context),
+                  label: Text(S.of(context).manageAccountDelete),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+          ),
+          actions: [
             TextButton(
-              onPressed: () => _confirmDelete(context),
-              child: Text(S.of(context).manageAccountDelete),
+              onPressed: _deleting ? null : () => Navigator.of(context).pop(),
+              child: Text(S.of(context).dialogOKLabel),
             ),
           ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(S.of(context).dialogOKLabel),
-        ),
-      ],
-    );
+        ));
   }
 
   void _confirmDelete(BuildContext context) async {
+    if (_deleting) return;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(S.of(context).manageAccountConfirmTitle),
+        scrollable: true,
+        title: ProfileDialogTitle(
+            title: S.of(context).manageAccountConfirmTitle,
+            icon: Icons.delete_outline_rounded,
+            color: Theme.of(context).colorScheme.error),
         content: Text(S.of(context).manageAccountConfirmMessage),
         actions: [
           TextButton(
@@ -110,6 +131,8 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
             child: Text(S.of(context).dialogCancelLabel),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(S.of(context).manageAccountConfirmAction),
           ),
@@ -123,6 +146,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
   }
 
   Future<void> _deleteAccount() async {
+    if (_deleting) return;
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
 
@@ -134,6 +158,7 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       return;
     }
 
+    setState(() => _deleting = true);
     try {
       final response = await supabase.functions.invoke('delete_my_account');
       if (!mounted) return;
@@ -167,10 +192,13 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
             .pushReplacementNamed(NavigationOptions.loginRoute);
         debugPrint('safeSignOut terminé → retour login.');
       } else {
-        final errorMessage = response.data?['error'] ?? S.of(context).loginUnknownError;
+        final errorMessage =
+            response.data?['error'] ?? S.of(context).loginUnknownError;
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(S.of(context).failedToDeleteWithReason(errorMessage))),
+          SnackBar(
+              content:
+                  Text(S.of(context).failedToDeleteWithReason(errorMessage))),
         );
       }
     } catch (e, stackTrace) {
@@ -179,6 +207,8 @@ class _ManageAccountDialogState extends State<ManageAccountDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(S.of(context).genericErrorOccurred)),
       );
+    } finally {
+      if (mounted) setState(() => _deleting = false);
     }
   }
 }

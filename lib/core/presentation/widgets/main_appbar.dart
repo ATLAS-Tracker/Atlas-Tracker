@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:opennutritracker/generated/l10n.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 
 class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
@@ -9,11 +10,14 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Same height as HomeAppbar so the settings icon lines up across tabs.
     return AppBar(
+      toolbarHeight: 72,
       leading: Icon(iconData),
       title: Text(title),
       actions: [
         IconButton(
+            tooltip: S.of(context).settingsLabel,
             onPressed: () {
               Navigator.of(context).pushNamed(NavigationOptions.settingsRoute);
             },
@@ -23,5 +27,5 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(72);
 }

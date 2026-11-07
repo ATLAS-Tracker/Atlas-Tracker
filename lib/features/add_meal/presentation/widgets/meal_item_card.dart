@@ -1,5 +1,5 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:opennutritracker/core/presentation/widgets/meal_value_unit_text.dart';
@@ -7,88 +7,126 @@ import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/core/utils/path_helper.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dart';
-import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/meal_detail/meal_detail_screen.dart';
 import 'dart:io';
+import 'package:opennutritracker/generated/l10n.dart';
+import 'package:opennutritracker/core/utils/number_format.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 
 class MealItemCard extends StatelessWidget {
   final DateTime day;
   final AddMealType addMealType;
   final MealEntity mealEntity;
-  final bool usesImperialUnits;
+  final VoidCallback? onDelete;
+  final VoidCallback? onReturn;
+  final IntakeEntity? lastIntake;
 
   const MealItemCard(
       {super.key,
       required this.day,
       required this.mealEntity,
-      required this.addMealType,
-      required this.usesImperialUnits});
+      this.onDelete,
+      this.onReturn,
+      this.lastIntake,
+      required this.addMealType});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
-      child: InkWell(
-        child: SizedBox(
-          height: 100,
-          child: Center(
-              child: ListTile(
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                width: 60,
-                height: 60,
-                child: _buildThumbnail(context),
-              ),
-            ),
-            title: AutoSizeText.rich(
-                TextSpan(
-                    text: mealEntity.name ?? "?",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface),
-                    children: [
-                      TextSpan(
-                          text: ' ${mealEntity.brands ?? ""}',
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Material(
+        color: colors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: colors.onSurface.withValues(alpha: 0.06))),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _onItemPressed(context),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: SizedBox(
+                        width: 56,
+                        height: 56,
+                        child: _buildThumbnail(context))),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(mealEntity.name ?? '?',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleSmall
+                            ?.copyWith(fontWeight: FontWeight.w700)),
+                    if (mealEntity.brands?.trim().isNotEmpty == true) ...[
+                      const SizedBox(height: 3),
+                      Text(mealEntity.brands!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context)
                               .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.8))),
-                    ]),
-                style: Theme.of(context).textTheme.titleLarge,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-            subtitle: mealEntity.mealQuantity != null
-                ? MealValueUnitText(
-                    value: double.parse(mealEntity.mealQuantity ?? "0"),
-                    meal: mealEntity,
-                    usesImperialUnits: usesImperialUnits)
-                : const SizedBox(),
-            trailing: IconButton(
-              style: IconButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-              ),
-              icon: const Icon(Icons.add_outlined),
-              onPressed: () => _onItemPressed(context),
+                              .bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant)),
+                    ],
+                    if (mealEntity.mealQuantity != null) ...[
+                      const SizedBox(height: 5),
+                      Row(children: [
+                        if (mealEntity.source == MealSourceEntity.off)
+                          Text('${S.of(context).packageLabel} ',
+                              style: Theme.of(context).textTheme.bodySmall),
+                        Flexible(
+                            child: MealValueUnitText(
+                                value: double.tryParse(
+                                        mealEntity.mealQuantity ?? '') ??
+                                    0,
+                                meal: mealEntity)),
+                      ]),
+                    ],
+                    if (mealEntity.nutriments.energyKcalPerQuantity !=
+                        null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                          '${formatNumber(mealEntity.isPortionBased ? mealEntity.nutriments.energyKcalPerQuantity! / 100 : mealEntity.nutriments.energyKcalPerQuantity!)} ${S.of(context).kcalLabel} / ${mealEntity.isPortionBased || mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe ? "1 ${S.of(context).servingLabel}" : "100 ${MealEntity.metricUnit(mealEntity.mealUnit)}"}',
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ],
+                )),
+                const SizedBox(width: 4),
+                IconButton(
+                  tooltip: S.of(context).addLabel,
+                  style: IconButton.styleFrom(
+                      foregroundColor: colors.primary,
+                      backgroundColor: colors.primary.withValues(alpha: 0.08)),
+                  onPressed: () => _onItemPressed(context),
+                  icon: const Icon(Icons.add_rounded, size: 23),
+                ),
+                if (onDelete != null)
+                  IconButton(
+                      tooltip: S.of(context).dialogDeleteLabel,
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline)),
+              ],
             ),
-          )),
+          ),
         ),
-        onTap: () => _onItemPressed(context),
       ),
     );
   }
 
-  void _onItemPressed(BuildContext context) {
-    Navigator.of(context).pushNamed(NavigationOptions.mealDetailRoute,
+  Future<void> _onItemPressed(BuildContext context) async {
+    await Navigator.of(context).pushNamed(NavigationOptions.mealDetailRoute,
         arguments: MealDetailScreenArguments(
-            mealEntity, addMealType.getIntakeType(), day, usesImperialUnits));
+            mealEntity, addMealType.getIntakeType(), day,
+            initialIntake: lastIntake));
+    if (context.mounted) onReturn?.call();
   }
 
   Widget _buildThumbnail(BuildContext context) {
@@ -97,7 +135,7 @@ class MealItemCard extends StatelessWidget {
       return _buildFallbackPlaceholder(context);
     }
 
-    if (mealEntity.mealOrRecipe == MealOrRecipeEntity.recipe) {
+    if (!thumbnailUrl.startsWith('http')) {
       return FutureBuilder<String>(
         future: PathHelper.localImagePath(thumbnailUrl),
         builder: (context, snapshot) {
@@ -131,15 +169,15 @@ class MealItemCard extends StatelessWidget {
   }
 
   Widget _buildFallbackPlaceholder(BuildContext context) => Container(
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         child: Icon(
           Icons.restaurant_outlined,
-          color: Theme.of(context).colorScheme.onSecondaryContainer,
+          color: Theme.of(context).colorScheme.primary,
         ),
       );
 
   Widget _buildLoadingPlaceholder(BuildContext context) => Container(
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
         alignment: Alignment.center,
         child: SizedBox(
           width: 20,

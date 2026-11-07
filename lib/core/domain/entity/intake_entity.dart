@@ -36,7 +36,7 @@ class IntakeEntity extends Equatable {
     );
   }
 
-  double get _effectiveAmountInBaseUnits {
+  double get effectiveAmountInBaseUnits {
     if (unit.toLowerCase() == 'serving' && meal.servingQuantity != null) {
       return amount * meal.servingQuantity!;
     }
@@ -44,15 +44,15 @@ class IntakeEntity extends Equatable {
   }
 
   double get totalKcal =>
-      _effectiveAmountInBaseUnits * (meal.nutriments.energyPerUnit ?? 0);
+      effectiveAmountInBaseUnits * (meal.nutriments.energyPerUnit ?? 0);
 
-  double get totalCarbsGram => _effectiveAmountInBaseUnits *
+  double get totalCarbsGram => effectiveAmountInBaseUnits *
       (meal.nutriments.carbohydratesPerUnit ?? 0);
 
   double get totalFatsGram =>
-      _effectiveAmountInBaseUnits * (meal.nutriments.fatPerUnit ?? 0);
+      effectiveAmountInBaseUnits * (meal.nutriments.fatPerUnit ?? 0);
 
-  double get totalProteinsGram => _effectiveAmountInBaseUnits *
+  double get totalProteinsGram => effectiveAmountInBaseUnits *
       (meal.nutriments.proteinsPerUnit ?? 0);
 
   @override

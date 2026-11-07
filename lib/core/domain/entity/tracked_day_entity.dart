@@ -1,12 +1,10 @@
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/data/dbo/tracked_day_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/data_util.dart';
 
 class TrackedDayEntity extends Equatable {
-  static const maxKcalDifferenceOverGoal = 500;
-  static const maxKcalDifferenceUnderGoal = 1000;
-
   final DateTime day;
   final double calorieGoal;
   final double caloriesTracked;
@@ -31,7 +29,8 @@ class TrackedDayEntity extends Equatable {
     this.proteinGoal,
     this.proteinTracked,
     DateTime? updatedAt,
-  }) : updatedAt = DateUtilsHelper.roundToSeconds(updatedAt ?? DateTime.now().toUtc());
+  }) : updatedAt =
+            DateUtilsHelper.roundToSeconds(updatedAt ?? DateTime.now().toUtc());
 
   factory TrackedDayEntity.fromTrackedDayDBO(TrackedDayDBO trackedDayDBO) {
     return TrackedDayEntity(
@@ -50,8 +49,9 @@ class TrackedDayEntity extends Equatable {
   }
 
   // TODO: make enum class for rating
-  Color getCalendarDayRatingColor(BuildContext context) {
-    if (_hasExceededMaxKcalDifferenceGoal(calorieGoal, caloriesTracked)) {
+  Color? getCalendarDayRatingColor(BuildContext context) {
+    if (caloriesTracked <= 0 || calorieGoal <= 0) return null;
+    if (isWithinNutritionGoal(caloriesTracked, calorieGoal)) {
       return Theme.of(context).colorScheme.primary;
     } else {
       return Theme.of(context).colorScheme.error;
@@ -59,7 +59,7 @@ class TrackedDayEntity extends Equatable {
   }
 
   Color getRatingDayTextColor(BuildContext context) {
-    if (_hasExceededMaxKcalDifferenceGoal(calorieGoal, caloriesTracked)) {
+    if (isWithinNutritionGoal(caloriesTracked, calorieGoal)) {
       return Theme.of(context).colorScheme.onSecondaryContainer;
     } else {
       return Theme.of(context).colorScheme.onErrorContainer;
@@ -67,35 +67,25 @@ class TrackedDayEntity extends Equatable {
   }
 
   Color getRatingDayTextBackgroundColor(BuildContext context) {
-    if (_hasExceededMaxKcalDifferenceGoal(calorieGoal, caloriesTracked)) {
+    if (isWithinNutritionGoal(caloriesTracked, calorieGoal)) {
       return Theme.of(context).colorScheme.secondaryContainer;
     } else {
       return Theme.of(context).colorScheme.errorContainer;
     }
   }
 
-  bool _hasExceededMaxKcalDifferenceGoal(double calorieGoal, caloriesTracked) {
-    double difference = calorieGoal - caloriesTracked;
-
-    if (calorieGoal < caloriesTracked) {
-      return difference.abs() < maxKcalDifferenceOverGoal;
-    } else {
-      return difference < maxKcalDifferenceUnderGoal;
-    }
-  }
-
   @override
   List<Object?> get props => [
-    day,
-    calorieGoal,
-    caloriesTracked,
-    caloriesBurned,
-    carbsGoal,
-    carbsTracked,
-    fatGoal,
-    fatTracked,
-    proteinGoal,
-    proteinTracked,
-    updatedAt,
-  ];
+        day,
+        calorieGoal,
+        caloriesTracked,
+        caloriesBurned,
+        carbsGoal,
+        carbsTracked,
+        fatGoal,
+        fatTracked,
+        proteinGoal,
+        proteinTracked,
+        updatedAt,
+      ];
 }

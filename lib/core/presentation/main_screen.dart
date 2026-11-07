@@ -1,20 +1,18 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:opennutritracker/core/presentation/widgets/add_item_bottom_sheet.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/diary_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/home_appbar.dart';
 import 'package:opennutritracker/features/home/home_page.dart';
 import 'package:opennutritracker/core/presentation/widgets/main_appbar.dart';
 import 'package:opennutritracker/features/profile/profile_page.dart';
+import 'package:opennutritracker/features/profile/coach_students_page.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/features/auth/check_subscription.dart';
 // Added for resume macro refresh
 import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
-import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
+import 'package:opennutritracker/features/sync/startup_user_sync.dart';
 import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 
 class MainScreen extends StatefulWidget {
@@ -26,14 +24,18 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _selectedPageIndex = 0;
-
-  late List<Widget> _bodyPages;
-  late List<PreferredSizeWidget> _appbarPages;
+  bool _isCoach = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    unawaited(synchronizeUserData(locator<SupabaseClient>()));
+    locator.get<GetUserUsecase>().getUserData().then((user) {
+      if (mounted && user.role == UserRoleEntity.coach) {
+        setState(() => _isCoach = true);
+      }
+    }).catchError((_) {});
   }
 
   @override
@@ -63,56 +65,30 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
       return;
     }
 
-    // 2) Refresh macro goals from coach and update tracked days
-    try {
-      final user = await locator.get<GetUserUsecase>().getUserData();
-      if (user.role == UserRoleEntity.student) {
-        await locator.get<AddMacroGoalUsecase>().addMacroGoalFromCoach();
-
-        // Notify key views to refresh
-        locator<HomeBloc>().add(const LoadItemsEvent());
-        locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-        locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
-      }
-    } catch (_) {
-      // Silently ignore on resume to avoid disrupting UX
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    _bodyPages = [
-      const HomePage(),
-      const DiaryPage(),
-      const ProfilePage(),
-    ];
-    _appbarPages = [
-      const HomeAppbar(),
-      MainAppbar(title: S.of(context).diaryLabel, iconData: Icons.book),
-      MainAppbar(
-          title: S.of(context).profileLabel, iconData: Icons.account_circle)
-    ];
-    super.didChangeDependencies();
+    unawaited(synchronizeUserData(locator<SupabaseClient>()));
   }
 
   @override
   Widget build(BuildContext context) {
+    // CoachStudentsPage brings its own Scaffold/AppBar.
+    final bodyPages = <Widget>[
+      const HomePage(),
+      const DiaryPage(),
+      _isCoach ? const CoachStudentsPage() : const ProfilePage(),
+    ];
+    final appbarPages = <PreferredSizeWidget?>[
+      const HomeAppbar(),
+      MainAppbar(
+          title: S.of(context).diaryLabel,
+          iconData: Icons.calendar_month_outlined),
+      _isCoach
+          ? null
+          : MainAppbar(
+              title: S.of(context).profileLabel, iconData: Icons.account_circle)
+    ];
     return Scaffold(
-      appBar: _appbarPages[_selectedPageIndex],
-      body: _bodyPages[_selectedPageIndex],
-      floatingActionButton: _selectedPageIndex == 0
-          ? FloatingActionButton(
-              onPressed: () => _onFabPressed(context),
-              tooltip: S.of(context).addLabel,
-              shape: const CircleBorder(),
-              elevation: 0,
-              focusElevation: 0,
-              hoverElevation: 0,
-              highlightElevation: 0,
-              disabledElevation: 0,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      appBar: appbarPages[_selectedPageIndex],
+      body: IndexedStack(index: _selectedPageIndex, children: bodyPages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedPageIndex,
         onDestinationSelected: _setPage,
@@ -124,14 +100,20 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               label: S.of(context).homeLabel),
           NavigationDestination(
               icon: _selectedPageIndex == 1
-                  ? const Icon(Icons.book)
-                  : const Icon((Icons.book_outlined)),
+                  ? const Icon(Icons.calendar_month)
+                  : const Icon(Icons.calendar_month_outlined),
               label: S.of(context).diaryLabel),
-          NavigationDestination(
-              icon: _selectedPageIndex == 2
-                  ? const Icon(Icons.account_circle)
-                  : const Icon(Icons.account_circle_outlined),
-              label: S.of(context).profileLabel)
+          _isCoach
+              ? NavigationDestination(
+                  icon: _selectedPageIndex == 2
+                      ? const Icon(Icons.groups)
+                      : const Icon(Icons.groups_outlined),
+                  label: S.of(context).myStudentsTitle)
+              : NavigationDestination(
+                  icon: _selectedPageIndex == 2
+                      ? const Icon(Icons.account_circle)
+                      : const Icon(Icons.account_circle_outlined),
+                  label: S.of(context).profileLabel)
         ],
       ),
     );
@@ -141,18 +123,5 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     setState(() {
       _selectedPageIndex = selectedIndex;
     });
-  }
-
-  void _onFabPressed(BuildContext context) async {
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.0),
-                topRight: Radius.circular(16.0))),
-        builder: (BuildContext context) {
-          return AddItemBottomSheet(day: DateTime.now());
-        });
   }
 }

@@ -7,19 +7,22 @@ class DeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      scrollable: true,
       title: Text(S.of(context).deleteTimeDialogTitle),
       content: Text(S.of(context).deleteTimeDialogContent),
       actions: [
         TextButton(
             onPressed: () {
-              Navigator.of(context).pop(true);
-            },
-            child: Text(S.of(context).dialogOKLabel)),
-        TextButton(
-            onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text(S.of(context).dialogCancelLabel))
+            child: Text(S.of(context).dialogCancelLabel)),
+        TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: Text(S.of(context).dialogOKLabel))
       ],
     );
   }

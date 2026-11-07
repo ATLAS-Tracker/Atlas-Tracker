@@ -1,29 +1,8 @@
 class FDCConst {
-  static const int defaultPageSize = 20;
-
   // URL
   static const fdcWebsiteUrl = "https://ciqual.anses.fr/#";
   static const _fdcFoodDetailPath = "/aliments/";
   static const _fdcBaseUrl = "api.nal.usda.gov";
-  static const _fdcFoodSearchPath = "/fdc/v1/foods/search";
-
-  static const _fdcQueryTag = "query";
-  static const _fdcPageSizeTag = "pageSize";
-  static const _fdcPageNumberTag = "pageNumber";
-  static const _fdcDataTypeTag = "dataType";
-
-  // static const _fdcDataTypeBrandedValue = "Branded";
-  static const _fdcDataTypeFoundationValue = "Foundation";
-  static const _fdcDataTypeSRLegacyValue = "SR Legacy";
-  static const _fdcSortOrderTag = "sortOrder";
-  static const _fdcSortOrderAscValue = "asc";
-  static const _fdcApiKeyTag = "api_key";
-
-  static const _dataTypeParams = [
-    _fdcDataTypeFoundationValue,
-    _fdcDataTypeSRLegacyValue
-  ];
-
   static const fdcDefaultUnit = 'g';
 
   static const Map<int, String> measureUnits = {
@@ -42,22 +21,6 @@ class FDCConst {
     } else {
       return fdcWebsiteUrl + _fdcFoodDetailPath + code;
     }
-  }
-
-  static String _getDataTypeParams() => _dataTypeParams.join(",");
-
-  static Uri getFDCWordSearchUrl(String searchString, String apiKey,
-      {int pageNumber = 1, int pageSize = defaultPageSize}) {
-    final queryParameters = {
-      _fdcQueryTag: searchString,
-      _fdcPageSizeTag: pageSize.toString(),
-      _fdcDataTypeTag: _getDataTypeParams(),
-      _fdcSortOrderTag: _fdcSortOrderAscValue,
-      _fdcApiKeyTag: apiKey,
-      _fdcPageNumberTag: pageNumber.toString(),
-    };
-
-    return Uri.https(_fdcBaseUrl, _fdcFoodSearchPath, queryParameters);
   }
 
   // Nutriment codes

@@ -1,6 +1,7 @@
-import 'dart:async';
+import 'package:opennutritracker/core/styles/dialog_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/repository/config_repository.dart';
@@ -35,17 +36,29 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final view = PlatformDispatcher.instance.views.first;
+  if ((view.physicalSize / view.devicePixelRatio).shortestSide < 600) {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  }
 
   LoggerConfig.intiLogger();
   await initLocator();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(false);
 
   FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    if (FirebaseCrashlytics.instance.isCrashlyticsCollectionEnabled) {
+      FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+    } else {
+      FlutterError.presentError(errorDetails);
+    }
   };
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
   PlatformDispatcher.instance.onError = (error, stack) {
+    if (!FirebaseCrashlytics.instance.isCrashlyticsCollectionEnabled) {
+      return false;
+    }
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
@@ -58,7 +71,6 @@ Future<void> main() async {
       await configRepo.getConfigHasAcceptedAnonymousData();
   final savedAppTheme = await configRepo.getConfigAppTheme();
   final log = Logger('main');
-
   await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
     hasAcceptedAnonymousData,
   );
@@ -117,6 +129,7 @@ class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: lightColorScheme,
+        dialogTheme: atlasDialogTheme(lightColorScheme),
         textTheme: appTextTheme,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
@@ -129,6 +142,7 @@ class _AtlasTrackerAppState extends State<AtlasTrackerApp> {
       darkTheme: ThemeData(
         useMaterial3: true,
         colorScheme: darkColorScheme,
+        dialogTheme: atlasDialogTheme(darkColorScheme),
         textTheme: appTextTheme,
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(

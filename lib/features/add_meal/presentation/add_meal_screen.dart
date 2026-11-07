@@ -1,3 +1,6 @@
+import 'package:opennutritracker/features/add_meal/presentation/widgets/search_empty_state.dart';
+import 'dart:math' as math;
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/presentation/widgets/error_dialog.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
@@ -6,18 +9,15 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dar
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
 import 'package:opennutritracker/features/add_meal/presentation/recipe_results_list.dart';
-import 'package:opennutritracker/features/add_meal/presentation/bloc/add_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recent_meal_bloc.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/recipe_search_bloc.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/default_results_widget.dart';
+import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
 import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_search_bar.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/no_results_widget.dart';
-import 'package:opennutritracker/features/add_meal/presentation/widgets/meal_item_card.dart';
 import 'package:opennutritracker/features/add_meal/presentation/bloc/products_bloc.dart';
+import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/features/edit_meal/presentation/edit_meal_screen.dart';
 import 'package:opennutritracker/features/scanner/scanner_screen.dart';
-import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
 class AddMealScreen extends StatefulWidget {
@@ -33,8 +33,7 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   late AddMealType _mealType;
   late DateTime _day;
-  late MealOrRecipeEntity _mealOrRecipe;
-
+  bool _isIngredientSearch = false;
   late ProductsBloc _productsBloc;
   late RecentMealBloc _recentMealBloc;
   late RecipeSearchBloc _recipeSearchBloc;
@@ -51,6 +50,7 @@ class _AddMealScreenState extends State<AddMealScreen>
     _productsScrollController = ScrollController();
     _productsScrollController.addListener(_onProductsScroll);
     _tabController.addListener(() {
+      setState(() {});
       // Update search results when tab changes
       _onSearchSubmit(_searchStringListener.value);
     });
@@ -63,12 +63,16 @@ class _AddMealScreenState extends State<AddMealScreen>
         ModalRoute.of(context)?.settings.arguments as AddMealScreenArguments;
     _mealType = args.mealType;
     _day = args.day;
-    _mealOrRecipe = args.mealOrRecipe;
+    _isIngredientSearch = args.mealOrRecipe == MealOrRecipeEntity.recipe;
     super.didChangeDependencies();
   }
 
   @override
   void dispose() {
+    _searchStringListener.dispose();
+    _productsBloc.close();
+    _recentMealBloc.close();
+    _recipeSearchBloc.close();
     _tabController.dispose();
     _productsScrollController.removeListener(_onProductsScroll);
     _productsScrollController.dispose();
@@ -77,201 +81,101 @@ class _AddMealScreenState extends State<AddMealScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-        appBar: AppBar(
-          title: Text(_mealOrRecipe == MealOrRecipeEntity.recipe
-              ? ""
-              : _mealType.getTypeName(context)),
-          actions: [
-            BlocBuilder<AddMealBloc, AddMealState>(
-              bloc: locator<AddMealBloc>()..add(InitializeAddMealEvent()),
-              builder: (BuildContext context, AddMealState state) {
-                if (state is AddMealLoadedState) {
-                  return IconButton(
-                    onPressed: () =>
-                        _onCustomAddButtonPressed(state.usesImperialUnits),
-                    icon: const Icon(Icons.add_circle_outline),
-                  );
-                }
-                return const SizedBox();
-              },
-            )
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            children: [
-              MealSearchBar(
-                searchStringListener: _searchStringListener,
-                onSearchSubmit: _onSearchSubmit,
-                onBarcodePressed: _onBarcodeIconPressed,
-              ),
-              const SizedBox(height: 16.0),
-              TabBar(
-                  tabs: [
-                    Tab(text: S.of(context).searchFoodPage),
-                    Tab(text: S.of(context).recipeLabel),
-                    Tab(text: S.of(context).recentlyAddedLabel)
-                  ],
-                  controller: _tabController,
-                  indicatorSize: TabBarIndicatorSize.tab),
-              const SizedBox(height: 16),
-              Expanded(
-                child: TabBarView(controller: _tabController, children: [
-                  Column(
-                    children: [
-                      Container(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          alignment: Alignment.centerLeft,
-                          child: Text(S.of(context).searchResultsLabel,
-                              style:
-                                  Theme.of(context).textTheme.headlineSmall)),
-                      Expanded(
-                        child: BlocBuilder<ProductsBloc, ProductsState>(
-                          bloc: _productsBloc,
-                          builder: (context, state) {
-                            if (state is ProductsInitial) {
-                              return const DefaultsResultsWidget();
-                            } else if (state is ProductsLoadingState) {
-                              return Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const CircularProgressIndicator(),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      S
-                                          .of(context)
-                                          .productSearchMayTakeLongerMessage,
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            } else if (state is ProductsLoadedState) {
-                              if (state.visibleCount == 0) {
-                                return state.isLoadingMore
-                                    ? const Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : const NoResultsWidget();
-                              }
-                              final itemCount = state.visibleCount +
-                                  (state.isLoadingMore ? 1 : 0);
-                              return ListView.builder(
-                                controller: _productsScrollController,
-                                padding:
-                                    const EdgeInsets.only(bottom: 16, top: 8),
-                                itemCount: itemCount,
-                                itemBuilder: (context, index) {
-                                  if (index >= state.visibleCount) {
-                                    return const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 16),
-                                      child: Center(
-                                        child: SizedBox(
-                                          height: 24,
-                                          width: 24,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  return MealItemCard(
-                                    day: _day,
-                                    mealEntity: state.products[index],
-                                    addMealType: _mealType,
-                                    usesImperialUnits: state.usesImperialUnits,
-                                  );
-                                },
-                              );
-                            } else if (state is ProductsFailedState) {
-                              return ErrorDialog(
-                                errorText:
-                                    S.of(context).errorFetchingProductData,
-                                onRefreshPressed:
-                                    _onProductsRefreshButtonPressed,
-                              );
-                            } else {
-                              return const SizedBox();
-                            }
-                          },
-                        ),
-                      )
-                    ],
-                  ),
-                  RecipeResultsList(
-                    day: _day,
-                    mealType: _mealType,
-                    bloc: _recipeSearchBloc,
-                  ),
-                  Column(
-                    children: [
-                      BlocBuilder<RecentMealBloc, RecentMealState>(
-                          bloc: _recentMealBloc,
-                          builder: (context, state) {
-                            if (state is RecentMealInitial) {
-                              _recentMealBloc.add(
-                                  const LoadRecentMealEvent(searchString: ""));
-                              return const SizedBox();
-                            } else if (state is RecentMealLoadingState) {
-                              return const Padding(
-                                padding: EdgeInsets.only(top: 32),
-                                child: CircularProgressIndicator(),
-                              );
-                            } else if (state is RecentMealLoadedState) {
-                              final isOnCreateMealScreen =
-                                  locator<CreateMealBloc>()
-                                      .state
-                                      .isOnCreateMealScreen;
-
-                              final filteredMeals = isOnCreateMealScreen
-                                  ? state.recentMeals
-                                      .where((meal) =>
-                                          meal.mealOrRecipe !=
-                                          MealOrRecipeEntity.recipe)
-                                      .toList()
-                                  : state.recentMeals;
-
-                              return filteredMeals.isNotEmpty
-                                  ? Flexible(
-                                      child: ListView.builder(
-                                        itemCount: filteredMeals.length,
-                                        itemBuilder: (context, index) {
-                                          return MealItemCard(
-                                            day: _day,
-                                            mealEntity: filteredMeals[index],
-                                            addMealType: _mealType,
-                                            usesImperialUnits:
-                                                state.usesImperialUnits,
-                                          );
-                                        },
-                                      ),
-                                    )
-                                  : const NoResultsWidget();
-                            } else if (state is RecentMealFailedState) {
-                              return ErrorDialog(
-                                errorText:
-                                    S.of(context).noMealsRecentlyAddedLabel,
-                                onRefreshPressed:
-                                    _onRecentMealsRefreshButtonPressed,
-                              );
-                            }
-                            return const SizedBox();
-                          })
-                    ],
-                  )
-                ]),
-              )
-            ],
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surface,
+        elevation: 0,
+        toolbarHeight: 76,
+        centerTitle: false,
+        title: Row(children: [
+          Icon(Icons.manage_search_rounded,
+              color: colorScheme.primary, size: 23),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                Text(S.of(context).searchLabel,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(fontWeight: FontWeight.w800)),
+                Text(
+                    '${_mealType.getTypeName(context)} · ${DateFormat.MMMd(Localizations.localeOf(context).toString()).format(_day)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium),
+              ])),
+        ]),
+        actions: [
+          IconButton(
+            tooltip: S.of(context).customFoodTitle,
+            onPressed: _onCustomAddButtonPressed,
+            icon: const Icon(Icons.edit_outlined),
+            color: colorScheme.primary,
           ),
-        ));
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          child: LayoutBuilder(builder: (context, constraints) {
+            return SingleChildScrollView(
+              child: SizedBox(
+                height: math.max(constraints.maxHeight,
+                    320 * MediaQuery.textScalerOf(context).scale(1)),
+                child: Column(
+                  children: [
+                    _SearchHeader(
+                      searchStringListener: _searchStringListener,
+                      onSearchSubmit: _onSearchSubmit,
+                      onBarcodePressed: _onBarcodeIconPressed,
+                      tabController: _tabController,
+                    ),
+                    const SizedBox(height: 18),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          _ProductsResultsPane(
+                            bloc: _productsBloc,
+                            scrollController: _productsScrollController,
+                            day: _day,
+                            mealType: _mealType,
+                            onRefreshPressed: _onProductsRefreshButtonPressed,
+                            search: _searchStringListener,
+                            onCreate: _openEditMealScreen,
+                            onScan: _onBarcodeIconPressed,
+                          ),
+                          RecipeResultsList(
+                            day: _day,
+                            mealType: _mealType,
+                            bloc: _recipeSearchBloc,
+                            showCreateButton: !_isIngredientSearch,
+                          ),
+                          _RecentMealsPane(
+                            bloc: _recentMealBloc,
+                            day: _day,
+                            mealType: _mealType,
+                            onRefreshPressed:
+                                _onRecentMealsRefreshButtonPressed,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
   }
 
   void _onProductsRefreshButtonPressed() {
@@ -279,13 +183,11 @@ class _AddMealScreenState extends State<AddMealScreen>
   }
 
   void _onRecentMealsRefreshButtonPressed() {
-    _recentMealBloc.add(const LoadRecentMealEvent(searchString: ""));
+    _recentMealBloc
+        .add(LoadRecentMealEvent(searchString: _searchStringListener.value));
   }
 
   void _onSearchSubmit(String inputText) {
-    // The search is case-sensitive, so it is necessary to replace "oe"
-    // with "œ" to find the corresponding foods.
-    inputText = inputText.replaceAll("oe", "œ");
     switch (_tabController.index) {
       case 0:
         final trimmedInput = inputText.trim();
@@ -310,37 +212,21 @@ class _AddMealScreenState extends State<AddMealScreen>
         arguments: ScannerScreenArguments(_day, _mealType.getIntakeType()));
   }
 
-  void _onCustomAddButtonPressed(bool usesImperialUnits) {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(S.of(context).createCustomDialogTitle),
-            content: Text(S.of(context).createCustomDialogContent),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.of(context).pop(), // close dialog
-                  child: Text(S.of(context).dialogCancelLabel)),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    _openEditMealScreen(usesImperialUnits);
-                  },
-                  child: Text(S.of(context).buttonYesLabel)),
-            ],
-          );
-        });
+  void _onCustomAddButtonPressed() {
+    _openEditMealScreen();
   }
 
-  void _openEditMealScreen(bool usesImperialUnits) {
+  Future<void> _openEditMealScreen() async {
     // TODO
-    Navigator.of(context).pushNamed(NavigationOptions.editMealRoute,
+    await Navigator.of(context).pushNamed(NavigationOptions.editMealRoute,
         arguments: EditMealScreenArguments(
           _day,
-          MealEntity.empty(),
+          MealEntity.empty().copyWith(name: _searchStringListener.value.trim()),
           _mealType.getIntakeType(),
-          usesImperialUnits,
         ));
+    if (mounted) {
+      _recentMealBloc.add(const LoadRecentMealEvent(searchString: ''));
+    }
   }
 
   void _onProductsScroll() {
@@ -364,6 +250,247 @@ class _AddMealScreenState extends State<AddMealScreen>
     if (_productsScrollController.hasClients) {
       _productsScrollController.jumpTo(0);
     }
+  }
+}
+
+class _SearchHeader extends StatelessWidget {
+  final ValueNotifier<String> searchStringListener;
+  final ValueChanged<String> onSearchSubmit;
+  final VoidCallback onBarcodePressed;
+  final TabController tabController;
+
+  const _SearchHeader({
+    required this.searchStringListener,
+    required this.onSearchSubmit,
+    required this.onBarcodePressed,
+    required this.tabController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        MealSearchBar(
+          searchStringListener: searchStringListener,
+          onSearchSubmit: onSearchSubmit,
+          onBarcodePressed: onBarcodePressed,
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.06)),
+          ),
+          child: TabBar(
+            controller: tabController,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color:
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            labelColor: Theme.of(context).colorScheme.primary,
+            unselectedLabelColor:
+                Theme.of(context).colorScheme.onSurfaceVariant,
+            labelStyle: Theme.of(context)
+                .textTheme
+                .labelLarge
+                ?.copyWith(fontWeight: FontWeight.w700),
+            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+            tabs: [
+              for (final label in [
+                S.of(context).searchFoodPage,
+                S.of(context).searchRecipesTabLabel,
+                S.of(context).searchRecentTabLabel
+              ])
+                Tab(
+                    child:
+                        FittedBox(fit: BoxFit.scaleDown, child: Text(label))),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProductsResultsPane extends StatelessWidget {
+  final ProductsBloc bloc;
+  final ScrollController scrollController;
+  final DateTime day;
+  final AddMealType mealType;
+  final VoidCallback onRefreshPressed;
+  final ValueNotifier<String> search;
+  final VoidCallback onCreate;
+  final VoidCallback onScan;
+
+  const _ProductsResultsPane({
+    required this.bloc,
+    required this.scrollController,
+    required this.day,
+    required this.mealType,
+    required this.onRefreshPressed,
+    required this.search,
+    required this.onCreate,
+    required this.onScan,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          S.of(context).searchResultsLabel,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontWeight: FontWeight.w800,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: BlocBuilder<ProductsBloc, ProductsState>(
+            bloc: bloc,
+            builder: (context, state) {
+              if (state is ProductsInitial) {
+                return const SearchEmptyState.initial();
+              } else if (state is ProductsLoadingState) {
+                return Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 12),
+                        Text(
+                          S.of(context).productSearchMayTakeLongerMessage,
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              } else if (state is ProductsLoadedState) {
+                if (state.visibleCount == 0) {
+                  return state.isLoadingMore
+                      ? const Center(child: CircularProgressIndicator())
+                      : SearchEmptyState(
+                          query: search.value,
+                          onCreate: onCreate,
+                          onScan: onScan);
+                }
+                final itemCount =
+                    state.visibleCount + (state.isLoadingMore ? 1 : 0);
+                return ListView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.only(bottom: 16, top: 8),
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    if (index >= state.visibleCount) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Center(
+                          child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      );
+                    }
+                    return MealItemCard(
+                      day: day,
+                      mealEntity: state.products[index],
+                      addMealType: mealType,
+                    );
+                  },
+                );
+              } else if (state is ProductsFailedState) {
+                return ErrorDialog(
+                  errorText: S.of(context).errorFetchingProductData,
+                  onRefreshPressed: onRefreshPressed,
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RecentMealsPane extends StatelessWidget {
+  final RecentMealBloc bloc;
+  final DateTime day;
+  final AddMealType mealType;
+  final VoidCallback onRefreshPressed;
+
+  const _RecentMealsPane({
+    required this.bloc,
+    required this.day,
+    required this.mealType,
+    required this.onRefreshPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<RecentMealBloc, RecentMealState>(
+      bloc: bloc,
+      builder: (context, state) {
+        if (state is RecentMealInitial) {
+          bloc.add(const LoadRecentMealEvent(searchString: ""));
+          return const SizedBox();
+        } else if (state is RecentMealLoadingState) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is RecentMealLoadedState) {
+          final isOnCreateMealScreen =
+              locator<CreateMealBloc>().state.isOnCreateMealScreen;
+          final filteredMeals = isOnCreateMealScreen
+              ? state.recentMeals
+                  .where(
+                    (meal) => meal.mealOrRecipe != MealOrRecipeEntity.recipe,
+                  )
+                  .toList()
+              : state.recentMeals;
+
+          if (filteredMeals.isEmpty) {
+            return const SearchEmptyState();
+          }
+          return ListView.builder(
+            padding: const EdgeInsets.only(bottom: 16, top: 8),
+            itemCount: filteredMeals.length,
+            itemBuilder: (context, index) {
+              return MealItemCard(
+                day: day,
+                mealEntity: filteredMeals[index],
+                lastIntake: state.lastIntakes[filteredMeals[index].code ??
+                    filteredMeals[index].name ??
+                    ''],
+                addMealType: mealType,
+                onReturn: () => onRefreshPressed(),
+              );
+            },
+          );
+        } else if (state is RecentMealFailedState) {
+          return ErrorDialog(
+            errorText: S.of(context).noMealsRecentlyAddedLabel,
+            onRefreshPressed: onRefreshPressed,
+          );
+        }
+        return const SizedBox();
+      },
+    );
   }
 }
 

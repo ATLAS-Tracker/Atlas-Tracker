@@ -1,5 +1,7 @@
 import 'package:opennutritracker/core/data/data_source/user_weight_dbo.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
+import 'package:opennutritracker/core/data/sync_metadata.dart';
+import 'package:opennutritracker/core/utils/extensions.dart';
 
 class UserWeightDataSource {
   final HiveDBProvider _hive;
@@ -13,11 +15,30 @@ class UserWeightDataSource {
 
   Future<void> addUserWeight(UserWeightDbo userWeightDbo) async {
     /* Use the date at midnight as the key to ensure one entry per day */
+    final key = _normaliseDateToKey(userWeightDbo.date);
+    final version = SyncMetadata(_hive.syncMetadataBox).nextLocalVersion(
+        'user_weight',
+        userWeightDbo.date.toDayKey(),
+        _hive.userWeightBox.get(key)?.updatedat);
+    await SyncMetadata(_hive.syncMetadataBox)
+        .markWeightPending(userWeightDbo.date.toDayKey(), version);
     await _hive.userWeightBox.put(
-        _normaliseDateToKey(userWeightDbo.date), userWeightDbo);
+        key,
+        UserWeightDbo(userWeightDbo.id, userWeightDbo.weight,
+            userWeightDbo.date, version));
   }
 
-  Future<void> deleteUserWeightByDate(DateTime dateTime) async {
+  Future<void> deleteUserWeightByDate(DateTime dateTime,
+      {DateTime? deletedAt}) async {
+    final metadata = SyncMetadata(_hive.syncMetadataBox);
+    await metadata.markDeleted('user_weight', dateTime.toDayKey(),
+        previous:
+            _hive.userWeightBox.get(_normaliseDateToKey(dateTime))?.updatedat,
+        version: deletedAt);
+    final version = metadata.deletedAt('user_weight', dateTime.toDayKey());
+    if (deletedAt == null && version != null) {
+      await metadata.markWeightPending(dateTime.toDayKey(), version);
+    }
     await _hive.userWeightBox.delete(_normaliseDateToKey(dateTime));
   }
 
@@ -40,9 +61,17 @@ class UserWeightDataSource {
   }
 
   Future<void> addAllUserWeights(List<UserWeightDbo> userWeightDbos) async {
-    final Map<String, UserWeightDbo> mapped = {
-      for (var dbo in userWeightDbos) _normaliseDateToKey(dbo.date): dbo
-    };
+    final mapped = <String, UserWeightDbo>{};
+    final metadata = SyncMetadata(_hive.syncMetadataBox);
+    for (final dbo in userWeightDbos) {
+      final key = _normaliseDateToKey(dbo.date);
+      final current = mapped[key] ?? _hive.userWeightBox.get(key);
+      final deleted = metadata.deletedAt('user_weight', dbo.date.toDayKey());
+      if ((current == null || dbo.updatedat.isAfter(current.updatedat)) &&
+          (deleted == null || dbo.updatedat.isAfter(deleted))) {
+        mapped[key] = dbo;
+      }
+    }
     await _hive.userWeightBox.putAll(mapped);
   }
 }

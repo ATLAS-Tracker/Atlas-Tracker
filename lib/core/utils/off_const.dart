@@ -1,14 +1,26 @@
 class OFFConst {
   static const offWebsiteUrl = "https://world.openfoodfacts.org/";
   static const _offBaseUrl = "world.openfoodfacts.org";
-  static const _offSearchTag = "/cgi/search.pl";
+  // search-a-licious: the legacy /cgi/search.pl is rate limited and mostly
+  // answers 503.
+  static const _offSearchBaseUrl = "search.openfoodfacts.org";
+  static const _offSearchTag = "/search";
   static const _offProductSearchTag = "/api/v2/product";
 
   static const offHttpSuccessCode = 200;
   static const offHttpDownCodes = [502, 503, 500];
   static const offProductNotFoundCode = 404;
 
-  static const _offProductSearchTermsTag = "search_terms";
+  static const _offSearchQueryTag = "q";
+  static const _offSearchLangsTag = "langs";
+  static const _offSearchCountryFilter = 'countries_tags:"en:france"';
+  // Drops sparse entries (no photo, no category...) that clutter results.
+  static const _offSearchCompletenessFilter = 'completeness:[0.4 TO *]';
+  // No sort_by: sorting by popularity overrode relevance, so a product matching
+  // one typed word outranked the one matching all of them. OFFDataSource ranks
+  // by matched words, then popularity (unique_scans_n).
+  // Lucene operators in user input would break or alter the query.
+  static final _offSearchSyntaxChars = RegExp(r'[+\-!(){}\[\]^"~*?:\\/&|]');
   static const _offFieldsTag = "fields";
   static const _offJsonTag = "json";
   static const _offJsonValue = "true";
@@ -32,6 +44,7 @@ class OFFConst {
   static const _offServingQuantityTag = "serving_quantity";
   static const _offServingSizeTag = "serving_size";
   static const _offNutrimentsTag = "nutriments";
+  static const _offUniqueScansTag = "unique_scans_n";
 
   static const _returnFields = [
     _offCodeTag,
@@ -48,7 +61,8 @@ class OFFConst {
     _offQuantityTag,
     _offServingQuantityTag,
     _offServingSizeTag,
-    _offNutrimentsTag
+    _offNutrimentsTag,
+    _offUniqueScansTag
   ];
 
   static String _getReturnFields() => _returnFields.join(",");
@@ -56,17 +70,24 @@ class OFFConst {
   static const _offPageSizeTag = "page_size";
   static const _offPageTag = "page";
 
+  /// [brand] restricts to products whose brand contains that word
+  /// ("brands:carrefour"), for a brand typed among the search words.
   static Uri getOffWordSearchUrl(String searchString,
-      {int page = 1, int pageSize = 20}) {
+      {int page = 1, int pageSize = 20, String? brand}) {
+    final terms = searchString.replaceAll(_offSearchSyntaxChars, ' ').trim();
+    final brandFilter = brand == null
+        ? ''
+        : ' brands:${brand.replaceAll(_offSearchSyntaxChars, '')}';
     final queryParameters = {
-      _offProductSearchTermsTag: searchString,
+      _offSearchQueryTag:
+          '$terms$brandFilter $_offSearchCountryFilter $_offSearchCompletenessFilter',
+      _offSearchLangsTag: 'fr',
       _offFieldsTag: _getReturnFields(),
-      _offJsonTag: _offJsonValue,
       _offPageTag: page.toString(),
       _offPageSizeTag: pageSize.toString(),
     };
 
-    return Uri.https(_offBaseUrl, _offSearchTag, queryParameters);
+    return Uri.https(_offSearchBaseUrl, _offSearchTag, queryParameters);
   }
 
   static Uri getOffBarcodeSearchUri(String barcode) {

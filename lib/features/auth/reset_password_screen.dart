@@ -48,6 +48,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       await showDialog(
         context: context,
         builder: (_) => AlertDialog(
+          scrollable: true,
           title: Text(S.of(context).resetPasswordChanged),
           actions: [
             TextButton(
@@ -121,6 +122,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
+                          tooltip: _obscureNewPassword
+                              ? S.of(context).showPasswordLabel
+                              : S.of(context).hidePasswordLabel,
                           icon: Icon(_obscureNewPassword
                               ? Icons.visibility_off
                               : Icons.visibility),
@@ -129,6 +133,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ),
                         ),
                         IconButton(
+                          tooltip: S.of(context).passwordRulesHelpLabel,
                           icon: const Icon(Icons.help_outline_outlined),
                           onPressed: () => showDialog(
                             context: context,
@@ -159,6 +164,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     Icons.lock_outline,
                   ).copyWith(
                     suffixIcon: IconButton(
+                      tooltip: _obscureConfirmPassword
+                          ? S.of(context).showPasswordLabel
+                          : S.of(context).hidePasswordLabel,
                       icon: Icon(_obscureConfirmPassword
                           ? Icons.visibility_off
                           : Icons.visibility),

@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:opennutritracker/core/styles/color_macro.dart';
+import 'package:opennutritracker/generated/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
@@ -70,20 +72,102 @@ class _PhotoPickerButtonState extends State<PhotoPickerButton> {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: _takeAndStorePhoto,
-      icon: _imagePath == null
-          ? const Icon(Icons.camera_alt, size: 40)
-          : ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                File(_imagePath!),
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-              ),
+    final s = S.of(context);
+    final label =
+        _imagePath == null ? s.customFoodAddPhoto : s.customFoodChangePhoto;
+    return Semantics(
+      button: true,
+      label: label,
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: atlasBrandGradientColors)),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            key: const ValueKey('recipe-cover'),
+            onTap: _takeAndStorePhoto,
+            child: SizedBox(
+              height: 184,
+              child: Stack(children: [
+                if (_imagePath != null)
+                  Positioned.fill(
+                      child: Image.file(File(_imagePath!),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                              child: Icon(Icons.restaurant_menu_rounded,
+                                  color: Colors.white, size: 48)))),
+                if (_imagePath == null) ...[
+                  Positioned(
+                      right: -32,
+                      top: -52,
+                      child: Container(
+                          width: 210,
+                          height: 210,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.07)))),
+                  Positioned(
+                      right: 22,
+                      top: 28,
+                      child: Icon(Icons.restaurant_menu_rounded,
+                          size: 72,
+                          color: Colors.white.withValues(alpha: 0.24))),
+                ],
+                if (_imagePath != null)
+                  Positioned.fill(
+                      child: DecoratedBox(
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.65)
+                      ])))),
+                Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                    child: Row(children: [
+                      Expanded(
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                            Text(s.recipeCoverLabel,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800)),
+                            const SizedBox(height: 4),
+                            Text(label,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.80))),
+                          ])),
+                      const SizedBox(width: 12),
+                      Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(16)),
+                          child: const Icon(Icons.add_a_photo_outlined,
+                              color: Colors.white, size: 23)),
+                    ])),
+              ]),
             ),
-      tooltip: _imagePath == null ? "Prendre une photo" : "Changer la photo",
+          ),
+        ),
+      ),
     );
   }
 }

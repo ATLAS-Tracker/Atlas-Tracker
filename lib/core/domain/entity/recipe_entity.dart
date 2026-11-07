@@ -6,15 +6,18 @@ import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dar
 class RecipeEntity extends Equatable {
   final MealEntity meal; // Le plat principal (la recette elle-même)
   final List<IntakeForRecipeEntity> ingredients; // Les composants (ingrédients)
+  final DateTime? updatedAt;
 
   const RecipeEntity({
     required this.meal,
     required this.ingredients,
+    this.updatedAt,
   });
 
   /// Convertir depuis un RecipesDBO Hive
   factory RecipeEntity.fromRecipesDBO(RecipesDBO dbo) {
     return RecipeEntity(
+      updatedAt: dbo.updatedAt,
       meal: MealEntity.fromMealDBO(dbo.recipe),
       ingredients: dbo.ingredients
           .map((ingredient) => IntakeForRecipeEntity(
@@ -31,5 +34,5 @@ class RecipeEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [meal, ingredients];
+  List<Object?> get props => [meal, ingredients, updatedAt];
 }

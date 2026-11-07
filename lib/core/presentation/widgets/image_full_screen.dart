@@ -34,10 +34,12 @@ class _ImageFullScreenState extends State<ImageFullScreen> {
     final isRemoteImage = _isRemote(imageUrl);
 
     return Scaffold(
+      backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
+        foregroundColor: Colors.white,
       ),
       body: InteractiveViewer(
         child: Hero(
@@ -48,7 +50,7 @@ class _ImageFullScreenState extends State<ImageFullScreen> {
                   height: double.infinity,
                   cacheManager: locator<CacheManager>(),
                   imageUrl: imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   placeholder: (context, string) => const MealPlaceholder(),
                   errorWidget: (context, url, error) => const MealPlaceholder(),
                 )
@@ -63,7 +65,7 @@ class _ImageFullScreenState extends State<ImageFullScreen> {
                       File(path),
                       width: double.infinity,
                       height: double.infinity,
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) =>
                           const MealPlaceholder(),
                     );

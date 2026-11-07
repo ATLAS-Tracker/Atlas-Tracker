@@ -49,7 +49,6 @@ dependencies:
 
   percent_indicator: ^4.2.4
   horizontal_picker: ^1.2.0
-  table_calendar: ^3.1.3
   introduction_screen: ^3.1.14
   auto_size_text: ^3.0.0
   animated_flip_counter: ^0.3.4
@@ -91,6 +90,8 @@ flutter:
     - assets/icon/ont_logo_square.png
     - assets/icon/ont_logo_square.svg
     - assets/icon/ont_logo_square_light.png
+    - assets/icon/atlas_tracker_logo.png
+    - assets/icon/macro_carbs_corn.png
     - assets/icon/ont_banner_top.png
     - assets/icon/ont_banner_top_light.png
   fonts:

@@ -49,14 +49,13 @@ class ImportDataSupabaseUsecase {
   );
 
   Future<bool> importData(
-    String exportZipFileName,
-    String userActivityJsonFileName,
-    String userIntakeJsonFileName,
-    String trackedDayJsonFileName,
-    String userWeightJsonFileName,
-    String recipesJsonFileName,
-    String userJsonFileName,
-  ) async {
+      String exportZipFileName,
+      String userActivityJsonFileName,
+      String userIntakeJsonFileName,
+      String trackedDayJsonFileName,
+      String userWeightJsonFileName,
+      String recipesJsonFileName,
+      String userJsonFileName) async {
     try {
       final userId = _client.auth.currentUser?.id;
       if (userId == null) {
@@ -189,6 +188,7 @@ class ImportDataSupabaseUsecase {
               .deleteIntake(IntakeEntity.fromIntakeDBO(existing));
         }
       }
+
       for (final dbo in intakeDBOs) {
         final current = intakeMap[dbo.id];
         if (current == null) {
@@ -248,6 +248,7 @@ class ImportDataSupabaseUsecase {
           await _userWeightRepository.deleteUserWeightByDate(existing.date);
         }
       }
+
       for (final dbo in userWeightDBOs) {
         final key = DateTime(dbo.date.year, dbo.date.month, dbo.date.day)
             .toIso8601String();

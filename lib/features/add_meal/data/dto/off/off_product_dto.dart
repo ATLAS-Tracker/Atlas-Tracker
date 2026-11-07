@@ -45,10 +45,12 @@ class OFFProductDTO {
         break;
     }
 
-    // If local language is not available, return available language
+    // If local language is not available, prefer French (the app targets
+    // France): product_name is the product's main language, e.g. Spanish.
     if (localeName == null || localeName.isEmpty) {
-      localeName =
-          product_name ?? product_name_en ?? product_name_fr ?? product_name_de;
+      localeName = [product_name_fr, product_name, product_name_en, product_name_de]
+          .firstWhere((name) => name != null && name.trim().isNotEmpty,
+              orElse: () => null);
     }
     return localeName;
   }

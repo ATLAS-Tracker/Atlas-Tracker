@@ -55,6 +55,44 @@ See [Data Protection](https://www.iubenda.com/privacy-policy/53501884)
 - ~~Add Imperial unit support~~
 - Add support for Material You themes
 
+### Urgent (Supabase prod, checked 2026-11-02)
+- Security: `fdc_food`, `fdc_portions`, `fdc_nutrients` have RLS disabled and `anon` holds INSERT/UPDATE/DELETE/TRUNCATE, so anyone with the app's public key can edit or wipe the food database. Fix: `enable row level security` on the 3 tables + one `select` policy for `anon, authenticated` (the app only reads them), and revoke write grants from `anon`/`authenticated`
+- Missing tables: `user_intakes` and `user_recipes` don't exist in prod (`supabase/journal_remote_sync.sql` never applied), so the journal/recipe sync of this branch fails silently. Apply the script before releasing (after fixing the delete/overwrite sync bugs below)
+- `fdc_food` in prod only has `fdc_id` + `description_fr` (no `description_en`/`description_de`/`picture_url`): `SPConst`/`SpFdcFoodDTO` still reference them; English/German locales are unsupported for generic foods
+
+### Bugs (review of `refactor/ui`)
+Critical:
+- Coach startup sync pulls students' `tracked_days` / `user_weight` into the coach's own journal: missing `.eq('user_id', uid)` (`startup_remote_sync_service.dart` `_fetchRemoteTrackedDays` / `_fetchRemoteUserWeights`)
+- Deletes never reach Supabase (`user_intakes`, `user_recipes`): deleted meals/recipes come back at next startup (needs remote delete or `deleted_at` tombstone)
+- Imperial: weight screen shows lbs but `EditableTextWidget` sends the typed value as kg (158 lbs saved as 158 kg); `UnitCalc.kgToLbs` rounds to integer so ±0.1 step is invisible
+
+Sync:
+- `syncLocalToRemote` upserts everything without comparing `updated_at`: a stale device overwrites newer edits; recipes get `updated_at = now` and are only pulled when missing locally, so recipe edits never propagate
+- `_restoreSupabaseArchiveAtStartup` (`main.dart`) re-runs on every launch when the user has no recipes and overwrites local recipes; redundant with row sync, remove it
+- Startup awaits 3–4 Supabase calls before `runApp` with no timeout: stuck on splash with a bad network
+- `_syncing` guard drops a push fired during login sync instead of rescheduling it
+- Profile edits made offline are reverted by `syncProfileFromSupabase` at next startup
+- `updated_at` is client-supplied (no DB trigger); `deleted_at` column unused
+
+Weight / Home:
+- "Goal / To goal" uses profile `weightKG`, not a target weight (no target field exists)
+- `getWeightsFromPastDays` does one lookup per day: history tab = 7 lookups per entry, "1y/All" chart = 365+ lookups, rerun after each save
+- `HomeBloc` awaits `_getCoachName` (2 Supabase queries) on every `LoadItemsEvent`: spinner when offline
+- Home weight card uses `getTodayUserWeight`: empty unless weighed in today
+- `HomeBloc.updateIntakeItem` picks add/remove from the amount delta, wrong when kcal and macros move in opposite directions; reuse the per-field version from `CalendarDayBloc`
+- Weight history dates have no year; step labels `'-0,5'`/`'+0,5'` hardcode the decimal comma
+
+Coach:
+- DST: `Duration(days: n)` arithmetic skips/repeats a day (`student_trend_view.dart:50`, `student_macros_page.dart` day navigator, `set_student_macros_page.dart` next day, `diary_table_calendar.dart`); use `DateTime(y, m, d ± n)`
+- Trend averages include a partially logged today
+- Saving a future-dated macro goal overwrites the current one (upsert on `user_id`)
+- Students list pull-to-refresh replaces the list with a spinner and rethrows errors into `onRefresh`
+- Students card shows "x / 0 kcal" when `calorieGoal` is missing; `trendVsGoal` reused for "vs previous goal"; `'g'` / `' %'` hardcoded instead of l10n
+
+### Cleanup (~1,400 removable lines)
+- Dead: non-compact `IntakeVerticalList` / `IntakeCard` paths, `DayInfoWidget`, `weight_vertical_list`, `weight_card`, `weight_info`, `onWeightItemLongPressed`, `DashboardWidget.dailyStepCount`, student bloc `MacroType`/`TimeRange` events, `AddMacroGoalUsecase.addMacroGoal`, `calculations*` arb keys, `_bodyGoalPlaceholder`
+- Duplicates: newest-wins diff ×8 and `_canSync` ×2 in sync services, image-with-placeholder ×3, unit localizing ×3, photo picker ×2, kg→lbs display ×4, `_trendColor` vs `weightTrendColor`, card decoration vs `atlasCardDecoration`, dialog shape ×7 (move to `dialogTheme`), inline `metric()` vs `TrendPillSelector`
+
 ## Contribution
 Contributions to AtlasTracker are welcome! If you find any issues or have suggestions for new features, please open an issue or submit a pull request. Make sure to follow the project's code style and guidelines.
 

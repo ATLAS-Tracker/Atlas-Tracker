@@ -16,14 +16,20 @@ class RecipesDBO extends HiveObject {
 
   @HiveField(1)
   List<IntakeForRecipeDBO> ingredients;
+  @HiveField(2)
+  @JsonKey(name: 'updated_at')
+  DateTime updatedAt;
 
   RecipesDBO({
     required this.recipe,
     required this.ingredients,
-  });
+    DateTime? updatedAt,
+  }) : updatedAt =
+            updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
   factory RecipesDBO.fromRecipeEntity(RecipeEntity entity) {
     return RecipesDBO(
+      updatedAt: entity.updatedAt,
       recipe: MealDBO.fromMealEntity(entity.meal),
       ingredients: entity.ingredients.map((ingredient) {
         return IntakeForRecipeDBO(
@@ -41,6 +47,7 @@ class RecipesDBO extends HiveObject {
 
   RecipeEntity toEntity() {
     return RecipeEntity(
+      updatedAt: updatedAt,
       meal: MealEntity.fromMealDBO(recipe),
       ingredients: ingredients.map((i) {
         return IntakeForRecipeEntity(

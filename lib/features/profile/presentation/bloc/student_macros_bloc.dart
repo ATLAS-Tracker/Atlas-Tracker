@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -6,18 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 part 'student_macros_event.dart';
 part 'student_macros_state.dart';
 
-enum MacroType { calories, carbs, fat, protein, weight, steps }
-
-enum TimeRange { week, month, threeMonths, sixMonths, year }
-
 class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
   final SupabaseClient _supabase;
 
   StudentMacrosBloc(this._supabase) : super(StudentMacrosInitial()) {
     on<LoadStudentMacrosEvent>(_onLoad);
     on<ChangeDateEvent>(_onChangeDate);
-    on<ChangeMacroTypeEvent>(_onChangeMacro);
-    on<ChangeRangeEvent>(_onChangeRange);
     on<UpdateDayMacrosEvent>(_onUpdateDayMacros);
   }
 
@@ -25,19 +21,27 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     LoadStudentMacrosEvent event,
     Emitter<StudentMacrosState> emit,
   ) async {
-    emit(StudentMacrosLoading());
+    final previous = state;
+    // Rafraîchissement : garde l'écran et la date affichés.
+    if (previous is! StudentMacrosLoaded) emit(StudentMacrosLoading());
     try {
-      final macros = await _fetchMacros(event.studentId);
+      final (macros, targetWeight) = await (
+        _fetchMacros(event.studentId),
+        _fetchTargetWeight(event.studentId),
+      ).wait;
       emit(
         StudentMacrosLoaded(
           macros: macros,
-          selectedDate: DateTime.now(),
-          selectedMacro: MacroType.calories,
-          selectedRange: TimeRange.week,
+          targetWeight: targetWeight,
+          selectedDate: previous is StudentMacrosLoaded
+              ? previous.selectedDate
+              : DateTime.now(),
         ),
       );
     } catch (e) {
       emit(StudentMacrosError(e.toString()));
+    } finally {
+      event.done?.complete();
     }
   }
 
@@ -57,26 +61,6 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     }
   }
 
-  void _onChangeMacro(
-    ChangeMacroTypeEvent event,
-    Emitter<StudentMacrosState> emit,
-  ) {
-    final current = state;
-    if (current is StudentMacrosLoaded) {
-      emit(current.copyWith(selectedMacro: event.macro));
-    }
-  }
-
-  void _onChangeRange(
-    ChangeRangeEvent event,
-    Emitter<StudentMacrosState> emit,
-  ) {
-    final current = state;
-    if (current is StudentMacrosLoaded) {
-      emit(current.copyWith(selectedRange: event.range));
-    }
-  }
-
   void _onUpdateDayMacros(
     UpdateDayMacrosEvent event,
     Emitter<StudentMacrosState> emit,
@@ -91,6 +75,16 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     }
   }
 
+  Future<double?> _fetchTargetWeight(String studentId) async {
+    final row = await _supabase
+        .from('users')
+        .select('weight_kg')
+        .eq('id', studentId)
+        .maybeSingle()
+        .timeout(const Duration(seconds: 8));
+    return (row?['weight_kg'] as num?)?.toDouble();
+  }
+
   Future<Map<String, Map<String, dynamic>>> _fetchMacros(
     String studentId,
   ) async {
@@ -102,28 +96,22 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     final macroResponse = await _supabase
         .from('tracked_days')
         .select(
-          'day, calorieGoal, caloriesTracked, caloriesBurned, carbsGoal, carbsTracked, fatGoal, fatTracked, proteinGoal, proteinTracked',
+          'day, calorieGoal, caloriesTracked, carbsGoal, carbsTracked, fatGoal, fatTracked, proteinGoal, proteinTracked',
         )
         .eq('user_id', studentId)
         .gte('day', startDate)
         .lte('day', endDate)
-        .order('day');
+        .order('day')
+        .timeout(const Duration(seconds: 8));
 
     final weightResponse = await _supabase
         .from('user_weight')
-        .select('date, weight')
+        .select()
         .eq('user_id', studentId)
         .gte('date', startDate)
         .lte('date', endDate)
-        .order('date');
-
-    final stepsResponse = await _supabase
-        .from('daily_steps')
-        .select('date, steps')
-        .eq('user_id', studentId)
-        .gte('date', startDate)
-        .lte('date', endDate)
-        .order('date');
+        .order('date')
+        .timeout(const Duration(seconds: 8));
 
     final Map<String, Map<String, dynamic>> result = {
       for (final Map<String, dynamic> item in macroResponse)
@@ -131,15 +119,10 @@ class StudentMacrosBloc extends Bloc<StudentMacrosEvent, StudentMacrosState> {
     };
 
     for (final Map<String, dynamic> item in weightResponse) {
+      if (item['deleted_at'] != null) continue;
       final dateStr = item['date'] as String;
       result.putIfAbsent(dateStr, () => {});
       result[dateStr]!['weight'] = item['weight'];
-    }
-
-    for (final Map<String, dynamic> item in stepsResponse) {
-      final dateStr = item['date'] as String;
-      result.putIfAbsent(dateStr, () => {});
-      result[dateStr]!['steps'] = item['steps'];
     }
 
     return result;

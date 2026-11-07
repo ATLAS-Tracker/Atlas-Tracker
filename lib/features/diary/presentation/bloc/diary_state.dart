@@ -14,12 +14,16 @@ class DiaryLoadingState extends DiaryState {
   List<Object?> get props => [];
 }
 
+class DiaryErrorState extends DiaryState {
+  @override
+  List<Object?> get props => [];
+}
+
 class DiaryLoadedState extends DiaryState {
   final Map<String, TrackedDayEntity> trackedDayMap;
-  final bool usesImperialUnits;
 
-  const DiaryLoadedState(this.trackedDayMap, this.usesImperialUnits);
+  const DiaryLoadedState(this.trackedDayMap);
 
   @override
-  List<Object?> get props => [trackedDayMap, usesImperialUnits];
+  List<Object?> get props => [trackedDayMap];
 }

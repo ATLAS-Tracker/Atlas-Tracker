@@ -1,24 +1,24 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';
 import 'package:opennutritracker/core/utils/id_generator.dart';
+import 'package:opennutritracker/core/utils/off_const.dart';
 import 'package:opennutritracker/core/utils/supported_language.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_const.dart';
-import 'package:opennutritracker/features/add_meal/data/dto/fdc/fdc_food_dto.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/fdc_sp/sp_fdc_food_dto.dart';
 import 'package:opennutritracker/features/add_meal/data/dto/off/off_product_dto.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_nutriments_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 
 class MealEntity extends Equatable {
-  static const liquidUnits = {'ml', 'l', 'dl', 'cl', 'fl oz', 'fl.oz'};
+  static const liquidUnits = {'ml', 'l', 'dl', 'cl'};
   static const solidUnits = {
     'kg',
     'g',
     'mg',
     'µg',
-    'oz',
   };
 
   final String? code;
@@ -37,13 +37,31 @@ class MealEntity extends Equatable {
   final String? servingUnit;
   final String? servingSize;
 
-  get hasServingValues => servingQuantity != null && servingUnit != null;
+  bool get hasServingValues =>
+      servingQuantity != null &&
+      servingQuantity!.isFinite &&
+      servingQuantity! > 0 &&
+      const {'g', 'ml', 'serving'}.contains(servingUnit);
+
+  static String metricUnit(String? unit) {
+    final normalized = unit?.trim().toLowerCase();
+    if (normalized == 'serving') return 'serving';
+    // Legacy intake amounts already use base units; only their labels change.
+    return liquidUnits.contains(normalized) ||
+            normalized == 'fl oz' ||
+            normalized == 'fl.oz'
+        ? 'ml'
+        : 'g';
+  }
 
   final MealSourceEntity source;
 
   final MealNutrimentsEntity nutriments;
 
-  bool get isLiquid => liquidUnits.contains(mealUnit);
+  bool get isPortionBased =>
+      mealUnit == 'serving' && servingUnit == 'serving' && servingQuantity == 1;
+
+  bool get isLiquid => metricUnit(mealUnit) == 'ml';
 
   bool get isSolid => solidUnits.contains(mealUnit);
 
@@ -97,6 +115,7 @@ class MealEntity extends Equatable {
       source: MealSourceEntity.fromMealSourceDBO(mealDBO.source));
 
   factory MealEntity.fromOFFProduct(OFFProductDTO offProduct) {
+    final serving = _offServing(offProduct);
     return MealEntity(
         code: offProduct.code,
         name: offProduct
@@ -104,33 +123,19 @@ class MealEntity extends Equatable {
         brands: offProduct.brands,
         thumbnailImageUrl: offProduct.image_front_thumb_url,
         mainImageUrl: offProduct.image_front_url,
-        url: offProduct.url,
+        // Search results carry no url, the product page is derived from the code.
+        url: offProduct.url ??
+            (offProduct.code == null
+                ? null
+                : '${OFFConst.offWebsiteUrl}product/${offProduct.code}'),
         mealQuantity: offProduct.product_quantity?.toString(),
         mealUnit: _tryGetUnit(offProduct.quantity),
-        servingQuantity: _tryQuantityCast(offProduct.serving_quantity),
-        servingUnit: _tryGetUnit(offProduct.quantity),
+        servingQuantity: serving.quantity,
+        servingUnit: serving.unit,
         servingSize: offProduct.serving_size,
         nutriments:
             MealNutrimentsEntity.fromOffNutriments(offProduct.nutriments),
         source: MealSourceEntity.off);
-  }
-
-  factory MealEntity.fromFDCFood(FDCFoodDTO fdcFood) {
-    final fdcId = fdcFood.fdcId?.toInt().toString();
-
-    return MealEntity(
-        code: fdcId,
-        name: fdcFood.description,
-        brands: fdcFood.brandName,
-        url: FDCConst.getFoodDetailUrlString(fdcId),
-        mealQuantity: fdcFood.packageWeight,
-        mealUnit: fdcFood.servingSizeUnit,
-        servingQuantity: fdcFood.servingSize,
-        servingUnit: fdcFood.servingSizeUnit,
-        servingSize: fdcFood.servingSizeUnit,
-        nutriments:
-            MealNutrimentsEntity.fromFDCNutriments(fdcFood.foodNutrients),
-        source: MealSourceEntity.fdc);
   }
 
   factory MealEntity.fromSpFDCFood(SpFdcFoodDTO foodItem) {
@@ -156,8 +161,7 @@ class MealEntity extends Equatable {
 
     return MealEntity(
         code: fdcId,
-        name: foodItem.getLocaleDescription(
-            SupportedLanguage.fromCode(Platform.localeName)),
+        name: foodItem.descriptionFr,
         brands: null,
         thumbnailImageUrl: foodItem.pictureUrl,
         mainImageUrl: foodItem.pictureUrl,
@@ -174,6 +178,34 @@ class MealEntity extends Equatable {
 
   MealOrRecipeEntity get mealOrRecipe {
     return nutriments.mealOrRecipe;
+  }
+
+  static ({double? quantity, String? unit}) _offServing(OFFProductDTO product) {
+    final matches = RegExp(
+      r'(\d+(?:[.,]\d+)?)\s*(kg|mg|g|ml|cl|l)\b',
+      caseSensitive: false,
+    ).allMatches(product.serving_size ?? '').toList();
+    // Mixed ice cream portions give both weight and volume; prefer the weight.
+    final match = matches.firstWhereOrNull(
+          (match) => const {'kg', 'mg', 'g'}.contains(match[2]!.toLowerCase()),
+        ) ??
+        matches.firstOrNull;
+    if (match != null) {
+      final unit = match[2]!.toLowerCase();
+      final factor = const {'kg': 1000.0, 'mg': 0.001, 'cl': 10.0, 'l': 1000.0};
+      final quantity =
+          double.parse(match[1]!.replaceAll(',', '.')) * (factor[unit] ?? 1);
+      if (quantity.isFinite && quantity > 0) {
+        return (
+          quantity: quantity,
+          unit: const {'kg', 'mg', 'g'}.contains(unit) ? 'g' : 'ml',
+        );
+      }
+    }
+    return (
+      quantity: _tryQuantityCast(product.serving_quantity),
+      unit: _tryGetUnit(product.quantity),
+    );
   }
 
   /// Value returned from OFF can either be String, int or double.

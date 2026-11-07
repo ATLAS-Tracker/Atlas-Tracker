@@ -1,18 +1,23 @@
+import 'package:opennutritracker/core/presentation/refresh_journal.dart';
+import 'package:opennutritracker/core/presentation/widgets/intake_actions.dart';
+import 'dart:async';
+import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/domain/entity/intake_entity.dart';
+import 'package:opennutritracker/core/domain/entity/intake_for_recipe_entity.dart';
 import 'package:opennutritracker/core/domain/entity/tracked_day_entity.dart';
-import 'package:opennutritracker/core/presentation/widgets/copy_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/delete_all_dialog.dart';
 import 'package:opennutritracker/core/presentation/widgets/intake_card.dart';
-import 'package:opennutritracker/core/presentation/widgets/placeholder_card.dart';
+import 'package:opennutritracker/core/presentation/widgets/macro_icon.dart';
+import 'package:opennutritracker/core/styles/color_macro.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/navigation_options.dart';
 import 'package:opennutritracker/core/utils/vertical_list_popup_menu_selections.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_screen.dart';
 import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
-import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
-import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
+import 'package:opennutritracker/features/create_meal/create_meal_screen.dart';
+import 'package:opennutritracker/features/create_meal/presentation/bloc/create_meal_bloc.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/meal_detail/presentation/bloc/meal_detail_bloc.dart';
 import 'package:opennutritracker/generated/l10n.dart';
@@ -20,35 +25,47 @@ import 'package:opennutritracker/generated/l10n.dart';
 class IntakeVerticalList extends StatefulWidget {
   final DateTime day;
   final String title;
-  final IconData listIcon;
   final AddMealType addMealType;
   final List<IntakeEntity> intakeList;
-  final bool usesImperialUnits;
-  final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity)
+  final FutureOr<void> Function(
+          IntakeEntity intake, TrackedDayEntity? trackedDayEntity)
       onDeleteIntakeCallback;
+  final Future<void> Function(List<IntakeEntity>) onDeleteAllIntakesCallback;
+  final Future<void> Function()? onCopyFromYesterday;
   final Function(BuildContext, IntakeEntity)? onItemLongPressedCallback;
   final Function(bool)? onItemDragCallback;
-  final Function(BuildContext, IntakeEntity, bool)? onItemTappedCallback;
-  final Function(IntakeEntity intake, TrackedDayEntity? trackedDayEntity,
-      AddMealType? type)? onCopyIntakeCallback;
+  final Function(BuildContext, IntakeEntity)? onItemTappedCallback;
+  final Future<void> Function(
+    List<IntakeEntity> intakes,
+    DateTime targetDay,
+    AddMealType type,
+  )? onCopyMealToDateCallback;
   final TrackedDayEntity? trackedDayEntity;
   final bool isDropZone;
+  final bool isCollapsible;
+  final int? foodPreviewLimit;
+  final bool initiallyExpanded;
+  final double horizontalMargin;
 
   const IntakeVerticalList({
     super.key,
     required this.day,
     required this.title,
-    required this.listIcon,
     required this.addMealType,
     required this.intakeList,
-    required this.usesImperialUnits,
     required this.onDeleteIntakeCallback,
+    required this.onDeleteAllIntakesCallback,
+    this.onCopyFromYesterday,
     this.onItemLongPressedCallback,
     this.onItemDragCallback,
     this.onItemTappedCallback,
-    this.onCopyIntakeCallback,
+    this.onCopyMealToDateCallback,
     this.trackedDayEntity,
     this.isDropZone = true,
+    this.isCollapsible = false,
+    this.foodPreviewLimit = 2,
+    this.initiallyExpanded = true,
+    this.horizontalMargin = 20,
   });
 
   @override
@@ -58,187 +75,564 @@ class IntakeVerticalList extends StatefulWidget {
 class _IntakeVerticalListState extends State<IntakeVerticalList> {
   late MealDetailBloc _mealDetailBloc;
   late HomeBloc _homeBloc;
+  late bool _isExpanded;
+  bool _showAllFoods = false;
 
   @override
   void initState() {
     _mealDetailBloc = locator<MealDetailBloc>();
     _homeBloc = locator<HomeBloc>();
+    _isExpanded = widget.initiallyExpanded;
     super.initState();
   }
 
-  double get totalKcal {
-    return widget.intakeList
-        .fold(0, (previousValue, element) => previousValue + element.totalKcal);
+  @override
+  void didUpdateWidget(covariant IntakeVerticalList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!DateUtils.isSameDay(oldWidget.day, widget.day) ||
+        oldWidget.addMealType != widget.addMealType) {
+      _isExpanded = widget.initiallyExpanded;
+      _showAllFoods = false;
+    }
+    if (widget.foodPreviewLimit == null ||
+        widget.intakeList.length <= widget.foodPreviewLimit!) {
+      _showAllFoods = false;
+    }
+  }
+
+  double get totalKcal => widget.intakeList.fold(
+        0,
+        (previousValue, element) => previousValue + element.totalKcal,
+      );
+
+  double get totalCarbs => widget.intakeList.fold(
+        0,
+        (previousValue, element) => previousValue + element.totalCarbsGram,
+      );
+
+  double get totalFats => widget.intakeList.fold(
+        0,
+        (previousValue, element) => previousValue + element.totalFatsGram,
+      );
+
+  double get totalProteins => widget.intakeList.fold(
+        0,
+        (previousValue, element) => previousValue + element.totalProteinsGram,
+      );
+
+  bool get _canCopyMeal =>
+      widget.isCollapsible &&
+      widget.onCopyMealToDateCallback != null &&
+      widget.intakeList.isNotEmpty;
+
+  Color _mealAccentColor() {
+    switch (widget.addMealType) {
+      case AddMealType.breakfastType:
+        return breakfastColor;
+      case AddMealType.lunchType:
+        return lunchColor;
+      case AddMealType.dinnerType:
+        return dinnerColor;
+      case AddMealType.snackType:
+        return snackColor;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          alignment: Alignment.centerLeft,
-          child: Row(
-            children: [
-              Icon(widget.listIcon,
-                  size: 24, color: Theme.of(context).colorScheme.onSurface),
-              const SizedBox(width: 4.0),
-              Text(
-                widget.title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(color: Theme.of(context).colorScheme.onSurface),
-              ),
-              const Spacer(),
-              if (totalKcal > 0) ...[
-                Text(
-                  '${totalKcal.toInt()} ${S.of(context).kcalLabel}',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7)),
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final separatorColor = colors.onSurface.withValues(
+      alpha: colors.brightness == Brightness.dark ? 0.10 : 0.06,
+    );
+    return Container(
+      margin: EdgeInsets.fromLTRB(
+        widget.horizontalMargin,
+        12,
+        widget.horizontalMargin,
+        0,
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 8, 12, 8),
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colors.onSurface.withValues(alpha: 0.06)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.isCollapsible)
+            _buildJournalMealHeader(context)
+          else ...[
+            Row(
+              children: [
+                _MealTypeIcon(
+                    mealType: widget.addMealType,
+                    color: _mealAccentColor(),
+                    size: 23),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.title,
+                          style: theme.textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800)),
+                      Text(
+                          '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
+                          style: theme.textTheme.bodySmall
+                              ?.copyWith(color: colors.onSurfaceVariant)),
+                    ],
+                  ),
                 ),
-                PopupMenuButton<VerticalListPopupMenuSelections>(
-                    onSelected:
-                        (VerticalListPopupMenuSelections selection) async {
-                      switch (selection) {
-                        case VerticalListPopupMenuSelections.onCopy:
-                          const copyDialog = CopyDialog();
-                          final selectedMealType =
-                              await showDialog<AddMealType>(
-                                  context: context,
-                                  builder: (context) => copyDialog);
-                          if (selectedMealType != null) {
-                            for (IntakeEntity intake in widget.intakeList) {
-                              widget.onCopyIntakeCallback!(
-                                  intake, null, selectedMealType);
-                            }
-                          }
-                          break;
-                        case VerticalListPopupMenuSelections.onDelete:
-                          final shouldDeleteIntakes = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => const DeleteAllDialog());
-                          if (shouldDeleteIntakes != null) {
-                            for (IntakeEntity intake in widget.intakeList) {
-                              widget.onDeleteIntakeCallback(
-                                  intake, widget.trackedDayEntity);
-                            }
-                            break;
-                          }
-                      }
-                    },
-                    itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<VerticalListPopupMenuSelections>>[
-                          if (widget.onCopyIntakeCallback != null)
-                            PopupMenuItem<VerticalListPopupMenuSelections>(
-                                value: VerticalListPopupMenuSelections.onCopy,
-                                child: Text(S.of(context).dialogCopyLabel)),
-                          PopupMenuItem<VerticalListPopupMenuSelections>(
-                              value: VerticalListPopupMenuSelections.onDelete,
-                              child: Text(S.of(context).deleteAllLabel)),
-                        ]),
+                IconButton(
+                  tooltip: '${S.of(context).addLabel} · ${widget.title}',
+                  onPressed: () => _onPlaceholderCardTapped(context),
+                  icon: Icon(
+                    Icons.add_circle_outline_rounded,
+                    color: colors.primary,
+                  ),
+                ),
+                if (widget.intakeList.isNotEmpty) _buildPopupMenu(),
               ],
-            ],
-          ),
-        ),
-        DragTarget<IntakeEntity>(
-          onAcceptWithDetails: (intake) {
-            _onItemDropped(intake.data);
-          },
-          builder: (context, candidateData, rejectedData) {
-            return SizedBox(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: widget.intakeList.length + 1,
-                // List length + placeholder card
-                itemBuilder: (BuildContext context, int index) {
-                  final firstListElement = index == 0 ? true : false;
-                  if (index == widget.intakeList.length) {
-                    return PlaceholderCard(
-                        day: widget.day,
-                        onTap: () => _onPlaceholderCardTapped(context),
-                        firstListElement: firstListElement);
-                  } else {
-                    final intakeEntity = widget.intakeList[index];
-                    return LongPressDraggable<IntakeEntity>(
-                      onDragStarted: () {
-                        widget.onItemDragCallback?.call(true);
-                      },
-                      onDragEnd: (details) {
-                        widget.onItemDragCallback?.call(false);
-                      },
-                      data: intakeEntity,
-                      feedback: Material(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _MealMacroTotals(
+                  totalCarbs: totalCarbs,
+                  totalFats: totalFats,
+                  totalProteins: totalProteins),
+            ),
+          ],
+          if (!widget.isCollapsible || _isExpanded) ...[
+            if (widget.intakeList.isNotEmpty)
+              Divider(height: 1, thickness: 0.5, color: separatorColor),
+            DragTarget<IntakeEntity>(
+              onWillAcceptWithDetails: (_) => widget.isDropZone,
+              onAcceptWithDetails: (details) => _onItemDropped(details.data),
+              builder: (context, candidates, rejected) => Container(
+                decoration: BoxDecoration(
+                  color: candidates.isEmpty
+                      ? null
+                      : colors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: widget.intakeList.isEmpty
+                    ? Column(children: [
+                        TextButton.icon(
+                          onPressed: () => _onPlaceholderCardTapped(context),
+                          icon: const Icon(Icons.add_rounded, size: 18),
+                          label: Text(S.of(context).addLabel),
                         ),
-                        child: Opacity(
-                          opacity: 0.7,
-                          child: IntakeCard(
-                            key: ValueKey(intakeEntity.meal.code),
-                            intake: intakeEntity,
-                            firstListElement: false,
-                            usesImperialUnits: widget.usesImperialUnits,
-                          ),
-                        ),
-                      ),
-                      childWhenDragging: Row(
+                        if (widget.onCopyFromYesterday != null)
+                          TextButton.icon(
+                              onPressed: widget.onCopyFromYesterday,
+                              icon: const Icon(Icons.copy_outlined, size: 18),
+                              label:
+                                  Text(S.of(context).copyFromYesterdayLabel)),
+                      ])
+                    : Column(
                         children: [
-                          SizedBox(width: firstListElement ? 16 : 0),
-                          SizedBox(
-                            width: 120,
-                            height: 120,
-                            child: Card(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16.0),
+                          for (final intake in (_showAllFoods ||
+                                  widget.foodPreviewLimit == null
+                              ? widget.intakeList
+                              : widget.intakeList
+                                  .take(widget.foodPreviewLimit!))) ...[
+                            if (intake != widget.intakeList.first)
+                              Divider(
+                                height: 8,
+                                thickness: 0.5,
+                                indent: 68,
+                                endIndent: 4,
+                                color: separatorColor,
                               ),
-                              color: Theme.of(context).cardColor,
+                            LongPressDraggable<IntakeEntity>(
+                              maxSimultaneousDrags:
+                                  widget.onItemLongPressedCallback == null
+                                      ? 1
+                                      : 0,
+                              key: ValueKey(intake.id),
+                              data: intake,
+                              onDragStarted: () =>
+                                  widget.onItemDragCallback?.call(true),
+                              onDragEnd: (_) =>
+                                  widget.onItemDragCallback?.call(false),
+                              feedback: Material(
+                                color: colors.surfaceContainerLowest,
+                                borderRadius: BorderRadius.circular(16),
+                                child: SizedBox(
+                                  width: 280,
+                                  child: IntakeCard(
+                                    key: ValueKey('drag-${intake.id}'),
+                                    intake: intake,
+                                    firstListElement: false,
+                                    compact: true,
+                                  ),
+                                ),
+                              ),
+                              child: IntakeCard(
+                                key: ValueKey('home-${intake.id}'),
+                                intake: intake,
+                                firstListElement: false,
+                                onItemTapped: widget.onItemTappedCallback,
+                                onItemLongPressed:
+                                    widget.onItemLongPressedCallback,
+                                compact: true,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
-                      child: IntakeCard(
-                        key: ValueKey(intakeEntity.meal.code),
-                        intake: intakeEntity,
-                        onItemLongPressed: widget.onItemLongPressedCallback,
-                        onItemTapped: widget.onItemTappedCallback,
-                        firstListElement: firstListElement,
-                        usesImperialUnits: widget.usesImperialUnits,
-                      ),
-                    );
+              ),
+            ),
+            if (widget.foodPreviewLimit != null &&
+                widget.intakeList.length > widget.foodPreviewLimit!)
+              TextButton.icon(
+                key: const ValueKey('toggle-meal-foods'),
+                onPressed: () => setState(() => _showAllFoods = !_showAllFoods),
+                icon:
+                    Icon(_showAllFoods ? Icons.expand_less : Icons.expand_more),
+                label: Text(_showAllFoods
+                    ? S.of(context).showFewerFoods
+                    : S.of(context).showMoreFoods(
+                        widget.intakeList.length - widget.foodPreviewLimit!)),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildJournalMealHeader(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final accent = _mealAccentColor();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            _MealTypeIcon(
+                mealType: widget.addMealType, color: accent, size: 23),
+            const SizedBox(width: 10),
+            Expanded(
+                child: Text(widget.title,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w800))),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: '${S.of(context).addLabel} · ${widget.title}',
+              onPressed: () => _onPlaceholderCardTapped(context),
+              icon:
+                  Icon(Icons.add_circle_outline_rounded, color: colors.primary),
+            ),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: S.of(context).copyMealLabel,
+              onPressed: _canCopyMeal ? _showCopyMealDialog : null,
+              icon: const Icon(Icons.content_copy_rounded, size: 20),
+            ),
+            IconButton(
+              constraints: const BoxConstraints.tightFor(width: 40, height: 48),
+              padding: EdgeInsets.zero,
+              tooltip: S.of(context).deleteAllLabel,
+              onPressed: widget.intakeList.isEmpty ? null : _deleteAllIntakes,
+              icon: Icon(Icons.delete_outline_rounded,
+                  color: widget.intakeList.isEmpty ? null : colors.error),
+            ),
+          ],
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: _MealEnergyBadge(totalKcal: totalKcal, accentColor: accent),
+        ),
+        Row(
+          children: [
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: _MealMacroTotals(
+                  totalCarbs: totalCarbs,
+                  totalFats: totalFats,
+                  totalProteins: totalProteins),
+            )),
+            IconButton(
+              tooltip: widget.title,
+              onPressed: () => setState(() => _isExpanded = !_isExpanded),
+              icon: Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _deleteAllIntakes() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => const DeleteAllDialog(),
+    );
+    if (confirmed != true || !mounted) return;
+    await widget.onDeleteAllIntakesCallback(List.of(widget.intakeList));
+  }
+
+  Widget _buildPopupMenu() {
+    return PopupMenuButton<VerticalListPopupMenuSelections>(
+      padding: EdgeInsets.zero,
+      iconSize: 20,
+      onSelected: (VerticalListPopupMenuSelections selection) async {
+        switch (selection) {
+          case VerticalListPopupMenuSelections.onDelete:
+            await _deleteAllIntakes();
+            break;
+          case VerticalListPopupMenuSelections.onCreateRecipe:
+            locator<CreateMealBloc>()
+                .add(SetIntakeListFromRecipeEvent(widget.intakeList
+                    .map((intake) => IntakeForRecipeEntity(
+                          code: intake.id,
+                          // Recipe macros are per 100 base units, so
+                          // servings are converted to grams first.
+                          unit: 'g',
+                          amount: intake.effectiveAmountInBaseUnits,
+                          meal: intake.meal,
+                        ))
+                    .toList()));
+            final sourceIntakes = List<IntakeEntity>.of(widget.intakeList);
+            final onDelete = widget.onDeleteIntakeCallback;
+            final trackedDay = widget.trackedDayEntity;
+            Navigator.of(context).pushNamed(
+              NavigationOptions.createMealRoute,
+              arguments: CreateRecipeFromMealArguments(
+                widget.addMealType.getIntakeType(),
+                widget.day,
+                () {
+                  for (final intake in sourceIntakes) {
+                    onDelete(intake, trackedDay);
                   }
                 },
               ),
             );
-          },
+            break;
+        }
+      },
+      itemBuilder: (BuildContext context) =>
+          <PopupMenuEntry<VerticalListPopupMenuSelections>>[
+        PopupMenuItem<VerticalListPopupMenuSelections>(
+          value: VerticalListPopupMenuSelections.onCreateRecipe,
+          child: Text(S.of(context).createRecipeLabel),
+        ),
+        PopupMenuItem<VerticalListPopupMenuSelections>(
+          value: VerticalListPopupMenuSelections.onDelete,
+          child: Text(S.of(context).deleteAllLabel),
         ),
       ],
     );
   }
 
   void _onPlaceholderCardTapped(BuildContext context) {
-    Navigator.pushNamed(context, NavigationOptions.addMealRoute,
-        arguments: AddMealScreenArguments(
-            widget.addMealType, widget.day, MealOrRecipeEntity.meal));
+    Navigator.pushNamed(
+      context,
+      NavigationOptions.addMealRoute,
+      arguments: AddMealScreenArguments(
+        widget.addMealType,
+        widget.day,
+        MealOrRecipeEntity.meal,
+      ),
+    );
   }
 
-  void _onItemDropped(IntakeEntity entity) {
+  Future<void> _showCopyMealDialog() async {
+    final copyCallback = widget.onCopyMealToDateCallback;
+    if (copyCallback == null) {
+      return;
+    }
+
+    final result = await selectIntakeDestination(context,
+        day: DateTime.now(), type: widget.addMealType.getIntakeType());
+
+    if (result == null || !mounted) {
+      return;
+    }
+
+    await copyCallback(
+        widget.intakeList,
+        result.$1,
+        AddMealType.values
+            .firstWhere((type) => type.getIntakeType() == result.$2));
+  }
+
+  Future<void> _onItemDropped(IntakeEntity entity) async {
     if (!widget.isDropZone) {
       return;
     }
-    _mealDetailBloc.addIntake(context, entity.unit, entity.amount.toString(),
-        widget.addMealType.getIntakeType(), entity.meal, entity.dateTime);
-    _homeBloc.deleteIntakeItem(entity);
+    await _mealDetailBloc.addIntake(
+      context,
+      entity.unit,
+      entity.amount.toString(),
+      widget.addMealType.getIntakeType(),
+      entity.meal,
+      widget.day,
+    );
+    await _homeBloc.deleteIntakeItem(entity);
 
-    // Refresh Home Page
-    locator<HomeBloc>().add(const LoadItemsEvent());
+    refreshJournalViews();
+  }
+}
 
-    // Refresh Diary Page
-    locator<DiaryBloc>().add(const LoadDiaryYearEvent());
-    locator<CalendarDayBloc>().add(RefreshCalendarDayEvent());
+class _MealMacroTotals extends StatelessWidget {
+  final double totalCarbs;
+  final double totalFats;
+  final double totalProteins;
+
+  const _MealMacroTotals(
+      {required this.totalCarbs,
+      required this.totalFats,
+      required this.totalProteins});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Flexible(
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value:
+                        '${formatNumber(totalCarbs)} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.carbs))),
+        const SizedBox(width: 6),
+        Flexible(
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value:
+                        '${formatNumber(totalFats)} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.fats))),
+        const SizedBox(width: 6),
+        Flexible(
+            child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _MealTotalChip(
+                    value:
+                        '${formatNumber(totalProteins)} ${S.of(context).gramUnit}',
+                    visual: MacroVisuals.proteins))),
+      ],
+    );
+  }
+}
+
+class _MealEnergyBadge extends StatelessWidget {
+  final double totalKcal;
+  final Color accentColor;
+
+  const _MealEnergyBadge({required this.totalKcal, required this.accentColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return _MealTotalChip(
+      value: '${formatNumber(totalKcal)} ${S.of(context).kcalLabel}',
+      icon: Icons.local_fire_department_rounded,
+      color: accentColor,
+      emphasized: true,
+    );
+  }
+}
+
+class _MealTotalChip extends StatelessWidget {
+  final String value;
+  final MacroVisual? visual;
+  final IconData? icon;
+  final Color? color;
+  final bool emphasized;
+
+  const _MealTotalChip({
+    required this.value,
+    this.visual,
+    this.icon,
+    this.color,
+    this.emphasized = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final effectiveColor = color ?? visual?.color ?? colorScheme.primary;
+    final background = Color.alphaBlend(
+      effectiveColor.withValues(
+        alpha: colorScheme.brightness == Brightness.dark ? 0.18 : 0.10,
+      ),
+      colorScheme.surfaceContainerLowest,
+    );
+
+    final valueText = Text(
+      value,
+      maxLines: 1,
+      overflow: TextOverflow.clip,
+      softWrap: false,
+      style: theme.textTheme.labelMedium?.copyWith(
+        color: emphasized ? colorScheme.onSurface : effectiveColor,
+        fontWeight: FontWeight.w800,
+        fontSize: 11.5,
+        height: 1,
+      ),
+    );
+
+    final chipContent = Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (visual != null) ...[
+          MacroIcon(visual: visual!, size: 14),
+          const SizedBox(width: 4),
+        ] else if (icon != null) ...[
+          Icon(icon, size: 14, color: effectiveColor),
+          const SizedBox(width: 4),
+        ],
+        valueText,
+      ],
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: chipContent,
+    );
+  }
+}
+
+class _MealTypeIcon extends StatelessWidget {
+  final AddMealType mealType;
+  final Color color;
+  final double size;
+
+  const _MealTypeIcon({
+    required this.mealType,
+    required this.color,
+    required this.size,
+  });
+
+  IconData get _icon {
+    switch (mealType) {
+      case AddMealType.breakfastType:
+        return Icons.free_breakfast_rounded;
+      case AddMealType.lunchType:
+        return Icons.lunch_dining_rounded;
+      case AddMealType.dinnerType:
+        return Icons.dinner_dining_rounded;
+      case AddMealType.snackType:
+        return Icons.cookie_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Icon(_icon, color: color, size: size);
   }
 }
