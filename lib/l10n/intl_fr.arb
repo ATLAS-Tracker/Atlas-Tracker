@@ -628,7 +628,7 @@
   "customFoodChangePhoto": "Changer la photo",
   "customFoodPhotoError": "Impossible de charger ou d’enregistrer cette photo. Réessaie.",
   "selectedPortionCount": "{count, plural, one{{count} portion} other{{count} portions}}",
-  "selectedPortionWeight": "{portions} (de {weight})",
+  "selectedPortionWeight": "{portions} ({weight})",
   "recipeNameLabel": "Nom de la recette",
   "recipeIngredientsLabel": "Ingrédients",
   "recipeEmptyHelp": "Ajoute les aliments qui composent ta recette.",

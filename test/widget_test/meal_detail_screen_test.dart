@@ -79,13 +79,13 @@ void main() {
         .first);
     expect(photoTap.onTap, isNull,
         reason: 'a missing photo cannot open an empty viewer');
-    expect(find.text('1 portion (de 26 g)'), findsOneWidget);
+    expect(find.text('1 portion (26 g)'), findsOneWidget);
     expect(find.text('Portion (26 g)'), findsOneWidget);
     expect(find.text('26g'), findsNothing);
     expect(find.text('130 kcal'), findsOneWidget);
     await tester.enterText(find.byType(TextFormField), '2');
     await tester.pumpAndSettle();
-    expect(find.text('2 portions (de 52 g)'), findsOneWidget);
+    expect(find.text('2 portions (52 g)'), findsOneWidget);
     expect(find.text('260 kcal'), findsOneWidget);
     await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
@@ -327,7 +327,7 @@ void main() {
           builder: (_) => const MealDetailScreen()),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('1 portion (de 20 g)'), findsOneWidget);
+    expect(find.text('1 portion (20 g)'), findsOneWidget);
     expect(find.text('95 kcal'), findsOneWidget);
 
     // Opening the menu re-runs didChangeDependencies: the serving must stay.

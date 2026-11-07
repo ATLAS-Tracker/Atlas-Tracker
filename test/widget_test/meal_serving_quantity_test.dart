@@ -31,14 +31,14 @@ void main() {
     }
 
     await show(26, 'g', 1);
-    expect(find.text('1 portion (de 26 g)'), findsOneWidget);
+    expect(find.text('1 portion (26 g)'), findsOneWidget);
     await show(52, 'g', 2);
-    expect(find.text('2 portions (de 52 g)'), findsOneWidget);
+    expect(find.text('2 portions (52 g)'), findsOneWidget);
     await show(26, 'g', null);
     expect(find.text('26 g'), findsOneWidget);
     expect(find.textContaining('portion'), findsNothing);
     await show(2, 'serving', null);
-    expect(find.text('2 portions (de 52 g)'), findsOneWidget);
+    expect(find.text('2 portions (52 g)'), findsOneWidget);
     await show(1, 'serving', 1);
     expect(find.text('1 portion'), findsOneWidget);
     expect(tester.takeException(), isNull);
