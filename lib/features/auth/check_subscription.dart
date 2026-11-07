@@ -60,6 +60,8 @@ class SubscriptionService {
           SnackBar(content: Text(msg)),
         );
       }
+      // A timeout or network failure must not revoke a paying user's session.
+      if (code == 'cloud_sync_problem') return true;
       await safeSignOut(context);
       return false;
     }
