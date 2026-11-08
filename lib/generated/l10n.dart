@@ -1853,10 +1853,10 @@ class S {
     );
   }
 
-  /// `The recipe is saved in your library. The whole recipe counts as one serving.`
+  /// `The recipe is saved in your library.`
   String get recipeLibraryHelp {
     return Intl.message(
-      'The recipe is saved in your library. The whole recipe counts as one serving.',
+      'The recipe is saved in your library.',
       name: 'recipeLibraryHelp',
       desc: '',
       args: [],

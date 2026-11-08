@@ -14,6 +14,9 @@ class CreateMealBloc extends Bloc<CreateMealEvent, CreateMealState> {
   final GetRecipeUsecase _recipeUsecase;
   List<IntakeForRecipeEntity> _intakeList = [];
 
+  /// Portions the recipe being edited makes; saved macros are divided by it.
+  int portions = 1;
+
   CreateMealBloc(this._recipeUsecase) : super(const CreateMealState()) {
     on<InitializeCreateMealEvent>((event, emit) async {
       emit(state.copyWith(isOnCreateMealScreen: true));
@@ -39,6 +42,7 @@ class CreateMealBloc extends Bloc<CreateMealEvent, CreateMealState> {
 
   void clearIntakeList() {
     _intakeList.clear();
+    portions = 1;
     _emitUpdatedState();
   }
 

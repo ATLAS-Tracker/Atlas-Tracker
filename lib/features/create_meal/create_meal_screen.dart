@@ -44,6 +44,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
   String _initialName = '';
   String? _initialImage;
   List<IntakeForRecipeEntity> _initialIngredients = [];
+  int _initialPortions = 1;
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
       _createMealBloc.add(
         SetIntakeListFromRecipeEvent(args.recipe.ingredients),
       );
+      _createMealBloc.portions = args.recipe.portions;
     } else {
       _id = UniqueKey().toString();
       _name = "";
@@ -91,6 +93,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     }
     _initialName = _nameTextController.text;
     _initialImage = _imagePath;
+    _initialPortions = _createMealBloc.portions;
     _initialIngredients = args is CreateMealScreenArguments
         ? List.of(args.recipe.ingredients)
         : _createMealBloc.getListOfIntakeForRecipeEntity();
@@ -310,6 +313,7 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
     _confirmingLeave = true;
     final changed = _nameTextController.text != _initialName ||
         _imagePath != _initialImage ||
+        _createMealBloc.portions != _initialPortions ||
         !listEquals(_createMealBloc.getListOfIntakeForRecipeEntity(),
             _initialIngredients);
     final discard = !changed ||
@@ -436,11 +440,48 @@ class _MealCreationScreenState extends State<MealCreationScreen> {
                   visual: MacroVisuals.proteins)),
         ]),
         const SizedBox(height: 16),
+        _portionsStepper(macros['totalKcal']!),
+        const SizedBox(height: 8),
         Text(s.recipePortionsHelp,
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: Colors.white.withValues(alpha: 0.76))),
       ]),
     );
+  }
+
+  Widget _portionsStepper(double totalKcal) {
+    final s = S.of(context);
+    final theme = Theme.of(context);
+    final portions = _createMealBloc.portions;
+    void setPortions(int value) =>
+        setState(() => _createMealBloc.portions = value);
+    return Row(children: [
+      Expanded(
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(s.mealPortionLabel,
+            style: theme.textTheme.titleSmall
+                ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+        Text(
+            '${s.perServingLabel} : ${(totalKcal / portions).round()} ${s.kcalLabel}',
+            style: theme.textTheme.bodySmall
+                ?.copyWith(color: Colors.white.withValues(alpha: 0.76))),
+      ])),
+      IconButton(
+          key: const Key('recipePortionsMinus'),
+          color: Colors.white,
+          onPressed: portions > 1 ? () => setPortions(portions - 1) : null,
+          icon: const Icon(Icons.remove_circle_outline_rounded)),
+      Text('$portions',
+          key: const Key('recipePortionsValue'),
+          style: theme.textTheme.titleLarge
+              ?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+      IconButton(
+          key: const Key('recipePortionsPlus'),
+          color: Colors.white,
+          onPressed: portions < 99 ? () => setPortions(portions + 1) : null,
+          icon: const Icon(Icons.add_circle_outline_rounded)),
+    ]);
   }
 
   void onIntakeItemTapped(

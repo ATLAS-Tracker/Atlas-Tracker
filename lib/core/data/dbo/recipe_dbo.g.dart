@@ -20,19 +20,22 @@ class RecipesDBOAdapter extends TypeAdapter<RecipesDBO> {
       recipe: fields[0] as MealDBO,
       ingredients: (fields[1] as List).cast<IntakeForRecipeDBO>(),
       updatedAt: fields[2] as DateTime?,
+      portions: fields[3] == null ? 1 : fields[3] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, RecipesDBO obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.recipe)
       ..writeByte(1)
       ..write(obj.ingredients)
       ..writeByte(2)
-      ..write(obj.updatedAt);
+      ..write(obj.updatedAt)
+      ..writeByte(3)
+      ..write(obj.portions);
   }
 
   @override
@@ -58,6 +61,7 @@ RecipesDBO _$RecipesDBOFromJson(Map<String, dynamic> json) => RecipesDBO(
       updatedAt: json['updated_at'] == null
           ? null
           : DateTime.parse(json['updated_at'] as String),
+      portions: (json['portions'] as num?)?.toInt() ?? 1,
     );
 
 Map<String, dynamic> _$RecipesDBOToJson(RecipesDBO instance) =>
@@ -65,4 +69,5 @@ Map<String, dynamic> _$RecipesDBOToJson(RecipesDBO instance) =>
       'recipe': instance.recipe,
       'ingredients': instance.ingredients,
       'updated_at': instance.updatedAt.toIso8601String(),
+      'portions': instance.portions,
     };

@@ -860,7 +860,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Ingredients"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Recipe"),
         "recipeLibraryHelp": MessageLookupByLibrary.simpleMessage(
-            "The recipe is saved in your library. The whole recipe counts as one serving."),
+            "The recipe is saved in your library."),
         "recipeNameHint":
             MessageLookupByLibrary.simpleMessage("e.g. Chicken & avocado bowl"),
         "recipeNameLabel": MessageLookupByLibrary.simpleMessage("Recipe name"),
