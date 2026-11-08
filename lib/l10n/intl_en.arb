@@ -200,7 +200,7 @@
   "moveIntakeLabel": "Move",
   "packageLabel": "Package",
   "recipeSaveError": "The recipe could not be saved. Your draft is preserved.",
-  "recipeLibraryHelp": "The recipe is saved in your library. The whole recipe counts as one serving.",
+  "recipeLibraryHelp": "The recipe is saved in your library.",
   "addRecipeToDiary": "Also add one serving to the diary",
   "unsavedRecipeTitle": "Unsaved changes",
   "unsavedRecipeMessage": "Leave and lose the changes to this recipe?",

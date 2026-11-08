@@ -33,8 +33,13 @@ class ImportDataUsecase {
   final RecipeRepository _recipeRepository;
   final UserRepository _userRepository;
 
-  ImportDataUsecase(this._userActivityRepository, this._intakeRepository,
-      this._trackedDayRepository, this._userWeightRepository, this._recipeRepository, this._userRepository);
+  ImportDataUsecase(
+      this._userActivityRepository,
+      this._intakeRepository,
+      this._trackedDayRepository,
+      this._userWeightRepository,
+      this._recipeRepository,
+      this._userRepository);
 
   /// Imports user activity, intake, and tracked day data from a zip file
   /// containing JSON files.
@@ -162,6 +167,7 @@ class ImportDataUsecase {
           if (path == null || path.startsWith('http')) return null;
           return p.basename(path);
         }
+
         String? stored(String? pName) {
           if (pName == null) return null;
           final entry = archive.findFile('images/$pName');
@@ -190,6 +196,7 @@ class ImportDataUsecase {
           source: meal.source,
         );
       }
+
       final List<RecipesDBO> updatedRecipes = [];
       for (final r in recipesDBOs) {
         final meal = await convMeal(r.recipe);
@@ -205,7 +212,10 @@ class ImportDataUsecase {
             meal: newMeal,
           ));
         }
-        updatedRecipes.add(RecipesDBO(recipe: meal, ingredients: updatedIngredients));
+        updatedRecipes.add(RecipesDBO(
+            recipe: meal,
+            ingredients: updatedIngredients,
+            portions: r.portions));
       }
       if (updatedRecipes.isNotEmpty) {
         await _recipeRepository.addAllRecipeDBOs(updatedRecipes);

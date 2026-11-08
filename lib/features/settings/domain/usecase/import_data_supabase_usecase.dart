@@ -167,6 +167,7 @@ class ImportDataSupabaseUsecase {
         updatedRecipes.add(RecipesDBO(
           recipe: updatedMeal,
           ingredients: updatedIngredients,
+          portions: r.portions,
         ));
       }
       if (updatedRecipes.isNotEmpty) {

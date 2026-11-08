@@ -200,7 +200,7 @@
   "moveIntakeLabel": "Déplacer",
   "packageLabel": "Paquet",
   "recipeSaveError": "La recette n'a pas pu être enregistrée. Votre brouillon est conservé.",
-  "recipeLibraryHelp": "La recette est enregistrée dans votre bibliothèque. La recette entière correspond à une portion.",
+  "recipeLibraryHelp": "La recette est enregistrée dans votre bibliothèque.",
   "addRecipeToDiary": "Ajouter aussi une portion au journal",
   "unsavedRecipeTitle": "Modifications non enregistrées",
   "unsavedRecipeMessage": "Quitter et perdre les modifications de cette recette ?",

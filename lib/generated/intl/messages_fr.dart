@@ -880,7 +880,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Ingrédients"),
         "recipeLabel": MessageLookupByLibrary.simpleMessage("Recette"),
         "recipeLibraryHelp": MessageLookupByLibrary.simpleMessage(
-            "La recette est enregistrée dans votre bibliothèque. La recette entière correspond à une portion."),
+            "La recette est enregistrée dans votre bibliothèque."),
         "recipeNameHint":
             MessageLookupByLibrary.simpleMessage("Ex. Bowl poulet & avocat"),
         "recipeNameLabel":
