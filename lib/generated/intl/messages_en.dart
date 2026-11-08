@@ -37,7 +37,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m7(date) => "Last goal applied on ${date}";
 
-  static String m17(min, max, unit) =>
+  static String m23(min, max, unit) =>
       "Enter a value between ${min} and ${max} ${unit}.";
 
   static String m8(count) =>
@@ -54,11 +54,24 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m13(value) => "${value} vs goal";
 
-  static String m14(date) => "Weigh-in for ${date}";
+  static String m14(period) => "Avg ${period}";
 
-  static String m15(value, unit) => "Period average: ${value} ${unit}";
+  static String m15(period) => "Change ${period}";
 
-  static String m16(age) => "${age} years";
+  static String m16(date) => "Weigh-in for ${date}";
+
+  static String m17(goal) => "Goal: ${goal}";
+
+  static String m18(value, unit) => "Period average: ${value} ${unit}";
+
+  static String m19(period) => "Average over ${period}";
+
+  static String m20(period) => "Change over ${period}";
+
+  static String m21(count) =>
+      "${Intl.plural(count, one: '${count} weigh-in', other: '${count} weigh-ins')}";
+
+  static String m22(age) => "${age} years";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -832,7 +845,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "productSearchMayTakeLongerMessage":
             MessageLookupByLibrary.simpleMessage("Searching…"),
         "profileLabel": MessageLookupByLibrary.simpleMessage("Profile"),
-        "profileValueRange": m17,
+        "profileValueRange": m23,
         "proteinLabel": MessageLookupByLibrary.simpleMessage("protein"),
         "proteinsLabel": MessageLookupByLibrary.simpleMessage("Proteins"),
         "quantityLabel": MessageLookupByLibrary.simpleMessage("Quantity"),
@@ -1020,22 +1033,37 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("website"),
         "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
             "Difference from the 7-day average"),
-        "weightEntryDate": m14,
+        "weightAverageGapLabel":
+            MessageLookupByLibrary.simpleMessage("Difference from average"),
+        "weightAverageShort": m14,
+        "weightChangeShort": m15,
+        "weightEntryDate": m16,
+        "weightGapShort": MessageLookupByLibrary.simpleMessage("Gap"),
+        "weightGoalReminder": m17,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Goal"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Weight history"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Weight"),
+        "weightMaxLabel": MessageLookupByLibrary.simpleMessage("max"),
         "weightMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Weigh-ins"),
+        "weightMinLabel": MessageLookupByLibrary.simpleMessage("min"),
         "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
             "No weigh-ins for this period"),
-        "weightPeriodAverage": m15,
+        "weightPeriodAverage": m18,
+        "weightPeriodAverageLabel": m19,
+        "weightPeriodChangeLabel": m20,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Could not save your weight. Please try again."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Weight saved"),
         "weightSavingLabel": MessageLookupByLibrary.simpleMessage("Saving…"),
-        "yearsLabel": m16,
+        "weightTodayLabel":
+            MessageLookupByLibrary.simpleMessage("today\'s weight"),
+        "weightTrendNotEnoughLabel":
+            MessageLookupByLibrary.simpleMessage("not enough weigh-ins"),
+        "weightWeighInCount": m21,
+        "yearsLabel": m22,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Yesterday")
       };
 }

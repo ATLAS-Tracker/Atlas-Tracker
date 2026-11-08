@@ -51,12 +51,25 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m13(value) => "${value} vs. Ziel";
 
-  static String m14(date) => "Wiegen am ${date}";
+  static String m14(period) => "Ø ${period}";
 
-  static String m15(value, unit) =>
+  static String m15(period) => "Änd. ${period}";
+
+  static String m16(date) => "Wiegen am ${date}";
+
+  static String m17(goal) => "Ziel: ${goal}";
+
+  static String m18(value, unit) =>
       "Durchschnitt im Zeitraum: ${value} ${unit}";
 
-  static String m16(age) => "${age} Jahre";
+  static String m19(period) => "Durchschnitt über ${period}";
+
+  static String m20(period) => "Veränderung über ${period}";
+
+  static String m21(count) =>
+      "${Intl.plural(count, one: '${count} Messung', other: '${count} Messungen')}";
+
+  static String m22(age) => "${age} Jahre";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -953,23 +966,38 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("Website"),
         "weightAverageDeltaLabel": MessageLookupByLibrary.simpleMessage(
             "Abweichung vom 7-Tage-Durchschnitt"),
-        "weightEntryDate": m14,
+        "weightAverageGapLabel":
+            MessageLookupByLibrary.simpleMessage("Abweichung vom Durchschnitt"),
+        "weightAverageShort": m14,
+        "weightChangeShort": m15,
+        "weightEntryDate": m16,
+        "weightGapShort": MessageLookupByLibrary.simpleMessage("Abw."),
+        "weightGoalReminder": m17,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Ziel"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Gewichtsverlauf"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Gewicht"),
+        "weightMaxLabel": MessageLookupByLibrary.simpleMessage("max."),
         "weightMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Wiegungen"),
+        "weightMinLabel": MessageLookupByLibrary.simpleMessage("min."),
         "weightNoMeasurementsLabel": MessageLookupByLibrary.simpleMessage(
             "Keine Wiegungen in diesem Zeitraum"),
-        "weightPeriodAverage": m15,
+        "weightPeriodAverage": m18,
+        "weightPeriodAverageLabel": m19,
+        "weightPeriodChangeLabel": m20,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Gewicht konnte nicht gespeichert werden. Bitte erneut versuchen."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Gewicht gespeichert"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Wird gespeichert…"),
-        "yearsLabel": m16,
+        "weightTodayLabel":
+            MessageLookupByLibrary.simpleMessage("heutiges Gewicht"),
+        "weightTrendNotEnoughLabel":
+            MessageLookupByLibrary.simpleMessage("zu wenige Messungen"),
+        "weightWeighInCount": m21,
+        "yearsLabel": m22,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Gestern")
       };
 }

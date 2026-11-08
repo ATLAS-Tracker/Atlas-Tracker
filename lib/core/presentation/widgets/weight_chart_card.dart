@@ -6,77 +6,45 @@ import 'package:opennutritracker/core/presentation/widgets/chart_controls.dart';
 import 'package:opennutritracker/core/utils/number_format.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 
+/// The one list of periods every weight/trend selector offers.
 enum WeightChartRange {
   sevenDays(days: 7),
   fourteenDays(days: 14),
-  oneMonth(days: 31),
-  threeMonths(days: 92),
-  sixMonths(days: 183),
-  oneYear(days: 365),
-  all(days: null);
+  oneMonth(days: 30),
+  threeMonths(days: 90);
 
-  final int? days;
+  final int days;
 
   const WeightChartRange({required this.days});
+
+  /// Non-breaking: "7 j" never wraps between number and unit.
+  String label(S s) => _label(s).replaceAll(' ', ' ');
+
+  String _label(S s) => switch (this) {
+        sevenDays => s.trendPeriod7d,
+        fourteenDays => s.trendPeriod14d,
+        oneMonth => s.trendPeriod1m,
+        threeMonths => s.trendPeriod3m,
+      };
 }
 
 class WeightChartCard extends StatelessWidget {
   final List<WeightData> data;
   final WeightChartRange range;
-  final Widget selector;
+  final Widget? selector;
 
   const WeightChartCard(
-      {super.key,
-      required this.data,
-      required this.range,
-      required this.selector});
+      {super.key, required this.data, required this.range, this.selector});
 
-  DateTimeIntervalType _xAxisIntervalType(WeightChartRange range) {
-    switch (range) {
-      case WeightChartRange.sevenDays:
-      case WeightChartRange.fourteenDays:
-      case WeightChartRange.oneMonth:
-      case WeightChartRange.threeMonths:
-        return DateTimeIntervalType.days;
-      case WeightChartRange.sixMonths:
-      case WeightChartRange.oneYear:
-      case WeightChartRange.all:
-        return DateTimeIntervalType.months;
-    }
-  }
+  double _xAxisInterval(WeightChartRange range) => switch (range) {
+        WeightChartRange.sevenDays => 2,
+        WeightChartRange.fourteenDays => 4,
+        WeightChartRange.oneMonth => 10,
+        WeightChartRange.threeMonths => 30,
+      };
 
-  double _xAxisInterval(WeightChartRange range, int pointCount) {
-    switch (range) {
-      case WeightChartRange.sevenDays:
-        return 2;
-      case WeightChartRange.fourteenDays:
-        return 4;
-      case WeightChartRange.oneMonth:
-        return 10;
-      case WeightChartRange.threeMonths:
-        return 30;
-      case WeightChartRange.sixMonths:
-        return 2;
-      case WeightChartRange.oneYear:
-        return 3;
-      case WeightChartRange.all:
-        return pointCount > 730 ? 6 : 3;
-    }
-  }
-
-  DateFormat _dateFormat(WeightChartRange range) {
-    switch (range) {
-      case WeightChartRange.sevenDays:
-      case WeightChartRange.fourteenDays:
-      case WeightChartRange.oneMonth:
-        return DateFormat('dd/MM');
-      case WeightChartRange.threeMonths:
-      case WeightChartRange.sixMonths:
-      case WeightChartRange.oneYear:
-      case WeightChartRange.all:
-        return DateFormat('MMM yy');
-    }
-  }
+  DateFormat _dateFormat(WeightChartRange range) =>
+      DateFormat(range == WeightChartRange.threeMonths ? 'MMM yy' : 'dd/MM');
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +78,7 @@ class WeightChartCard extends StatelessWidget {
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              selector,
+              if (selector != null) selector!,
             ],
           ),
           const SizedBox(height: 18),
@@ -128,8 +96,8 @@ class WeightChartCard extends StatelessWidget {
                 plotAreaBorderWidth: 0,
                 primaryXAxis: DateTimeAxis(
                   dateFormat: _dateFormat(range),
-                  intervalType: _xAxisIntervalType(range),
-                  interval: _xAxisInterval(range, chartData.length),
+                  intervalType: DateTimeIntervalType.days,
+                  interval: _xAxisInterval(range),
                   majorTickLines: const MajorTickLines(size: 0),
                   majorGridLines: MajorGridLines(
                     width: 0.7,

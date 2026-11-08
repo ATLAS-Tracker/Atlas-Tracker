@@ -50,11 +50,23 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m13(value) => "hedefe göre ${value}";
 
-  static String m14(date) => "${date} tarihli tartım";
+  static String m14(period) => "Ort. ${period}";
 
-  static String m15(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+  static String m15(period) => "Değ. ${period}";
 
-  static String m16(age) => "${age} yıl";
+  static String m16(date) => "${date} tarihli tartım";
+
+  static String m17(goal) => "Hedef: ${goal}";
+
+  static String m18(value, unit) => "Dönem ortalaması: ${value} ${unit}";
+
+  static String m19(period) => "${period} ortalaması";
+
+  static String m20(period) => "${period} değişim";
+
+  static String m21(count) => "${Intl.plural(count, other: '${count} tartım')}";
+
+  static String m22(age) => "${age} yıl";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -914,23 +926,38 @@ class MessageLookup extends MessageLookupByLibrary {
         "websiteLabel": MessageLookupByLibrary.simpleMessage("web sitesi"),
         "weightAverageDeltaLabel":
             MessageLookupByLibrary.simpleMessage("7 günlük ortalamadan fark"),
-        "weightEntryDate": m14,
+        "weightAverageGapLabel":
+            MessageLookupByLibrary.simpleMessage("Ortalamadan fark"),
+        "weightAverageShort": m14,
+        "weightChangeShort": m15,
+        "weightEntryDate": m16,
+        "weightGapShort": MessageLookupByLibrary.simpleMessage("Fark"),
+        "weightGoalReminder": m17,
         "weightGoalShortLabel": MessageLookupByLibrary.simpleMessage("Hedef"),
         "weightHistoryLabel":
             MessageLookupByLibrary.simpleMessage("Kilo geçmişi"),
         "weightLabel": MessageLookupByLibrary.simpleMessage("Kilo"),
+        "weightMaxLabel": MessageLookupByLibrary.simpleMessage("en çok"),
         "weightMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Tartımlar"),
+        "weightMinLabel": MessageLookupByLibrary.simpleMessage("en az"),
         "weightNoMeasurementsLabel":
             MessageLookupByLibrary.simpleMessage("Bu dönemde tartım yok"),
-        "weightPeriodAverage": m15,
+        "weightPeriodAverage": m18,
+        "weightPeriodAverageLabel": m19,
+        "weightPeriodChangeLabel": m20,
         "weightSaveError": MessageLookupByLibrary.simpleMessage(
             "Kilonuz kaydedilemedi. Lütfen tekrar deneyin."),
         "weightSavedLabel":
             MessageLookupByLibrary.simpleMessage("Kilo kaydedildi"),
         "weightSavingLabel":
             MessageLookupByLibrary.simpleMessage("Kaydediliyor…"),
-        "yearsLabel": m16,
+        "weightTodayLabel":
+            MessageLookupByLibrary.simpleMessage("bugünkü kilo"),
+        "weightTrendNotEnoughLabel":
+            MessageLookupByLibrary.simpleMessage("yeterli tartım yok"),
+        "weightWeighInCount": m21,
+        "yearsLabel": m22,
         "yesterdayLabel": MessageLookupByLibrary.simpleMessage("Dün")
       };
 }

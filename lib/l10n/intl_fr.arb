@@ -645,5 +645,17 @@
   "macroGoalHistoryEmpty": "L’historique des modifications d’objectifs apparaîtra ici.",
   "bodyGoalPreviewDescription": "Prise de masse, sèche ou maintien : les macros s’ajusteront au poids cible.",
   "caloriesAboveGoal": "+{amount} kcal au-dessus",
-  "lastJournalDay": "Dernière journée renseignée : {date}"
+  "lastJournalDay": "Dernière journée renseignée : {date}",
+  "weightTrendNotEnoughLabel": "pas assez de pesées",
+  "weightTodayLabel": "poids du jour",
+  "weightPeriodAverageLabel": "Moyenne sur {period}",
+  "weightAverageGapLabel": "Écart à la moyenne",
+  "weightPeriodChangeLabel": "Variation sur {period}",
+  "weightGoalReminder": "Objectif : {goal}",
+  "weightAverageShort": "Moy. {period}",
+  "weightGapShort": "Écart",
+  "weightChangeShort": "Var. {period}",
+  "weightWeighInCount": "{count, plural, one{{count} pesée} other{{count} pesées}}",
+  "weightMinLabel": "min",
+  "weightMaxLabel": "max"
 }
