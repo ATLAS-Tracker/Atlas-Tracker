@@ -589,5 +589,17 @@
   "macroGoalHistoryEmpty": "Hedef değişikliklerinin geçmişi burada görünecek.",
   "bodyGoalPreviewDescription": "Kilo alma, yağ yakma veya koruma: makrolar hedef kiloya göre ayarlanacak.",
   "caloriesAboveGoal": "Hedefin {amount} kcal üzerinde",
-  "lastJournalDay": "Son kayıtlı gün: {date}"
+  "lastJournalDay": "Son kayıtlı gün: {date}",
+  "weightTrendNotEnoughLabel": "yeterli tartım yok",
+  "weightTodayLabel": "bugünkü kilo",
+  "weightPeriodAverageLabel": "{period} ortalaması",
+  "weightAverageGapLabel": "Ortalamadan fark",
+  "weightPeriodChangeLabel": "{period} değişim",
+  "weightGoalReminder": "Hedef: {goal}",
+  "weightAverageShort": "Ort. {period}",
+  "weightGapShort": "Fark",
+  "weightChangeShort": "Değ. {period}",
+  "weightWeighInCount": "{count, plural, other{{count} tartım}}",
+  "weightMinLabel": "en az",
+  "weightMaxLabel": "en çok"
 }
