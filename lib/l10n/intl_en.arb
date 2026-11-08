@@ -200,7 +200,7 @@
   "moveIntakeLabel": "Move",
   "packageLabel": "Package",
   "recipeSaveError": "The recipe could not be saved. Your draft is preserved.",
-  "recipeLibraryHelp": "The recipe is saved in your library. The whole recipe counts as one serving.",
+  "recipeLibraryHelp": "The recipe is saved in your library.",
   "addRecipeToDiary": "Also add one serving to the diary",
   "unsavedRecipeTitle": "Unsaved changes",
   "unsavedRecipeMessage": "Leave and lose the changes to this recipe?",
@@ -645,5 +645,18 @@
   "macroGoalHistoryEmpty": "The history of target changes will appear here.",
   "bodyGoalPreviewDescription": "Bulking, cutting or maintenance: macros will adapt to the target weight.",
   "caloriesAboveGoal": "+{amount} kcal above goal",
-  "lastJournalDay": "Last logged day: {date}"
+  "lastJournalDay": "Last logged day: {date}",
+  "weightTrendNotEnoughLabel": "not enough weigh-ins",
+  "weightTodayLabel": "today's weight",
+  "weightPeriodAverageLabel": "Average over {period}",
+  "weightAverageGapLabel": "Difference from average",
+  "weightPeriodChangeLabel": "Change over {period}",
+  "weightGoalReminder": "Goal: {goal}",
+  "weightAverageShort": "Avg {period}",
+  "weightGapShort": "Gap",
+  "weightChangeShort": "Change {period}",
+  "weightWeighInCount": "{count, plural, one{{count} weigh-in} other{{count} weigh-ins}}",
+  "@weightWeighInCount": {"placeholders": {"count": {"type": "int"}}},
+  "weightMinLabel": "min",
+  "weightMaxLabel": "max"
 }

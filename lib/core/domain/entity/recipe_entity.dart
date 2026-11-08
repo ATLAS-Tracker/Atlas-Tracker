@@ -7,17 +7,20 @@ class RecipeEntity extends Equatable {
   final MealEntity meal; // Le plat principal (la recette elle-même)
   final List<IntakeForRecipeEntity> ingredients; // Les composants (ingrédients)
   final DateTime? updatedAt;
+  final int portions;
 
   const RecipeEntity({
     required this.meal,
     required this.ingredients,
     this.updatedAt,
+    this.portions = 1,
   });
 
   /// Convertir depuis un RecipesDBO Hive
   factory RecipeEntity.fromRecipesDBO(RecipesDBO dbo) {
     return RecipeEntity(
       updatedAt: dbo.updatedAt,
+      portions: dbo.portions,
       meal: MealEntity.fromMealDBO(dbo.recipe),
       ingredients: dbo.ingredients
           .map((ingredient) => IntakeForRecipeEntity(
@@ -34,5 +37,5 @@ class RecipeEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [meal, ingredients, updatedAt];
+  List<Object?> get props => [meal, ingredients, updatedAt, portions];
 }

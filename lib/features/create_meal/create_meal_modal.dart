@@ -210,8 +210,9 @@ class _CalendarMealTypeSelectorState extends State<CalendarMealTypeSelector> {
   }
 }
 
-/// Saves the ingredients currently held by [CreateMealBloc] as a one-serving
-/// recipe and logs one serving of it to [type] on [day].
+/// Saves the ingredients currently held by [CreateMealBloc] as a recipe whose
+/// serving is one of its [CreateMealBloc.portions], and logs one serving of it
+/// to [type] on [day].
 Future<void> saveRecipe(
   BuildContext context, {
   required String mealName,
@@ -221,7 +222,10 @@ Future<void> saveRecipe(
   required DateTime day,
   bool addToDiary = false,
 }) async {
-  final macros = locator<CreateMealBloc>().computeMacros();
+  final bloc = locator<CreateMealBloc>();
+  final portions = bloc.portions < 1 ? 1 : bloc.portions;
+  final macros =
+      bloc.computeMacros().map((key, value) => MapEntry(key, value / portions));
 
   final nutriment = MealNutrimentsEntity(
     energyKcalPerQuantity: macros['totalKcal']!,
@@ -253,7 +257,8 @@ Future<void> saveRecipe(
   // Add the recipe to the DB to keep tracking of the mealEntity composing the recipe
   final recipe = RecipeEntity(
     meal: meal,
-    ingredients: locator<CreateMealBloc>().getListOfIntakeForRecipeEntity(),
+    ingredients: bloc.getListOfIntakeForRecipeEntity(),
+    portions: portions,
   );
   await locator<AddRecipeUsecase>().addRecipe(recipe);
   if (addToDiary) {

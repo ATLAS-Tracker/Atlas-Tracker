@@ -97,26 +97,21 @@ class _TrendView extends StatefulWidget {
 }
 
 class _TrendViewState extends State<_TrendView> {
-  static const _periods = [7, 14, 30, 90];
-  int _period = 0;
+  WeightChartRange _range = WeightChartRange.sevenDays;
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    final data = trendDataFrom(widget.state.macros, _periods[_period]);
+    final data = trendDataFrom(widget.state.macros, _range.days);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ChartSelector(
-          labels: [
-            s.trendPeriod7d,
-            s.trendPeriod14d,
-            s.trendPeriod1m,
-            s.trendPeriod3m
-          ],
-          selectedIndex: _period,
-          onSelected: (i) => setState(() => _period = i),
+          labels: [for (final range in WeightChartRange.values) range.label(s)],
+          selectedIndex: _range.index,
+          onSelected: (i) =>
+              setState(() => _range = WeightChartRange.values[i]),
         ),
         const SizedBox(height: 12),
         _TrendStats(
@@ -125,7 +120,7 @@ class _TrendViewState extends State<_TrendView> {
                 widget.state.macros, _dateOnly(DateTime.now()))),
         const SizedBox(height: 12),
         _TrendChartCard(
-            range: WeightChartRange.values[_period],
+            range: _range,
             data: TrendData(
               days: [
                 ...data.days,

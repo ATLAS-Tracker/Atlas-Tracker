@@ -6,15 +6,11 @@ import 'package:opennutritracker/generated/l10n.dart';
 
 class MealDetailNutrimentsTable extends StatelessWidget {
   final MealEntity product;
-  final double? servingQuantity;
-  final String? servingUnit;
   final bool embedded;
 
   const MealDetailNutrimentsTable({
     super.key,
     required this.product,
-    this.servingQuantity,
-    this.servingUnit,
     this.embedded = false,
   });
 
@@ -27,13 +23,7 @@ class MealDetailNutrimentsTable extends StatelessWidget {
         ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold) ??
         const TextStyle();
 
-    final unit = MealEntity.metricUnit(product.mealUnit);
-
-    final headerText = product.isPortionBased
-        ? '${S.of(context).perServingLabel}${product.servingSize == null ? '' : ' · ${product.servingSize}'}'
-        : product.mealOrRecipe == MealOrRecipeEntity.recipe
-            ? "${S.of(context).perServingLabel} (${formatQuantity(servingQuantity ?? 1)} ${_localizedUnit(context, servingUnit)})"
-            : "${S.of(context).per100gmlLabel} $unit";
+    final headerText = headerFor(context, product);
 
     return Container(
       padding: EdgeInsets.all(embedded ? 0 : 16),
@@ -73,7 +63,9 @@ class MealDetailNutrimentsTable extends StatelessWidget {
                         .onSurface
                         .withValues(alpha: 0.06))),
             children: <TableRow>[
-              _getNutrimentsTableRow("", headerText, textStyleBold),
+              // Embedded: the parent tile shows the header as its subtitle.
+              if (!embedded)
+                _getNutrimentsTableRow("", headerText, textStyleBold),
               _getNutrimentsTableRow(
                 S.of(context).energyLabel,
                 "${formatNumber(_adjustValueForServing(product.nutriments.energyKcalPerQuantity?.toDouble() ?? 0))} ${S.of(context).kcalLabel}",
@@ -116,6 +108,17 @@ class MealDetailNutrimentsTable extends StatelessWidget {
     );
   }
 
+  /// What the values are for ("Par portion", "Pour 100 g"…).
+  static String headerFor(BuildContext context, MealEntity product) {
+    if (product.isPortionBased) {
+      return '${S.of(context).perServingLabel}${product.servingSize == null ? '' : ' · ${product.servingSize}'}';
+    }
+    if (product.mealOrRecipe == MealOrRecipeEntity.recipe) {
+      return S.of(context).perServingLabel;
+    }
+    return '${S.of(context).per100gmlLabel} ${MealEntity.metricUnit(product.mealUnit)}';
+  }
+
   double _adjustValueForServing(double value) {
     if (product.isPortionBased) return value / 100;
     return value;
@@ -139,18 +142,5 @@ class MealDetailNutrimentsTable extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _localizedUnit(BuildContext context, String? unit) {
-    switch (unit) {
-      case 'serving':
-        return S.of(context).servingLabel;
-      case 'g':
-        return S.of(context).gramUnit;
-      case 'ml':
-        return S.of(context).milliliterUnit;
-      default:
-        return unit ?? S.of(context).gramUnit;
-    }
   }
 }

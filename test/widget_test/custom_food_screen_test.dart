@@ -227,8 +227,7 @@ void main() {
       home: Scaffold(
           body: SingleChildScrollView(
               child: Column(children: [
-        MealDetailNutrimentsTable(
-            product: meal, servingQuantity: 1, servingUnit: 'serving'),
+        MealDetailNutrimentsTable(product: meal),
         MealDetailBottomSheet(
             product: meal,
             day: DateTime(2026, 10, 24),
