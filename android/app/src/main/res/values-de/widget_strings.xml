@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Atlas · Ernährung</string>
+    <string name="widget_description">Kalorien und Makros des Tages</string>
+    <string name="widget_today">HEUTE</string>
+    <string name="widget_sign_in">Atlas zum Anmelden öffnen</string>
+    <string name="widget_refresh">Atlas zum Aktualisieren öffnen</string>
+    <string name="widget_kcal_goal">/ %1$s kcal</string>
+    <string name="widget_proteins">Eiweiß</string>
+    <string name="widget_carbs">Kohlenhydrate</string>
+    <string name="widget_fats">Fett</string>
+    <string name="widget_open">Atlas Tracker öffnen</string>
+    <string name="widget_remaining">Noch %1$s kcal</string>
+    <string name="widget_over">%1$s kcal darüber</string>
+</resources>

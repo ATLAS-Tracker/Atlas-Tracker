@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Atlas · Beslenme</string>
+    <string name="widget_description">Günlük kalori ve makrolar</string>
+    <string name="widget_today">BUGÜN</string>
+    <string name="widget_sign_in">Giriş yapmak için Atlas’ı açın</string>
+    <string name="widget_refresh">Yenilemek için Atlas’ı açın</string>
+    <string name="widget_kcal_goal">/ %1$s kcal</string>
+    <string name="widget_proteins">Protein</string>
+    <string name="widget_carbs">Karbonhidrat</string>
+    <string name="widget_fats">Yağ</string>
+    <string name="widget_open">Atlas Tracker’ı aç</string>
+    <string name="widget_remaining">%1$s kcal kaldı</string>
+    <string name="widget_over">%1$s kcal fazla</string>
+</resources>

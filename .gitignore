@@ -33,7 +33,13 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
-android/
+# Keep native widget sources visible while ignoring local Android build files.
+/android/*
+!/android/app/
+/android/app/*
+!/android/app/src/
+/android/app/src/*
+!/android/app/src/main/
 
 # API Keys
 *.env
