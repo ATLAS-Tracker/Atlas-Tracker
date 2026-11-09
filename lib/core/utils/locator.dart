@@ -76,6 +76,7 @@ import 'package:opennutritracker/features/settings/presentation/bloc/settings_bl
 import 'package:opennutritracker/features/sync/journal_sync_engine.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/services/daily_steps_queue_sync_service.dart';
+import 'package:opennutritracker/services/nutrition_widget_service.dart';
 import 'package:opennutritracker/services/step_count/android_step_count_provider.dart';
 import 'package:opennutritracker/services/step_count/step_count_provider.dart';
 import 'package:opennutritracker/services/step_count_service.dart';
@@ -377,6 +378,11 @@ Future<void> registerUserScope(HiveDBProvider hive) async {
   );
 
   await _initializeConfig(locator());
+  final nutritionWidget =
+      NutritionWidgetService(hive, locator(), locator(), locator());
+  locator.registerSingleton<NutritionWidgetService>(nutritionWidget,
+      dispose: (service) => service.dispose());
+  nutritionWidget.start();
   await locator<JournalSyncEngine>().start();
 }
 

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Atlas · Nutrition</string>
+    <string name="widget_description">Today’s calories and macros</string>
+    <string name="widget_today">TODAY</string>
+    <string name="widget_sign_in">Open Atlas to sign in</string>
+    <string name="widget_refresh">Open Atlas to refresh</string>
+    <string name="widget_kcal_goal">/ %1$s kcal</string>
+    <string name="widget_proteins">Protein</string>
+    <string name="widget_carbs">Carbs</string>
+    <string name="widget_fats">Fat</string>
+    <string name="widget_open">Open Atlas Tracker</string>
+    <string name="widget_remaining">%1$s kcal left</string>
+    <string name="widget_over">%1$s kcal over</string>
+    <string name="widget_scan">Scan</string>
+    <string name="widget_add">Add</string>
+    <string name="widget_scan_description">Open barcode scanner</string>
+    <string name="widget_add_description">Open food addition menu</string>
+    <string name="widget_energy_remaining_label">Remaining</string>
+    <string name="widget_energy_over_label">Over target</string>
+    <string name="widget_energy_consumed_label">Consumed</string>
+    <string name="widget_energy_goal_label">Goal</string>
+    <string name="widget_compact_name">Atlas · Calories (2×2)</string>
+    <string name="widget_compact_description">Calories remaining and quick food logging</string>
+    <string name="widget_compact_goal">Goal %1$s</string>
+</resources>

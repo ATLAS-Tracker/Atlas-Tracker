@@ -588,5 +588,17 @@
   "macroGoalHistoryEmpty": "Der Verlauf der Zieländerungen wird hier angezeigt.",
   "bodyGoalPreviewDescription": "Aufbau, Diät oder Erhalt: Die Makros passen sich dem Zielgewicht an.",
   "caloriesAboveGoal": "+{amount} kcal über dem Ziel",
-  "lastJournalDay": "Zuletzt erfasster Tag: {date}"
+  "lastJournalDay": "Zuletzt erfasster Tag: {date}",
+  "weightTrendNotEnoughLabel": "zu wenige Messungen",
+  "weightTodayLabel": "heutiges Gewicht",
+  "weightPeriodAverageLabel": "Durchschnitt über {period}",
+  "weightAverageGapLabel": "Abweichung vom Durchschnitt",
+  "weightPeriodChangeLabel": "Veränderung über {period}",
+  "weightGoalReminder": "Ziel: {goal}",
+  "weightAverageShort": "Ø {period}",
+  "weightGapShort": "Abw.",
+  "weightChangeShort": "Änd. {period}",
+  "weightWeighInCount": "{count, plural, one{{count} Messung} other{{count} Messungen}}",
+  "weightMinLabel": "min.",
+  "weightMaxLabel": "max."
 }

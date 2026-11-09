@@ -443,14 +443,17 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                           .textTheme
                           .titleSmall
                           ?.copyWith(fontWeight: FontWeight.w800)),
+                  subtitle: Text(
+                      MealDetailNutrimentsTable.headerFor(context, meal),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall
+                          ?.copyWith(color: colors.onSurfaceVariant)),
                   children: [
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                       child: MealDetailNutrimentsTable(
-                          product: meal,
-                          servingQuantity: meal.servingQuantity,
-                          servingUnit: meal.servingUnit,
-                          embedded: true),
+                          product: meal, embedded: true),
                     )
                   ],
                 ),

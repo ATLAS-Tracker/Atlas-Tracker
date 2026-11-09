@@ -58,8 +58,13 @@ class MealEntity extends Equatable {
 
   final MealNutrimentsEntity nutriments;
 
+  /// Custom food stored "per portion" (values kept ×100). Recipes also use a
+  /// 1-serving unit but store their per-portion values as-is.
   bool get isPortionBased =>
-      mealUnit == 'serving' && servingUnit == 'serving' && servingQuantity == 1;
+      mealUnit == 'serving' &&
+      servingUnit == 'serving' &&
+      servingQuantity == 1 &&
+      mealOrRecipe != MealOrRecipeEntity.recipe;
 
   bool get isLiquid => metricUnit(mealUnit) == 'ml';
 

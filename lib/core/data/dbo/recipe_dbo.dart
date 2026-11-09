@@ -20,16 +20,24 @@ class RecipesDBO extends HiveObject {
   @JsonKey(name: 'updated_at')
   DateTime updatedAt;
 
+  /// How many portions the ingredients make; the recipe meal's nutriments are
+  /// per portion.
+  @HiveField(3)
+  @JsonKey(defaultValue: 1)
+  int portions;
+
   RecipesDBO({
     required this.recipe,
     required this.ingredients,
     DateTime? updatedAt,
+    this.portions = 1,
   }) : updatedAt =
             updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
   factory RecipesDBO.fromRecipeEntity(RecipeEntity entity) {
     return RecipesDBO(
       updatedAt: entity.updatedAt,
+      portions: entity.portions,
       recipe: MealDBO.fromMealEntity(entity.meal),
       ingredients: entity.ingredients.map((ingredient) {
         return IntakeForRecipeDBO(
@@ -48,6 +56,7 @@ class RecipesDBO extends HiveObject {
   RecipeEntity toEntity() {
     return RecipeEntity(
       updatedAt: updatedAt,
+      portions: portions,
       meal: MealEntity.fromMealDBO(recipe),
       ingredients: ingredients.map((i) {
         return IntakeForRecipeEntity(

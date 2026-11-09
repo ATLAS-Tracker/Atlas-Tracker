@@ -1853,10 +1853,10 @@ class S {
     );
   }
 
-  /// `The recipe is saved in your library. The whole recipe counts as one serving.`
+  /// `The recipe is saved in your library.`
   String get recipeLibraryHelp {
     return Intl.message(
-      'The recipe is saved in your library. The whole recipe counts as one serving.',
+      'The recipe is saved in your library.',
       name: 'recipeLibraryHelp',
       desc: '',
       args: [],
@@ -6195,6 +6195,128 @@ class S {
       name: 'lastJournalDay',
       desc: '',
       args: [date],
+    );
+  }
+
+  /// `not enough weigh-ins`
+  String get weightTrendNotEnoughLabel {
+    return Intl.message(
+      'not enough weigh-ins',
+      name: 'weightTrendNotEnoughLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `today's weight`
+  String get weightTodayLabel {
+    return Intl.message(
+      'today\'s weight',
+      name: 'weightTodayLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average over {period}`
+  String weightPeriodAverageLabel(Object period) {
+    return Intl.message(
+      'Average over $period',
+      name: 'weightPeriodAverageLabel',
+      desc: '',
+      args: [period],
+    );
+  }
+
+  /// `Difference from average`
+  String get weightAverageGapLabel {
+    return Intl.message(
+      'Difference from average',
+      name: 'weightAverageGapLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change over {period}`
+  String weightPeriodChangeLabel(Object period) {
+    return Intl.message(
+      'Change over $period',
+      name: 'weightPeriodChangeLabel',
+      desc: '',
+      args: [period],
+    );
+  }
+
+  /// `Goal: {goal}`
+  String weightGoalReminder(Object goal) {
+    return Intl.message(
+      'Goal: $goal',
+      name: 'weightGoalReminder',
+      desc: '',
+      args: [goal],
+    );
+  }
+
+  /// `Avg {period}`
+  String weightAverageShort(Object period) {
+    return Intl.message(
+      'Avg $period',
+      name: 'weightAverageShort',
+      desc: '',
+      args: [period],
+    );
+  }
+
+  /// `Gap`
+  String get weightGapShort {
+    return Intl.message(
+      'Gap',
+      name: 'weightGapShort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change {period}`
+  String weightChangeShort(Object period) {
+    return Intl.message(
+      'Change $period',
+      name: 'weightChangeShort',
+      desc: '',
+      args: [period],
+    );
+  }
+
+  /// `{count, plural, one{{count} weigh-in} other{{count} weigh-ins}}`
+  String weightWeighInCount(int count) {
+    return Intl.plural(
+      count,
+      one: '$count weigh-in',
+      other: '$count weigh-ins',
+      name: 'weightWeighInCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `min`
+  String get weightMinLabel {
+    return Intl.message(
+      'min',
+      name: 'weightMinLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `max`
+  String get weightMaxLabel {
+    return Intl.message(
+      'max',
+      name: 'weightMaxLabel',
+      desc: '',
+      args: [],
     );
   }
 }

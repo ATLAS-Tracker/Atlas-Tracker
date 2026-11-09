@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_name">Atlas · Nutrition</string>
+    <string name="widget_description">Calories et macros de la journée</string>
+    <string name="widget_today">AUJOURD’HUI</string>
+    <string name="widget_sign_in">Ouvrir Atlas pour se connecter</string>
+    <string name="widget_refresh">Ouvrir Atlas pour actualiser</string>
+    <string name="widget_kcal_goal">/ %1$s kcal</string>
+    <string name="widget_proteins">Protéines</string>
+    <string name="widget_carbs">Glucides</string>
+    <string name="widget_fats">Lipides</string>
+    <string name="widget_open">Ouvrir Atlas Tracker</string>
+    <string name="widget_remaining">Reste %1$s kcal</string>
+    <string name="widget_over">Surplus : %1$s kcal</string>
+    <string name="widget_scan">Scan</string>
+    <string name="widget_add">Ajout</string>
+    <string name="widget_scan_description">Ouvrir le scanner de code-barres</string>
+    <string name="widget_add_description">Ouvrir le menu d’ajout</string>
+    <string name="widget_energy_remaining_label">Restantes</string>
+    <string name="widget_energy_over_label">En surplus</string>
+    <string name="widget_energy_consumed_label">Consommées</string>
+    <string name="widget_energy_goal_label">Objectif</string>
+    <string name="widget_compact_name">Atlas · Calories (2×2)</string>
+    <string name="widget_compact_description">Calories restantes et ajout rapide</string>
+    <string name="widget_compact_goal">Objectif %1$s</string>
+</resources>

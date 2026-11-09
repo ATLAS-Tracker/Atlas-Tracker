@@ -344,29 +344,6 @@ void main() {
     expect(find.text(S.current.weightMeasurementsLabel), findsNothing);
   });
 
-  testWidgets('all-time chart reuses the history already loaded',
-      (tester) async {
-    savedWeights = [
-      entry('past', 50, day.subtract(const Duration(days: 20))),
-      entry('today', 54, day),
-      entry('future', 80, day.add(const Duration(days: 1))),
-    ];
-    await pumpScreen(tester);
-    clearInteractions(getWeight);
-    await tester.tap(find.text(S.current.lastSevenDaysLabel));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(S.current.allTimeLabel).last);
-    await tester.pumpAndSettle();
-    verify(() => getWeight.getAllUserWeights()).called(1);
-    verifyNever(() => getWeight.getWeightsFromPastDays(any(), any(),
-        includeToday: any(named: 'includeToday')));
-    final chart =
-        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
-    final points = chart.series.first.dataSource! as List<WeightData>;
-    expect(points.map((p) => p.weight), [50, 54]);
-    expect((chart.primaryYAxis as NumericAxis).plotBands, isEmpty);
-  });
-
   testWidgets(
       'finite chart periods keep real points sorted and inside the selected days',
       (tester) async {
@@ -378,9 +355,7 @@ void main() {
       entry('today-new', 55, day),
     ];
     await pumpScreen(tester);
-    await tester.tap(find.text(S.current.lastSevenDaysLabel));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(S.current.lastFourteenDaysLabel).last);
+    await tester.tap(find.text(WeightChartRange.fourteenDays.label(S.current)));
     await tester.pumpAndSettle();
     final chart =
         tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
@@ -398,9 +373,7 @@ void main() {
       'weight adjustments keep the selected chart without rereading history',
       (tester) async {
     await pumpScreen(tester);
-    await tester.tap(find.text(S.current.lastSevenDaysLabel));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(S.current.allTimeLabel).last);
+    await tester.tap(find.text(WeightChartRange.threeMonths.label(S.current)));
     await tester.pumpAndSettle();
     clearInteractions(getWeight);
     await tester.ensureVisible(find.text('+1'));
@@ -432,6 +405,120 @@ void main() {
     await pumpScreen(tester);
     expect(find.text(S.current.weightNoMeasurementsLabel), findsOneWidget);
     expect(find.byType(SfCartesianChart), findsNothing);
+  });
+
+  String textIn(WidgetTester tester, String key) => tester
+      .widgetList<Text>(find.descendant(
+          of: find.byKey(ValueKey(key)), matching: find.byType(Text)))
+      .map((t) => t.data ?? t.textSpan!.toPlainText())
+      .join(' ');
+
+  testWidgets('dashboard: today, average, gap, change and goal for 7 days',
+      (tester) async {
+    savedWeights = [
+      entry('d6', 56, day.subtract(const Duration(days: 6))),
+      entry('d3', 55, day.subtract(const Duration(days: 3))),
+      entry('d0', 54, day),
+    ];
+    await pumpScreen(tester);
+    expect(textIn(tester, 'weight-today'), contains('54,0'));
+    final average = textIn(tester, 'weight-average');
+    expect(
+        average,
+        startsWith(S.current.weightPeriodAverageLabel(
+            WeightChartRange.sevenDays.label(S.current))));
+    expect(average, endsWith('55,0 kg'));
+    expect(
+        average,
+        contains('${S.current.weightMinLabel} 54,0  ·  '
+            '${S.current.weightMaxLabel} 56,0 kg'));
+    expect(average, contains(S.current.weightWeighInCount(3)));
+    expect(textIn(tester, 'weight-average-gap'), contains('−1,0 kg'));
+    expect(textIn(tester, 'weight-change'),
+        '${S.current.weightPeriodChangeLabel(WeightChartRange.sevenDays.label(S.current))} −2,0 kg');
+    expect(find.text(S.current.weightGoalReminder(S.current.goalGainWeight)),
+        findsOneWidget);
+    // Fixture user wants to gain: losing weight is shown off target.
+    final badge = tester.widget<Container>(find
+        .ancestor(
+            of: find.descendant(
+                of: find.byKey(const ValueKey('weight-average-gap')),
+                matching: find.byIcon(Icons.trending_down_rounded)),
+            matching: find.byType(Container))
+        .first);
+    expect((badge.decoration! as BoxDecoration).color, lightColorScheme.error);
+  });
+
+  testWidgets('the period selector drives the dashboard and the chart',
+      (tester) async {
+    savedWeights = [
+      entry('d20', 60, day.subtract(const Duration(days: 20))),
+      entry('d3', 55, day.subtract(const Duration(days: 3))),
+      entry('d0', 54, day),
+    ];
+    await pumpScreen(tester);
+    expect(textIn(tester, 'weight-change'), contains('−1,0 kg'));
+    await tester.tap(find.text(WeightChartRange.oneMonth.label(S.current)));
+    await tester.pumpAndSettle();
+    verify(() => getWeight.getWeightsFromPastDays(day, 30, includeToday: true))
+        .called(1);
+    expect(textIn(tester, 'weight-change'),
+        '${S.current.weightPeriodChangeLabel(WeightChartRange.oneMonth.label(S.current))} −6,0 kg');
+    expect(textIn(tester, 'weight-average'), contains('56,3 kg'));
+    final chart =
+        tester.widget<SfCartesianChart>(find.byType(SfCartesianChart));
+    expect((chart.series.first.dataSource! as List<WeightData>).length, 3);
+  });
+
+  testWidgets('a compact recap appears once the dashboard scrolls away',
+      (tester) async {
+    await pumpScreen(tester);
+    await tester.binding.setSurfaceSize(const Size(412, 640));
+    await tester.pumpAndSettle();
+    bool shown() =>
+        tester
+            .widget<IgnorePointer>(find
+                .ancestor(
+                    of: find.byKey(const ValueKey('weight-sticky-bar')),
+                    matching: find.byType(IgnorePointer))
+                .first)
+            .ignoring ==
+        false;
+    expect(shown(), isFalse);
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+    expect(shown(), isTrue);
+    expect(
+        find.descendant(
+            of: find.byKey(const ValueKey('weight-sticky-bar')),
+            matching: find.text(S.current.weightAverageShort(
+                WeightChartRange.sevenDays.label(S.current)))),
+        findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, 800));
+    await tester.pumpAndSettle();
+    expect(shown(), isFalse);
+  });
+
+  testWidgets('no weigh-in today: dashes for today, gap and change',
+      (tester) async {
+    savedWeights = [
+      entry('d1', 54, day.subtract(const Duration(days: 1))),
+      entry('d2', 55, day.subtract(const Duration(days: 2))),
+    ];
+    await pumpScreen(tester);
+    expect(textIn(tester, 'weight-today'), '—');
+    expect(textIn(tester, 'weight-average'), contains('54,5 kg'));
+    expect(textIn(tester, 'weight-average-gap'), endsWith('—'));
+    expect(textIn(tester, 'weight-change'), endsWith('—'));
+  });
+
+  testWidgets('a single weigh-in asks for more instead of a change',
+      (tester) async {
+    savedWeights = [entry('today', 54, day)];
+    await pumpScreen(tester);
+    expect(textIn(tester, 'weight-change'),
+        contains(S.current.weightTrendNotEnoughLabel));
+    expect(textIn(tester, 'weight-change'), contains('—'));
   });
 
   testWidgets('profile weight is not shown as a target', (tester) async {
@@ -472,6 +559,12 @@ void main() {
         (tester) async {
       await pumpScreen(tester, dark: dark, scale: 1.3, width: 320);
       expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('weight-change')), findsOneWidget);
+      for (final range in WeightChartRange.values) {
+        await tester.tap(find.text(range.label(S.current)));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
       await tester.tap(find.text(S.current.historyLabel));
       await tester.pumpAndSettle();
       expect(find.byIcon(Icons.edit_outlined), findsNothing);

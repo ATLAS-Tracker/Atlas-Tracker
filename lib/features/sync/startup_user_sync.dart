@@ -3,8 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/domain/usecase/add_macro_goal_usecase.dart';
-import 'package:opennutritracker/core/domain/usecase/get_user_usecase.dart';
-import 'package:opennutritracker/core/domain/entity/user_role_entity.dart';
 import 'package:opennutritracker/features/home/presentation/bloc/home_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/diary_bloc.dart';
 import 'package:opennutritracker/features/diary/presentation/bloc/calendar_day_bloc.dart';
@@ -24,16 +22,14 @@ Future<void> synchronizeUserData(SupabaseClient client) async {
   try {
     await syncProfileFromSupabase(client);
     if (!owns()) return;
-    final user = await locator<GetUserUsecase>().getUserData();
-    if (user.role == UserRoleEntity.student) {
-      try {
-        await locator<AddMacroGoalUsecase>()
-            .addMacroGoalFromCoach()
-            .timeout(const Duration(seconds: 8));
-      } catch (error) {
-        Logger('StartupUserSync')
-            .warning('Coach goals deferred: ${error.runtimeType}');
-      }
+    // Any role may own goals (a coach can be their own student).
+    try {
+      await locator<AddMacroGoalUsecase>()
+          .addMacroGoalFromCoach()
+          .timeout(const Duration(seconds: 8));
+    } catch (error) {
+      Logger('StartupUserSync')
+          .warning('Coach goals deferred: ${error.runtimeType}');
     }
     if (!owns()) return;
     try {
