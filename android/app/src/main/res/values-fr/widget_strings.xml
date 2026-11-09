@@ -12,4 +12,8 @@
     <string name="widget_open">Ouvrir Atlas Tracker</string>
     <string name="widget_remaining">Reste %1$s kcal</string>
     <string name="widget_over">Surplus : %1$s kcal</string>
+    <string name="widget_scan">Scan</string>
+    <string name="widget_add">Ajout</string>
+    <string name="widget_scan_description">Ouvrir le scanner de code-barres</string>
+    <string name="widget_add_description">Ouvrir le menu d’ajout</string>
 </resources>

@@ -1,4 +1,10 @@
 import 'dart:async';
+import 'package:opennutritracker/services/nutrition_widget_actions.dart';
+import 'package:opennutritracker/core/utils/navigation_options.dart';
+import 'package:opennutritracker/features/add_meal/presentation/add_meal_screen.dart';
+import 'package:opennutritracker/features/add_meal/presentation/add_meal_type.dart';
+import 'package:opennutritracker/features/add_meal/domain/entity/meal_or_recipe_entity.dart';
+import 'package:opennutritracker/features/scanner/scanner_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:opennutritracker/core/utils/locator.dart';
 import 'package:opennutritracker/features/diary/diary_page.dart';
@@ -25,11 +31,15 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
   int _selectedPageIndex = 0;
   bool _isCoach = false;
+  final _widgetActions = NutritionWidgetActions();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _widgetActions.start(_openWidgetAction);
+    });
     unawaited(synchronizeUserData(locator<SupabaseClient>()));
     locator.get<GetUserUsecase>().getUserData().then((user) {
       if (mounted && user.role == UserRoleEntity.coach) {
@@ -40,6 +50,7 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _widgetActions.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -66,6 +77,23 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     }
 
     unawaited(synchronizeUserData(locator<SupabaseClient>()));
+  }
+
+  void _openWidgetAction(String action) {
+    if (!mounted) return;
+    final navigator = Navigator.of(context);
+    navigator.popUntil((route) => route.isFirst);
+    // Fixed meal until widget meal-time preferences are introduced.
+    const meal = AddMealType.breakfastType;
+    final day = DateTime.now();
+    if (action == 'scan') {
+      navigator.pushNamed(NavigationOptions.scannerRoute,
+          arguments: ScannerScreenArguments(day, meal.getIntakeType()));
+    } else {
+      navigator.pushNamed(NavigationOptions.addMealRoute,
+          arguments:
+              AddMealScreenArguments(meal, day, MealOrRecipeEntity.meal));
+    }
   }
 
   @override

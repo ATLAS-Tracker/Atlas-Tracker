@@ -10,12 +10,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Build
 import android.util.AtomicFile
+import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
 import java.io.File
+import java.text.DateFormat
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.roundToLong
 
 class NutritionWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
@@ -80,10 +84,35 @@ class NutritionWidgetProvider : AppWidgetProvider() {
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(Calendar.getInstance().time)
             val fresh = data != null && data.optString("date") == today
             val views = RemoteViews(context.packageName, R.layout.nutrition_widget)
-            views.setImageViewBitmap(R.id.widget_artwork,
-                NutritionWidgetArtwork.render(context, data, fresh))
+            val format = NumberFormat.getIntegerInstance()
+            fun number(key: String) = data?.optDouble(key, 0.0)?.takeIf { it.isFinite() } ?: 0.0
+            fun value(key: String) = if (fresh) format.format(number(key)) else "—"
+            views.setTextViewText(R.id.widget_status, when {
+                data == null -> context.getString(R.string.widget_sign_in)
+                !fresh -> context.getString(R.string.widget_refresh)
+                else -> DateFormat.getDateInstance(DateFormat.MEDIUM).format(Calendar.getInstance().time)
+            })
+            views.setTextViewText(R.id.widget_kcal, value("kcal"))
+            views.setTextViewText(R.id.widget_kcal_goal, if (fresh)
+                context.getString(R.string.widget_kcal_goal, value("kcalGoal")) else "kcal")
+            views.setViewVisibility(R.id.widget_remaining, if (fresh) View.VISIBLE else View.GONE)
+            views.setTextViewText(R.id.widget_remaining, if (fresh) {
+                val remaining = number("kcalGoal").roundToLong() - number("kcal").roundToLong()
+                context.getString(if (remaining >= 0) R.string.widget_remaining else R.string.widget_over,
+                    format.format(kotlin.math.abs(remaining)))
+            } else "")
+            for ((id, key) in listOf(R.id.widget_carbs_value to "carbs",
+                    R.id.widget_fats_value to "fats", R.id.widget_protein_value to "proteins")) {
+                views.setTextViewText(id, if (fresh) "${value(key)} / ${value("${key}Goal")} g" else "— g")
+            }
+            for ((id, key) in listOf(R.id.widget_kcal_bar to "kcal", R.id.widget_carbs_bar to "carbs",
+                    R.id.widget_fats_bar to "fats", R.id.widget_protein_bar to "proteins")) {
+                val goal = number("${key}Goal")
+                val progress = if (fresh && goal > 0)
+                    (number(key) / goal * 1000).coerceIn(0.0, 1000.0).toInt() else 0
+                views.setProgressBar(id, 1000, progress, false)
+            }
             val summary = if (fresh) {
-                val format = java.text.NumberFormat.getIntegerInstance()
                 listOf("kcal", "carbs", "fats", "proteins").joinToString(", ") { key ->
                     val label = when (key) {
                         "carbs" -> context.getString(R.string.widget_carbs)
@@ -94,12 +123,20 @@ class NutritionWidgetProvider : AppWidgetProvider() {
                     "$label ${format.format(data!!.optDouble(key, 0.0))} / ${format.format(data.optDouble("${key}Goal", 0.0))}"
                 }
             } else context.getString(if (data == null) R.string.widget_sign_in else R.string.widget_refresh)
-            views.setContentDescription(R.id.widget_root, summary)
+            views.setContentDescription(R.id.widget_summary, summary)
             val launch = Intent(context, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             views.setOnClickPendingIntent(R.id.widget_root,
                 PendingIntent.getActivity(context, 0, launch,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+            for ((id, action) in listOf(R.id.widget_scan to "scan", R.id.widget_add to "add")) {
+                val intent = Intent(context, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    .putExtra("nutrition_widget_action", action)
+                views.setOnClickPendingIntent(id,
+                    PendingIntent.getActivity(context, if (action == "scan") 1 else 2, intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+            }
             manager.updateAppWidget(ids, views)
             // Inexact alarm: no exact-alarm permission or constantly running service.
             val midnight = Calendar.getInstance().apply {

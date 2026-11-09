@@ -12,4 +12,8 @@
     <string name="widget_open">Atlas Tracker öffnen</string>
     <string name="widget_remaining">Noch %1$s kcal</string>
     <string name="widget_over">%1$s kcal darüber</string>
+    <string name="widget_scan">Scan</string>
+    <string name="widget_add">Hinzufügen</string>
+    <string name="widget_scan_description">Barcode-Scanner öffnen</string>
+    <string name="widget_add_description">Lebensmittel hinzufügen</string>
 </resources>

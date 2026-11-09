@@ -64,6 +64,7 @@ class DashboardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AtlasBrandPanel(
+            padding: const EdgeInsets.fromLTRB(32, 24, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -135,7 +136,7 @@ class DashboardWidget extends StatelessWidget {
                   '${formatNumber(totalKcalSupplied)} / ${formatNumber(totalKcalDaily)} ${s.kcalLabel} ${s.consumedLabel}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: brandSecondary,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 14),

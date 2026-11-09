@@ -12,4 +12,8 @@
     <string name="widget_open">Atlas Tracker’ı aç</string>
     <string name="widget_remaining">%1$s kcal kaldı</string>
     <string name="widget_over">%1$s kcal fazla</string>
+    <string name="widget_scan">Tara</string>
+    <string name="widget_add">Ekle</string>
+    <string name="widget_scan_description">Barkod tarayıcıyı aç</string>
+    <string name="widget_add_description">Yiyecek ekleme menüsünü aç</string>
 </resources>
