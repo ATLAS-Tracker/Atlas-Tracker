@@ -20,4 +20,7 @@
     <string name="widget_energy_over_label">Over target</string>
     <string name="widget_energy_consumed_label">Consumed</string>
     <string name="widget_energy_goal_label">Goal</string>
+    <string name="widget_compact_name">Atlas · Calories (2×2)</string>
+    <string name="widget_compact_description">Calories remaining and quick food logging</string>
+    <string name="widget_compact_goal">Goal %1$s</string>
 </resources>

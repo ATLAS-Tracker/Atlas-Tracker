@@ -20,4 +20,7 @@
     <string name="widget_energy_over_label">En surplus</string>
     <string name="widget_energy_consumed_label">Consommées</string>
     <string name="widget_energy_goal_label">Objectif</string>
+    <string name="widget_compact_name">Atlas · Calories (2×2)</string>
+    <string name="widget_compact_description">Calories restantes et ajout rapide</string>
+    <string name="widget_compact_goal">Objectif %1$s</string>
 </resources>

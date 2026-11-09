@@ -20,4 +20,7 @@
     <string name="widget_energy_over_label">Hedef aşıldı</string>
     <string name="widget_energy_consumed_label">Tüketilen</string>
     <string name="widget_energy_goal_label">Hedef</string>
+    <string name="widget_compact_name">Atlas · Kalori (2×2)</string>
+    <string name="widget_compact_description">Kalan kaloriler ve hızlı yiyecek ekleme</string>
+    <string name="widget_compact_goal">Hedef %1$s</string>
 </resources>
