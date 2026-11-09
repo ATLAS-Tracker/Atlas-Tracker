@@ -16,4 +16,8 @@
     <string name="widget_add">Ajout</string>
     <string name="widget_scan_description">Ouvrir le scanner de code-barres</string>
     <string name="widget_add_description">Ouvrir le menu d’ajout</string>
+    <string name="widget_energy_remaining_label">Restantes</string>
+    <string name="widget_energy_over_label">En surplus</string>
+    <string name="widget_energy_consumed_label">Consommées</string>
+    <string name="widget_energy_goal_label">Objectif</string>
 </resources>

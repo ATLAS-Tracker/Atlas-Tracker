@@ -16,4 +16,8 @@
     <string name="widget_add">Hinzufügen</string>
     <string name="widget_scan_description">Barcode-Scanner öffnen</string>
     <string name="widget_add_description">Lebensmittel hinzufügen</string>
+    <string name="widget_energy_remaining_label">Übrig</string>
+    <string name="widget_energy_over_label">Über dem Ziel</string>
+    <string name="widget_energy_consumed_label">Verbraucht</string>
+    <string name="widget_energy_goal_label">Ziel</string>
 </resources>

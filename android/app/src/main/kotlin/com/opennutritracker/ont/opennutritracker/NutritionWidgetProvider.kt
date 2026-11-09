@@ -9,8 +9,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Build
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.graphics.Typeface
 import android.util.AtomicFile
-import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
 import java.io.File
@@ -92,15 +96,18 @@ class NutritionWidgetProvider : AppWidgetProvider() {
                 !fresh -> context.getString(R.string.widget_refresh)
                 else -> DateFormat.getDateInstance(DateFormat.MEDIUM).format(Calendar.getInstance().time)
             })
-            views.setTextViewText(R.id.widget_kcal, value("kcal"))
-            views.setTextViewText(R.id.widget_kcal_goal, if (fresh)
-                context.getString(R.string.widget_kcal_goal, value("kcalGoal")) else "kcal")
-            views.setViewVisibility(R.id.widget_remaining, if (fresh) View.VISIBLE else View.GONE)
-            views.setTextViewText(R.id.widget_remaining, if (fresh) {
-                val remaining = number("kcalGoal").roundToLong() - number("kcal").roundToLong()
-                context.getString(if (remaining >= 0) R.string.widget_remaining else R.string.widget_over,
-                    format.format(kotlin.math.abs(remaining)))
-            } else "")
+            val remaining = number("kcalGoal").roundToLong() - number("kcal").roundToLong()
+            val remainingValue = if (fresh) format.format(kotlin.math.abs(remaining)) else "—"
+            val headline = SpannableString("$remainingValue kcal")
+            headline.setSpan(RelativeSizeSpan(0.5f), headline.length - 4, headline.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            headline.setSpan(StyleSpan(Typeface.BOLD), headline.length - 4, headline.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            views.setTextViewText(R.id.widget_kcal, headline)
+            views.setTextViewText(R.id.widget_energy_label, context.getString(
+                if (fresh && remaining < 0) R.string.widget_energy_over_label else R.string.widget_energy_remaining_label))
+            views.setTextViewText(R.id.widget_kcal_consumed, value("kcal"))
+            views.setTextViewText(R.id.widget_kcal_goal, value("kcalGoal"))
             for ((id, key) in listOf(R.id.widget_carbs_value to "carbs",
                     R.id.widget_fats_value to "fats", R.id.widget_protein_value to "proteins")) {
                 views.setTextViewText(id, if (fresh) "${value(key)} / ${value("${key}Goal")} g" else "— g")
@@ -113,6 +120,8 @@ class NutritionWidgetProvider : AppWidgetProvider() {
                 views.setProgressBar(id, 1000, progress, false)
             }
             val summary = if (fresh) {
+                context.getString(if (remaining >= 0) R.string.widget_remaining else R.string.widget_over,
+                    format.format(kotlin.math.abs(remaining))) + ", " +
                 listOf("kcal", "carbs", "fats", "proteins").joinToString(", ") { key ->
                     val label = when (key) {
                         "carbs" -> context.getString(R.string.widget_carbs)

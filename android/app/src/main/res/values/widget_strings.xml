@@ -16,4 +16,8 @@
     <string name="widget_add">Add</string>
     <string name="widget_scan_description">Open barcode scanner</string>
     <string name="widget_add_description">Open food addition menu</string>
+    <string name="widget_energy_remaining_label">Remaining</string>
+    <string name="widget_energy_over_label">Over target</string>
+    <string name="widget_energy_consumed_label">Consumed</string>
+    <string name="widget_energy_goal_label">Goal</string>
 </resources>

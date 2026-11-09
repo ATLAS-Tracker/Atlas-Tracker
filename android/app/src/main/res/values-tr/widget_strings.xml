@@ -16,4 +16,8 @@
     <string name="widget_add">Ekle</string>
     <string name="widget_scan_description">Barkod tarayıcıyı aç</string>
     <string name="widget_add_description">Yiyecek ekleme menüsünü aç</string>
+    <string name="widget_energy_remaining_label">Kalan</string>
+    <string name="widget_energy_over_label">Hedef aşıldı</string>
+    <string name="widget_energy_consumed_label">Tüketilen</string>
+    <string name="widget_energy_goal_label">Hedef</string>
 </resources>
